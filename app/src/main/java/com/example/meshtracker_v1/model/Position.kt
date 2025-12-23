@@ -43,20 +43,129 @@ data class MeshPosition(
          * Używa reflection, jeśli klasa nie jest dostępna bezpośrednio.
          */
         fun fromMeshtasticPosition(position: Any?): MeshPosition? {
-            if (position == null) return null
+            if (position == null) {
+                android.util.Log.d("MeshPosition", "Position object is null")
+                return null
+            }
+            
+            android.util.Log.d("MeshPosition", "Parsing position, type: ${position.javaClass.name}")
+            
+            // Debug: List available methods
+            try {
+                val methods = position.javaClass.declaredMethods
+                android.util.Log.d("MeshPosition", "Available methods: ${methods.map { it.name }.joinToString(", ")}")
+            } catch (e: Exception) {
+                android.util.Log.w("MeshPosition", "Could not list methods: ${e.message}")
+            }
             
             return try {
-                val lat = position.javaClass.getMethod("getLatitude").invoke(position) as? Double ?: 0.0
-                val lng = position.javaClass.getMethod("getLongitude").invoke(position) as? Double ?: 0.0
-                val alt = (position.javaClass.getMethod("getAltitude").invoke(position) as? Int) ?: 0
-                val time = (position.javaClass.getMethod("getTime").invoke(position) as? Int) ?: 0
-                val satellites = (position.javaClass.getMethod("getSatellitesInView").invoke(position) as? Int) ?: 0
-                val speed = (position.javaClass.getMethod("getGroundSpeed").invoke(position) as? Int) ?: 0
-                val track = (position.javaClass.getMethod("getGroundTrack").invoke(position) as? Int) ?: 0
-                val precision = (position.javaClass.getMethod("getPrecisionBits").invoke(position) as? Int) ?: 0
+                val lat = try {
+                    val method = position.javaClass.getMethod("getLatitude")
+                    val value = method.invoke(position)
+                    when (value) {
+                        is Double -> value
+                        is Float -> value.toDouble()
+                        else -> (value as? Number)?.toDouble() ?: 0.0
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.w("MeshPosition", "Error getting latitude: ${e.message}")
+                    0.0
+                }
                 
-                MeshPosition(lat, lng, alt, time, satellites, speed, track, precision)
+                val lng = try {
+                    val method = position.javaClass.getMethod("getLongitude")
+                    val value = method.invoke(position)
+                    when (value) {
+                        is Double -> value
+                        is Float -> value.toDouble()
+                        else -> (value as? Number)?.toDouble() ?: 0.0
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.w("MeshPosition", "Error getting longitude: ${e.message}")
+                    0.0
+                }
+                
+                android.util.Log.d("MeshPosition", "Parsed lat=$lat, lng=$lng")
+                
+                val alt = try {
+                    val method = position.javaClass.getMethod("getAltitude")
+                    val value = method.invoke(position)
+                    when (value) {
+                        is Int -> value
+                        is Long -> value.toInt()
+                        else -> (value as? Number)?.toInt() ?: 0
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.w("MeshPosition", "Error getting altitude: ${e.message}")
+                    0
+                }
+                
+                val time = try {
+                    val method = position.javaClass.getMethod("getTime")
+                    val value = method.invoke(position)
+                    when (value) {
+                        is Int -> value
+                        is Long -> value.toInt()
+                        else -> (value as? Number)?.toInt() ?: 0
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.w("MeshPosition", "Error getting time: ${e.message}")
+                    0
+                }
+                
+                val satellites = try {
+                    val method = position.javaClass.getMethod("getSatellitesInView")
+                    val value = method.invoke(position)
+                    when (value) {
+                        is Int -> value
+                        is Long -> value.toInt()
+                        else -> (value as? Number)?.toInt() ?: 0
+                    }
+                } catch (e: Exception) {
+                    0
+                }
+                
+                val speed = try {
+                    val method = position.javaClass.getMethod("getGroundSpeed")
+                    val value = method.invoke(position)
+                    when (value) {
+                        is Int -> value
+                        is Long -> value.toInt()
+                        else -> (value as? Number)?.toInt() ?: 0
+                    }
+                } catch (e: Exception) {
+                    0
+                }
+                
+                val track = try {
+                    val method = position.javaClass.getMethod("getGroundTrack")
+                    val value = method.invoke(position)
+                    when (value) {
+                        is Int -> value
+                        is Long -> value.toInt()
+                        else -> (value as? Number)?.toInt() ?: 0
+                    }
+                } catch (e: Exception) {
+                    0
+                }
+                
+                val precision = try {
+                    val method = position.javaClass.getMethod("getPrecisionBits")
+                    val value = method.invoke(position)
+                    when (value) {
+                        is Int -> value
+                        is Long -> value.toInt()
+                        else -> (value as? Number)?.toInt() ?: 0
+                    }
+                } catch (e: Exception) {
+                    0
+                }
+                
+                val result = MeshPosition(lat, lng, alt, time, satellites, speed, track, precision)
+                android.util.Log.d("MeshPosition", "Created MeshPosition: valid=${result.isValid()}, inRange=${result.isInRange()}")
+                result
             } catch (e: Exception) {
+                android.util.Log.e("MeshPosition", "Error parsing position", e)
                 null
             }
         }

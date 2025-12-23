@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Job
 
 /**
  * ViewModel dla ekranu mapy.
@@ -42,6 +43,8 @@ class MapViewModel(application: Application) : AndroidViewModel(application),
     val connectionState: StateFlow<ConnectionState> = _connectionState.asStateFlow()
     
     private var isReceiverRegistered = false
+    private var periodicRefreshJob: Job? = null
+    private var connectionCheckJob: Job? = null
     
     init {
         initialize()
@@ -58,8 +61,21 @@ class MapViewModel(application: Application) : AndroidViewModel(application),
             override fun onServiceConnected() {
                 Log.d(TAG, "Service connected")
                 viewModelScope.launch {
-                    _connectionState.value = ConnectionState.CONNECTED
-                    refreshNodes()
+                    // Sprawdź stan połączenia radia
+                    val radioState = meshServiceManager.getConnectionState()
+                    Log.d(TAG, "Radio connection state: $radioState")
+                    
+                    if (radioState == Constants.STATE_CONNECTED) {
+                        _connectionState.value = ConnectionState.CONNECTED
+                        refreshNodes()
+                        // Rozpocznij okresowe odświeżanie
+                        startPeriodicRefresh()
+                    } else {
+                        Log.d(TAG, "Service connected but radio not connected yet, waiting for connection...")
+                        _connectionState.value = ConnectionState.CONNECTING
+                        // Rozpocznij okresowe sprawdzanie stanu połączenia
+                        startConnectionCheck()
+                    }
                 }
             }
             
@@ -101,13 +117,78 @@ class MapViewModel(application: Application) : AndroidViewModel(application),
      */
     fun refreshNodes() {
         viewModelScope.launch {
+            Log.d(TAG, "Refreshing nodes...")
+            
+            // Sprawdź czy serwis jest połączony
+            if (!meshServiceManager.isConnected()) {
+                Log.w(TAG, "Cannot refresh nodes - service not connected")
+                return@launch
+            }
+            
+            // Sprawdź stan połączenia radia
+            val radioState = meshServiceManager.getConnectionState()
+            Log.d(TAG, "Radio connection state: $radioState")
+            
+            if (radioState != Constants.STATE_CONNECTED) {
+                Log.w(TAG, "Cannot refresh nodes - radio not connected (state: $radioState)")
+                return@launch
+            }
+            
             val nodesList = meshServiceManager.getNodes()
             if (nodesList != null) {
                 val nodesMap = nodesList.associateBy { it.getId() }
                 _nodes.value = nodesMap
                 Log.d(TAG, "Refreshed ${nodesList.size} nodes")
+                if (nodesList.isEmpty()) {
+                    Log.w(TAG, "Node list is empty - radio may be connected but no nodes discovered yet")
+                } else {
+                    nodesList.forEach { node ->
+                        Log.d(TAG, "Node: ${node.getDisplayName()} (${node.getId()}), hasPosition: ${node.hasValidPosition()}")
+                    }
+                }
             } else {
-                Log.w(TAG, "Failed to get nodes")
+                Log.w(TAG, "Failed to get nodes - getNodes() returned null")
+            }
+        }
+    }
+    
+    /**
+     * Sprawdza stan połączenia radia okresowo (gdy serwis jest połączony ale radio nie).
+     */
+    private fun startConnectionCheck() {
+        // Anuluj poprzedni job jeśli istnieje
+        connectionCheckJob?.cancel()
+        
+        connectionCheckJob = viewModelScope.launch {
+            while (_connectionState.value == ConnectionState.CONNECTING && meshServiceManager.isConnected()) {
+                kotlinx.coroutines.delay(2000) // Sprawdzaj co 2 sekundy
+                
+                val radioState = meshServiceManager.getConnectionState()
+                Log.d(TAG, "Checking radio connection state: $radioState")
+                
+                if (radioState == Constants.STATE_CONNECTED) {
+                    Log.d(TAG, "Radio connected detected via polling")
+                    _connectionState.value = ConnectionState.CONNECTED
+                    refreshNodes()
+                    startPeriodicRefresh()
+                    connectionCheckJob?.cancel()
+                    connectionCheckJob = null
+                }
+            }
+        }
+    }
+    
+    /**
+     * Odświeża węzły okresowo (co 5 sekund).
+     */
+    private fun startPeriodicRefresh() {
+        // Anuluj poprzedni job jeśli istnieje
+        periodicRefreshJob?.cancel()
+        
+        periodicRefreshJob = viewModelScope.launch {
+            while (_connectionState.value == ConnectionState.CONNECTED) {
+                kotlinx.coroutines.delay(5000) // 5 sekund
+                refreshNodes()
             }
         }
     }
@@ -120,7 +201,9 @@ class MapViewModel(application: Application) : AndroidViewModel(application),
             val currentNodes = _nodes.value.toMutableMap()
             currentNodes[nodeInfo.getId()] = nodeInfo
             _nodes.value = currentNodes
-            Log.d(TAG, "Node updated: ${nodeInfo.getDisplayName()}")
+            Log.d(TAG, "Node updated: ${nodeInfo.getDisplayName()} (${nodeInfo.getId()})")
+            Log.d(TAG, "Total nodes now: ${_nodes.value.size}")
+            Log.d(TAG, "Node has position: ${nodeInfo.hasValidPosition()}")
         }
     }
     
@@ -129,8 +212,11 @@ class MapViewModel(application: Application) : AndroidViewModel(application),
      */
     override fun onMeshConnected() {
         viewModelScope.launch {
+            Log.d(TAG, "Radio connected (from broadcast)")
             _connectionState.value = ConnectionState.CONNECTED
             refreshNodes()
+            // Rozpocznij okresowe odświeżanie jeśli jeszcze nie działa
+            startPeriodicRefresh()
         }
     }
     
@@ -139,7 +225,17 @@ class MapViewModel(application: Application) : AndroidViewModel(application),
      */
     override fun onMeshDisconnected() {
         viewModelScope.launch {
+            Log.d(TAG, "Radio disconnected (from broadcast)")
             _connectionState.value = ConnectionState.DISCONNECTED
+            // Anuluj okresowe odświeżanie
+            periodicRefreshJob?.cancel()
+            periodicRefreshJob = null
+            
+            // Jeśli serwis jest nadal połączony, zacznij sprawdzanie połączenia
+            if (meshServiceManager.isConnected()) {
+                _connectionState.value = ConnectionState.CONNECTING
+                startConnectionCheck()
+            }
         }
     }
     
@@ -166,6 +262,12 @@ class MapViewModel(application: Application) : AndroidViewModel(application),
     
     override fun onCleared() {
         super.onCleared()
+        
+        // Anuluj wszystkie joby
+        periodicRefreshJob?.cancel()
+        periodicRefreshJob = null
+        connectionCheckJob?.cancel()
+        connectionCheckJob = null
         
         // Wyrejestruj receiver
         if (isReceiverRegistered) {

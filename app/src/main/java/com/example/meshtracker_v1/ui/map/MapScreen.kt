@@ -3,6 +3,7 @@ package com.example.meshtracker_v1.ui.map
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
@@ -60,6 +61,14 @@ fun MapScreen(
     
     // Filtruj węzły z prawidłową pozycją
     val nodesWithPosition = nodes.values.filter { it.hasValidPosition() }
+    
+    // Debug: loguj informacje o węzłach
+    androidx.compose.runtime.LaunchedEffect(nodes.size, nodesWithPosition.size) {
+        android.util.Log.d("MapScreen", "Total nodes: ${nodes.size}, nodes with position: ${nodesWithPosition.size}")
+        nodes.values.forEach { node ->
+            android.util.Log.d("MapScreen", "Node: ${node.getDisplayName()}, hasPosition: ${node.hasValidPosition()}")
+        }
+    }
     
     // Aktualizuj kamerę gdy wybrano węzeł
     LaunchedEffect(selectedNodeId) {
@@ -120,7 +129,7 @@ fun MapScreen(
                 }
             }
             
-            // Wyświetl wskaźnik ładowania gdy brak węzłów i jest połączenie
+            // Wyświetl informacje gdy brak węzłów z pozycją
             if (nodesWithPosition.isEmpty() && connectionState == MapViewModel.ConnectionState.CONNECTED) {
                 Box(
                     modifier = Modifier
@@ -128,10 +137,31 @@ fun MapScreen(
                         .padding(16.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "No nodes with position found",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = if (nodes.isEmpty()) {
+                                "No nodes found"
+                            } else {
+                                "No nodes with position found"
+                            },
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        if (nodes.isNotEmpty()) {
+                            Text(
+                                text = "Total nodes: ${nodes.size}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = "Check the Nodes tab to see all nodes",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
                 }
             }
             

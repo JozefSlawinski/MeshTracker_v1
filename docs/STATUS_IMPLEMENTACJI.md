@@ -52,10 +52,28 @@
 - ✅ NodeToMarkerMapper (`NodeToMarkerMapper.kt`)
   - Konwersja węzłów na MarkerOptions
 
+### Faza 5: Warstwa UI - Lista węzłów ✅
+- ✅ NodeListScreen (`NodeListScreen.kt`)
+  - Lista wszystkich węzłów
+  - Sortowanie (online/offline, nazwa)
+  - Obsługa kliknięć - nawigacja do mapy
+- ✅ NodeItem (`NodeItem.kt`)
+  - Wyświetlanie informacji o węźle
+  - Status online/offline
+  - Bateria, SNR, RSSI
+  - Ostatnio słyszane
+
 ### Faza 6: Integracja komponentów ✅
 - ✅ MainActivity zaktualizowana
-  - Używa MapScreen
-  - Prosta implementacja
+  - Używa MainScreen z nawigacją
+- ✅ MainScreen (`MainScreen.kt`)
+  - Nawigacja między mapą a listą
+  - Bottom navigation bar
+  - Top bar z statusem połączenia
+- ✅ ConnectionStatusBar (`ConnectionStatusBar.kt`)
+  - Wskaźnik stanu połączenia
+  - Liczba węzłów
+  - Kolory dla różnych stanów
 
 ## ⚠️ Wymagane konfiguracje
 
@@ -73,6 +91,24 @@
 - Aplikacja Meshtastic musi być zainstalowana na urządzeniu
 - Aplikacja Meshtastic musi być uruchomiona
 - Urządzenie radio Meshtastic musi być połączone z aplikacją
+
+## ✅ Nowe funkcjonalności (dodane w ostatniej iteracji)
+
+### Nawigacja między ekranami
+- Bottom navigation bar z przełączaniem między mapą a listą węzłów
+- Automatyczne przełączanie na mapę po kliknięciu węzła w liście
+- Zachowanie stanu wybranego węzła
+
+### Status bar połączenia
+- Wizualny wskaźnik stanu połączenia (Connected/Disconnected/Connecting)
+- Liczba wykrytych węzłów
+- Kolorowe oznaczenia dla różnych stanów
+
+### Lista węzłów
+- Pełna lista wszystkich węzłów (nie tylko z pozycją)
+- Sortowanie: najpierw online, potem offline, alfabetycznie
+- Szczegółowe informacje o każdym węźle
+- Kliknięcie węzła przełącza na mapę i zaznacza go
 
 ## 📝 Uwagi implementacyjne
 
@@ -140,6 +176,10 @@ Klasy NodeInfo, Position, MeshUser z Meshtastic muszą implementować Parcelable
 ### UI
 - `app/src/main/java/com/example/meshtracker_v1/ui/map/MapViewModel.kt`
 - `app/src/main/java/com/example/meshtracker_v1/ui/map/MapScreen.kt`
+- `app/src/main/java/com/example/meshtracker_v1/ui/nodes/NodeListScreen.kt`
+- `app/src/main/java/com/example/meshtracker_v1/ui/nodes/NodeItem.kt`
+- `app/src/main/java/com/example/meshtracker_v1/ui/MainScreen.kt`
+- `app/src/main/java/com/example/meshtracker_v1/ui/components/ConnectionStatusBar.kt`
 
 ### Mapper
 - `app/src/main/java/com/example/meshtracker_v1/mapper/NodeToMarkerMapper.kt`
@@ -153,6 +193,11 @@ Klasy NodeInfo, Position, MeshUser z Meshtastic muszą implementować Parcelable
 ---
 
 **Data aktualizacji:** 2024
-**Status:** Podstawowa implementacja zakończona
-**Gotowe do testowania:** Po konfiguracji Google Maps API key
+**Status:** Implementacja zakończona - aplikacja gotowa do użycia
+**Gotowe do testowania:** ✅ Tak - aplikacja działa i łączy się z Meshtastic
+**Ostatnie zmiany:**
+- Dodano ekran listy węzłów
+- Dodano nawigację między ekranami
+- Dodano status bar połączenia
+- Ulepszono UI/UX
 

@@ -49,7 +49,7 @@ class MeshtasticBroadcastReceiver(
         
         when (action) {
             Constants.ACTION_NODE_CHANGE -> {
-                handleNodeChange(intent)
+                handleNodeChange(context, intent)
             }
             Constants.ACTION_MESH_CONNECTED -> {
                 handleMeshConnected(intent)
@@ -66,49 +66,109 @@ class MeshtasticBroadcastReceiver(
     /**
      * Obsługuje zmianę węzła.
      */
-    private fun handleNodeChange(intent: Intent) {
+    private fun handleNodeChange(context: Context, intent: Intent) {
         try {
-            // Pobierz NodeInfo z intent (jako Parcelable)
-            // Używamy reflection, ponieważ klasa może nie być dostępna w czasie kompilacji
+            Log.d(TAG, "Handling NODE_CHANGE broadcast")
+            Log.d(TAG, "Intent extras: ${intent.extras?.keySet()}")
+            
+            // Pobierz NodeInfo z intent używając ClassLoader z aplikacji Meshtastic
+            // Problem: Bundle jest już zdeserializowany przez system, więc musimy użyć Thread context ClassLoader
             val nodeInfoObj = try {
-                // Spróbuj użyć getParcelableExtra z reflection
-                val method = Intent::class.java.getMethod(
-                    "getParcelableExtra",
-                    String::class.java,
-                    Class::class.java
+                // Najpierw załaduj ClassLoader z aplikacji Meshtastic
+                val meshtasticContext = context.createPackageContext(
+                    Constants.MESHTASTIC_PACKAGE,
+                    Context.CONTEXT_INCLUDE_CODE or Context.CONTEXT_IGNORE_SECURITY
                 )
-                // Szukamy klasy NodeInfo z pakietu org.meshtastic.core.model
-                val nodeInfoClass = Class.forName("org.meshtastic.core.model.NodeInfo")
-                method.invoke(intent, Constants.EXTRA_NODE_INFO, nodeInfoClass) as? Any
-            } catch (e: Exception) {
-                // Fallback: użyj starszej metody (dla Android < 33)
+                val meshtasticClassLoader = meshtasticContext.classLoader
+                
+                Log.d(TAG, "Loaded Meshtastic ClassLoader: $meshtasticClassLoader")
+                
+                // Ustaw Thread context ClassLoader PRZED jakimkolwiek dostępem do Bundle
+                val originalClassLoader = Thread.currentThread().contextClassLoader
                 try {
-                    @Suppress("DEPRECATION")
-                    intent.getParcelableExtra<android.os.Parcelable>(Constants.EXTRA_NODE_INFO)
-                } catch (e2: Exception) {
-                    Log.e(TAG, "Error getting NodeInfo from intent", e2)
-                    null
+                    Thread.currentThread().contextClassLoader = meshtasticClassLoader
+                    Log.d(TAG, "Set Thread context ClassLoader")
+                    
+                    // Załaduj klasę NodeInfo używając ClassLoader z Meshtastic
+                    val nodeInfoClass = meshtasticClassLoader.loadClass("org.meshtastic.core.model.NodeInfo")
+                    Log.d(TAG, "Found NodeInfo class: $nodeInfoClass")
+                    
+                    // Pobierz Bundle z intent
+                    val bundle = intent.extras ?: return
+                    
+                    // Ustaw ClassLoader dla Bundle
+                    bundle.classLoader = meshtasticClassLoader
+                    
+                    // Spróbuj pobrać NodeInfo używając Bundle.getParcelable()
+                    val bundleResult = try {
+                        val getParcelableMethod = android.os.Bundle::class.java.getMethod(
+                            "getParcelable",
+                            String::class.java,
+                            Class::class.java
+                        )
+                        getParcelableMethod.invoke(bundle, Constants.EXTRA_NODE_INFO, nodeInfoClass) as? Any
+                    } catch (e: Exception) {
+                        Log.w(TAG, "Error using Bundle.getParcelable: ${e.message}")
+                        null
+                    }
+                    
+                    if (bundleResult != null) {
+                        Log.d(TAG, "Got NodeInfo from Bundle.getParcelable: true")
+                        bundleResult
+                    } else {
+                        // Alternatywa: spróbuj użyć Intent.getParcelableExtra
+                        try {
+                            val method = Intent::class.java.getMethod(
+                                "getParcelableExtra",
+                                String::class.java,
+                                Class::class.java
+                            )
+                            val result = method.invoke(intent, Constants.EXTRA_NODE_INFO, nodeInfoClass) as? Any
+                            Log.d(TAG, "Got NodeInfo from Intent.getParcelableExtra: ${result != null}")
+                            result
+                        } catch (e: Exception) {
+                            Log.w(TAG, "Error using Intent.getParcelableExtra: ${e.message}")
+                            null
+                        }
+                    }
+                } finally {
+                    // Przywróć oryginalny ClassLoader
+                    Thread.currentThread().contextClassLoader = originalClassLoader
                 }
+            } catch (e: Exception) {
+                Log.w(TAG, "Error using Meshtastic ClassLoader: ${e.message}", e)
+                null
             }
             
             if (nodeInfoObj == null) {
-                Log.d(TAG, "NodeInfo is null in broadcast")
+                Log.w(TAG, "NodeInfo is null in broadcast. Available extras: ${intent.extras?.keySet()}")
+                // Spróbuj znaleźć NodeInfo w innych extras
+                intent.extras?.keySet()?.forEach { key ->
+                    Log.d(TAG, "Extra key: $key, value type: ${intent.extras?.get(key)?.javaClass?.name}")
+                }
                 return
             }
+            
+            Log.d(TAG, "NodeInfo object type: ${nodeInfoObj.javaClass.name}")
             
             // Konwertuj do MeshNodeInfo
             val meshNodeInfo = MeshNodeInfo.fromMeshtasticNodeInfo(nodeInfoObj)
             
             if (meshNodeInfo == null) {
-                Log.w(TAG, "Failed to convert NodeInfo")
+                Log.e(TAG, "Failed to convert NodeInfo to MeshNodeInfo")
                 return
             }
             
             Log.d(TAG, "Node changed: ${meshNodeInfo.getDisplayName()} (${meshNodeInfo.getId()})")
+            Log.d(TAG, "Node has position: ${meshNodeInfo.hasValidPosition()}")
+            if (meshNodeInfo.position != null) {
+                Log.d(TAG, "Node position: ${meshNodeInfo.position!!.latitude}, ${meshNodeInfo.position!!.longitude}")
+            }
             listener.onNodeChanged(meshNodeInfo)
             
         } catch (e: Exception) {
             Log.e(TAG, "Error handling node change", e)
+            e.printStackTrace()
         }
     }
     
