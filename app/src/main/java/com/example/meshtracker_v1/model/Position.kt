@@ -50,22 +50,52 @@ data class MeshPosition(
             
             android.util.Log.d("MeshPosition", "Parsing position, type: ${position.javaClass.name}")
             
-            // Debug: List available methods
+            // Debug: List available methods and fields
             try {
-                val methods = position.javaClass.declaredMethods
-                android.util.Log.d("MeshPosition", "Available methods: ${methods.map { it.name }.joinToString(", ")}")
+                val declaredMethods = position.javaClass.declaredMethods
+                val allMethods = position.javaClass.methods
+                val fields = position.javaClass.declaredFields
+                android.util.Log.d("MeshPosition", "Declared methods: ${declaredMethods.map { it.name }.joinToString(", ")}")
+                android.util.Log.d("MeshPosition", "All methods: ${allMethods.map { it.name }.joinToString(", ")}")
+                android.util.Log.d("MeshPosition", "Declared fields: ${fields.map { it.name }.joinToString(", ")}")
             } catch (e: Exception) {
-                android.util.Log.w("MeshPosition", "Could not list methods: ${e.message}")
+                android.util.Log.w("MeshPosition", "Could not list methods/fields: ${e.message}")
             }
             
             return try {
                 val lat = try {
+                    // Try getMethod first (includes inherited)
                     val method = position.javaClass.getMethod("getLatitude")
                     val value = method.invoke(position)
-                    when (value) {
+                    android.util.Log.d("MeshPosition", "getLatitude() returned: $value (type: ${value?.javaClass?.name})")
+                    val result = when (value) {
                         is Double -> value
                         is Float -> value.toDouble()
+                        is Int -> value / 1e7  // Meshtastic stores as degrees * 1e7
+                        is Long -> value / 1e7
                         else -> (value as? Number)?.toDouble() ?: 0.0
+                    }
+                    android.util.Log.d("MeshPosition", "Converted latitude: $result")
+                    result
+                } catch (e: NoSuchMethodException) {
+                    try {
+                        // Try as a field
+                        val latField = position.javaClass.getDeclaredField("latitude")
+                        latField.isAccessible = true
+                        val value = latField.get(position)
+                        android.util.Log.d("MeshPosition", "latitude field value: $value (type: ${value?.javaClass?.name})")
+                        val result = when (value) {
+                            is Double -> value
+                            is Float -> value.toDouble()
+                            is Int -> value / 1e7  // Meshtastic stores as degrees * 1e7
+                            is Long -> value / 1e7
+                            else -> (value as? Number)?.toDouble() ?: 0.0
+                        }
+                        android.util.Log.d("MeshPosition", "Converted latitude from field: $result")
+                        result
+                    } catch (e2: Exception) {
+                        android.util.Log.w("MeshPosition", "Error getting latitude (method and field): ${e.message}, ${e2.message}")
+                        0.0
                     }
                 } catch (e: Exception) {
                     android.util.Log.w("MeshPosition", "Error getting latitude: ${e.message}")
@@ -73,19 +103,45 @@ data class MeshPosition(
                 }
                 
                 val lng = try {
+                    // Try getMethod first (includes inherited)
                     val method = position.javaClass.getMethod("getLongitude")
                     val value = method.invoke(position)
-                    when (value) {
+                    android.util.Log.d("MeshPosition", "getLongitude() returned: $value (type: ${value?.javaClass?.name})")
+                    val result = when (value) {
                         is Double -> value
                         is Float -> value.toDouble()
+                        is Int -> value / 1e7  // Meshtastic stores as degrees * 1e7
+                        is Long -> value / 1e7
                         else -> (value as? Number)?.toDouble() ?: 0.0
+                    }
+                    android.util.Log.d("MeshPosition", "Converted longitude: $result")
+                    result
+                } catch (e: NoSuchMethodException) {
+                    try {
+                        // Try as a field
+                        val lngField = position.javaClass.getDeclaredField("longitude")
+                        lngField.isAccessible = true
+                        val value = lngField.get(position)
+                        android.util.Log.d("MeshPosition", "longitude field value: $value (type: ${value?.javaClass?.name})")
+                        val result = when (value) {
+                            is Double -> value
+                            is Float -> value.toDouble()
+                            is Int -> value / 1e7  // Meshtastic stores as degrees * 1e7
+                            is Long -> value / 1e7
+                            else -> (value as? Number)?.toDouble() ?: 0.0
+                        }
+                        android.util.Log.d("MeshPosition", "Converted longitude from field: $result")
+                        result
+                    } catch (e2: Exception) {
+                        android.util.Log.w("MeshPosition", "Error getting longitude (method and field): ${e.message}, ${e2.message}")
+                        0.0
                     }
                 } catch (e: Exception) {
                     android.util.Log.w("MeshPosition", "Error getting longitude: ${e.message}")
                     0.0
                 }
                 
-                android.util.Log.d("MeshPosition", "Parsed lat=$lat, lng=$lng")
+                android.util.Log.d("MeshPosition", "Final parsed lat=$lat, lng=$lng")
                 
                 val alt = try {
                     val method = position.javaClass.getMethod("getAltitude")

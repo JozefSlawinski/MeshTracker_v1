@@ -59,12 +59,18 @@ data class MeshNodeInfo(
             
             android.util.Log.d("MeshNodeInfo", "Parsing NodeInfo, type: ${nodeInfo.javaClass.name}")
             
-            // Debug: List all available methods
+            // Debug: List all available methods (including inherited)
             try {
-                val methods = nodeInfo.javaClass.declaredMethods
-                android.util.Log.d("MeshNodeInfo", "Available methods: ${methods.map { it.name }.joinToString(", ")}")
+                val declaredMethods = nodeInfo.javaClass.declaredMethods
+                val allMethods = nodeInfo.javaClass.methods
+                android.util.Log.d("MeshNodeInfo", "Declared methods: ${declaredMethods.map { it.name }.joinToString(", ")}")
+                android.util.Log.d("MeshNodeInfo", "All methods (including inherited): ${allMethods.map { it.name }.joinToString(", ")}")
+                
+                // Also list fields
+                val fields = nodeInfo.javaClass.declaredFields
+                android.util.Log.d("MeshNodeInfo", "Declared fields: ${fields.map { it.name }.joinToString(", ")}")
             } catch (e: Exception) {
-                android.util.Log.w("MeshNodeInfo", "Could not list methods: ${e.message}")
+                android.util.Log.w("MeshNodeInfo", "Could not list methods/fields: ${e.message}")
             }
             
             return try {
@@ -93,7 +99,18 @@ data class MeshNodeInfo(
                 android.util.Log.d("MeshNodeInfo", "Node num: $num")
                 
                 val userObj = try {
+                    // Try getMethod first (includes inherited)
                     nodeInfo.javaClass.getMethod("getUser").invoke(nodeInfo)
+                } catch (e: NoSuchMethodException) {
+                    try {
+                        // Try as a field
+                        val userField = nodeInfo.javaClass.getDeclaredField("user")
+                        userField.isAccessible = true
+                        userField.get(nodeInfo)
+                    } catch (e2: Exception) {
+                        android.util.Log.w("MeshNodeInfo", "Error getting user (method and field): ${e.message}, ${e2.message}")
+                        null
+                    }
                 } catch (e: Exception) {
                     android.util.Log.w("MeshNodeInfo", "Error getting user: ${e.message}")
                     null
@@ -111,12 +128,56 @@ data class MeshNodeInfo(
                 }
                 
                 val positionObj = try {
-                    nodeInfo.javaClass.getMethod("getPosition").invoke(nodeInfo)
+                    // Try getMethod first (includes inherited)
+                    android.util.Log.d("MeshNodeInfo", "Trying getPosition() method...")
+                    val result = nodeInfo.javaClass.getMethod("getPosition").invoke(nodeInfo)
+                    android.util.Log.d("MeshNodeInfo", "getPosition() returned: $result")
+                    result
+                } catch (e: NoSuchMethodException) {
+                    android.util.Log.d("MeshNodeInfo", "getPosition() method not found, trying field access...")
+                    try {
+                        // Try as a field
+                        val positionField = nodeInfo.javaClass.getDeclaredField("position")
+                        positionField.isAccessible = true
+                        val result = positionField.get(nodeInfo)
+                        android.util.Log.d("MeshNodeInfo", "position field value: $result")
+                        result
+                    } catch (e2: NoSuchFieldException) {
+                        android.util.Log.w("MeshNodeInfo", "position field not found either. Trying alternative field names...")
+                        // Try alternative field names
+                        try {
+                            val fields = nodeInfo.javaClass.declaredFields
+                            android.util.Log.d("MeshNodeInfo", "Available fields: ${fields.map { it.name }.joinToString(", ")}")
+                            // Try common alternatives
+                            val altNames = listOf("pos", "location", "gpsPosition", "coordinates")
+                            var found: Any? = null
+                            for (name in altNames) {
+                                try {
+                                    val field = nodeInfo.javaClass.getDeclaredField(name)
+                                    field.isAccessible = true
+                                    found = field.get(nodeInfo)
+                                    if (found != null) {
+                                        android.util.Log.d("MeshNodeInfo", "Found position in field '$name': $found")
+                                        break
+                                    }
+                                } catch (e3: Exception) {
+                                    // Continue trying
+                                }
+                            }
+                            found
+                        } catch (e3: Exception) {
+                            android.util.Log.w("MeshNodeInfo", "Error getting position (method and field): ${e.message}, ${e2.message}, ${e3.message}")
+                            null
+                        }
+                    } catch (e2: Exception) {
+                        android.util.Log.w("MeshNodeInfo", "Error accessing position field: ${e.message}, ${e2.message}")
+                        null
+                    }
                 } catch (e: Exception) {
-                    android.util.Log.w("MeshNodeInfo", "Error getting position object: ${e.message}")
+                    android.util.Log.w("MeshNodeInfo", "Error getting position object: ${e.message}", e)
                     null
                 }
-                android.util.Log.d("MeshNodeInfo", "Position object: ${if (positionObj != null) positionObj.javaClass.name else "null"}")
+                android.util.Log.d("MeshNodeInfo", "Position object: ${if (positionObj != null) "${positionObj.javaClass.name} = $positionObj" else "null"}")
                 val position = MeshPosition.fromMeshtasticPosition(positionObj)
                 android.util.Log.d("MeshNodeInfo", "Parsed position: ${if (position != null) "${position.latitude}, ${position.longitude} (valid: ${position.isValid()}, inRange: ${position.isInRange()})" else "null"}")
                 
@@ -133,6 +194,7 @@ data class MeshNodeInfo(
                 }
                 
                 val lastHeard = try {
+                    // Try getMethod first (includes inherited)
                     val method = nodeInfo.javaClass.getMethod("getLastHeard")
                     val value = method.invoke(nodeInfo)
                     val result = when (value) {
@@ -154,8 +216,25 @@ data class MeshNodeInfo(
                         }
                         android.util.Log.d("MeshNodeInfo", "lastHeard (via getLastHeardTime): $result")
                         result
+                    } catch (e2: NoSuchMethodException) {
+                        try {
+                            // Try as a field
+                            val lastHeardField = nodeInfo.javaClass.getDeclaredField("lastHeard")
+                            lastHeardField.isAccessible = true
+                            val value = lastHeardField.get(nodeInfo)
+                            val result = when (value) {
+                                is Int -> value
+                                is Long -> value.toInt()
+                                else -> (value as? Number)?.toInt() ?: 0
+                            }
+                            android.util.Log.d("MeshNodeInfo", "lastHeard (via field): $result")
+                            result
+                        } catch (e3: Exception) {
+                            android.util.Log.w("MeshNodeInfo", "Could not get lastHeard (method and field): ${e.message}, ${e2.message}, ${e3.message}")
+                            0
+                        }
                     } catch (e2: Exception) {
-                        android.util.Log.w("MeshNodeInfo", "Could not get lastHeard: ${e.message}, ${e2.message}")
+                        android.util.Log.w("MeshNodeInfo", "Error getting lastHeard (getLastHeardTime): ${e.message}, ${e2.message}")
                         0
                     }
                 } catch (e: Exception) {
