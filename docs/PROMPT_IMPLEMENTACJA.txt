@@ -1,0 +1,82 @@
+Stwórz aplikację Android, która łączy się z aplikacją Meshtastic przez interfejs IMeshService i wyświetla pozycje węzłów na mapie.
+
+WYMAGANIA:
+
+1. POŁĄCZENIE Z MESHTASTIC:
+   - Użyj MeshServiceManager do połączenia z serwisem com.geeksville.mesh.service.MeshService
+   - Pakiet aplikacji Meshtastic: com.geeksville.mesh
+   - Zarejestruj BroadcastReceiver dla akcji:
+     * com.geeksville.mesh.NODE_CHANGE - zmiany węzłów
+     * com.geeksville.mesh.MESH_CONNECTED - połączenie z radiem
+     * com.geeksville.mesh.MESH_DISCONNECTED - rozłączenie z radiem
+
+2. ODBIERANIE POZYCJI:
+   - W BroadcastReceiver.onReceive() dla ACTION_NODE_CHANGE:
+     * Pobierz NodeInfo z extra: "com.geeksville.mesh.NodeInfo"
+     * Sprawdź czy NodeInfo.getUser() i NodeInfo.getPosition() nie są null
+     * Sprawdź czy pozycja jest prawidłowa (latitude != 0.0 || longitude != 0.0)
+
+3. WYŚWIETLANIE NA MAPIE:
+   - Dla każdego węzła z prawidłową pozycją utwórz CotEvent:
+     * UID: nodeInfo.getUser().getId()
+     * Type: "a-f-G-E-S" (sensor)
+     * How: "m-g" (mesh/gps)
+     * Point: new CotPoint(latitude, longitude, altitude, UNKNOWN, UNKNOWN)
+     * Detail zawierający:
+       - contact z callsign i endpoint
+       - __group z role="Team Member"
+       - status z battery (jeśli dostępne)
+       - takv z platform="Meshtastic"
+       - uid z Droid=nazwa
+       - __meshtastic (marker aby uniknąć pętli)
+   - Wyślij przez CotMapComponent.getInternalDispatcher().dispatch(cotEvent)
+
+4. STRUKTURY DANYCH:
+   - NodeInfo zawiera: user (MeshUser), position (Position), deviceMetrics
+   - Position zawiera: latitude (double), longitude (double), altitude (int)
+   - MeshUser zawiera: id (String), longName (String), hwModelString (String)
+
+5. ZARZĄDZANIE CYKLEM ŻYCIA:
+   - W onCreate(): inicjalizuj MeshServiceManager, zarejestruj receiver, wywołaj connect()
+   - W onDestroy(): wywołaj disconnect() i unregisterReceiver()
+   - Ustaw ConnectionListener aby odświeżać listę węzłów przy połączeniu
+
+6. ANDROIDMANIFEST.XML:
+   - Dodaj <queries><package android:name="com.geeksville.mesh" /></queries>
+   - Dodaj uprawnienia jeśli potrzebne
+
+GOTOWE FRAGMENTY KODU:
+
+// Inicjalizacja
+MeshServiceManager manager = MeshServiceManager.getInstance(context);
+manager.setConnectionListener(new MeshServiceManager.ConnectionListener() {
+    @Override
+    public void onServiceConnected() {
+        List<NodeInfo> nodes = manager.getNodes();
+        // Przetwórz węzły
+    }
+    @Override
+    public void onServiceDisconnected() {}
+});
+manager.connect();
+
+// BroadcastReceiver
+IntentFilter filter = new IntentFilter();
+filter.addAction("com.geeksville.mesh.NODE_CHANGE");
+context.registerReceiver(receiver, filter, Context.RECEIVER_EXPORTED);
+
+// W onReceive:
+NodeInfo node = intent.getParcelableExtra("com.geeksville.mesh.NodeInfo");
+Position pos = node.getPosition();
+// Utwórz i wyślij CotEvent
+
+OCZEKIWANY REZULTAT:
+Aplikacja powinna automatycznie wyświetlać markery na mapie dla wszystkich węzłów Meshtastic, które mają prawidłową pozycję GPS. Markery powinny aktualizować się automatycznie gdy węzły zmieniają pozycję lub pojawiają się nowe węzły w sieci.
+
+DODATKOWE WYMAGANIA:
+- Użyj klas z pakietu com.atakmap.android.meshtastic.service.MeshServiceManager
+- Użyj stałych z com.atakmap.android.meshtastic.util.Constants
+- Obsłuż wyjątki RemoteException przy wywołaniach IMeshService
+- Dodaj logowanie dla debugowania (Log.d, Log.w, Log.e)
+- Sprawdź czy serwis jest połączony przed każdym wywołaniem metody
+
