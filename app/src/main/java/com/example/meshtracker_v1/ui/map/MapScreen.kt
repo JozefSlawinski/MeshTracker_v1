@@ -26,6 +26,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
@@ -121,6 +122,7 @@ fun MapScreen(
                         state = MarkerState(position = position.toLatLng()),
                         title = node.getDisplayName(),
                         snippet = buildMarkerSnippet(node),
+                        icon = BitmapDescriptorFactory.defaultMarker(getMarkerHue(node)),
                         onClick = {
                             viewModel.selectNode(node.getId())
                             true
@@ -201,5 +203,21 @@ private fun buildMarkerSnippet(node: MeshNodeInfo): String {
     }
     
     return parts.joinToString(" • ")
+}
+
+/**
+ * Zwraca kolor markera na podstawie roli węzła.
+ */
+private fun getMarkerHue(node: MeshNodeInfo): Float {
+    val role = node.user?.role
+    if (role == null) {
+        android.util.Log.d("MapScreen", "Node ${node.getDisplayName()} has no user or role, using default color")
+        return BitmapDescriptorFactory.HUE_AZURE
+    }
+    android.util.Log.d("MapScreen", "Node ${node.getDisplayName()} has role: $role")
+    return when (role) {
+
+    }
+
 }
 

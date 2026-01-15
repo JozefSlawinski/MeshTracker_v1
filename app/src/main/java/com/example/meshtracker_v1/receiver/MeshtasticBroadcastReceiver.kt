@@ -162,7 +162,9 @@ class MeshtasticBroadcastReceiver(
             Log.d(TAG, "Node changed: ${meshNodeInfo.getDisplayName()} (${meshNodeInfo.getId()})")
             Log.d(TAG, "Node has position: ${meshNodeInfo.hasValidPosition()}")
             if (meshNodeInfo.position != null) {
-                Log.d(TAG, "Node position: ${meshNodeInfo.position!!.latitude}, ${meshNodeInfo.position!!.longitude}")
+                val pos = meshNodeInfo.position!!
+                Log.d(TAG, "Node position: lat=${pos.latitude}, lng=${pos.longitude}, time=${pos.time}, satellites=${pos.satellitesInView}, precisionBits=${pos.precisionBits}")
+                Log.d(TAG, "Position valid: ${pos.isValid()}, inRange: ${pos.isInRange()}")
             }
             listener.onNodeChanged(meshNodeInfo)
             

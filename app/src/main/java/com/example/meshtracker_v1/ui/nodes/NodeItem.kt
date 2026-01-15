@@ -76,6 +76,24 @@ fun NodeItem(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             
+            // Rola węzła (jeśli dostępna)
+            node.user?.role?.let { role ->
+                val roleName = when (role) {
+                    0 -> "CLIENT"
+                    5 -> "TRACKER"
+                    else -> "Role: $role"
+                }
+                Text(
+                    text = roleName,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = when (role) {
+                        0 -> MaterialTheme.colorScheme.error // CLIENT - czerwony
+                        5 -> MaterialTheme.colorScheme.primary // TRACKER - zielony/primary
+                        else -> MaterialTheme.colorScheme.onSurfaceVariant
+                    }
+                )
+            }
+            
             // Pozycja (jeśli dostępna)
             if (node.hasValidPosition()) {
                 val position = node.position!!

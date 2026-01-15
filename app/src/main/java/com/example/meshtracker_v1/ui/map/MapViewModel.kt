@@ -136,15 +136,41 @@ class MapViewModel(application: Application) : AndroidViewModel(application),
             
             val nodesList = meshServiceManager.getNodes()
             if (nodesList != null) {
-                val nodesMap = nodesList.associateBy { it.getId() }
-                _nodes.value = nodesMap
-                Log.d(TAG, "Refreshed ${nodesList.size} nodes")
+                val currentNodes = _nodes.value.toMutableMap()
+                var updatedCount = 0
+                var unchangedCount = 0
+                
+                nodesList.forEach { newNode ->
+                    val nodeId = newNode.getId()
+                    val oldNode = currentNodes[nodeId]
+                    
+                    // Porównaj pozycje, aby zobaczyć, czy się zmieniły
+                    if (oldNode != null && oldNode.hasValidPosition() && newNode.hasValidPosition()) {
+                        val oldPos = oldNode.position!!
+                        val newPos = newNode.position!!
+                        if (oldPos.latitude == newPos.latitude && oldPos.longitude == newPos.longitude) {
+                            unchangedCount++
+                            Log.d(TAG, "Node ${newNode.getDisplayName()}: position unchanged in refreshNodes (lat=${newPos.latitude}, lng=${newPos.longitude})")
+                        } else {
+                            updatedCount++
+                            Log.d(TAG, "Node ${newNode.getDisplayName()}: position changed in refreshNodes")
+                            Log.d(TAG, "  Old: lat=${oldPos.latitude}, lng=${oldPos.longitude}")
+                            Log.d(TAG, "  New: lat=${newPos.latitude}, lng=${newPos.longitude}")
+                        }
+                    } else if (newNode.hasValidPosition()) {
+                        updatedCount++
+                        Log.d(TAG, "Node ${newNode.getDisplayName()}: new position from refreshNodes")
+                    }
+                    
+                    // Aktualizuj węzeł (ale nie nadpisuj, jeśli broadcast miał nowszą pozycję)
+                    // TODO: Można dodać logikę, aby nie nadpisywać świeżych aktualizacji z broadcastów
+                    currentNodes[nodeId] = newNode
+                }
+                
+                _nodes.value = currentNodes
+                Log.d(TAG, "Refreshed ${nodesList.size} nodes (${updatedCount} updated, ${unchangedCount} unchanged)")
                 if (nodesList.isEmpty()) {
                     Log.w(TAG, "Node list is empty - radio may be connected but no nodes discovered yet")
-                } else {
-                    nodesList.forEach { node ->
-                        Log.d(TAG, "Node: ${node.getDisplayName()} (${node.getId()}), hasPosition: ${node.hasValidPosition()}")
-                    }
                 }
             } else {
                 Log.w(TAG, "Failed to get nodes - getNodes() returned null")
@@ -186,9 +212,16 @@ class MapViewModel(application: Application) : AndroidViewModel(application),
         periodicRefreshJob?.cancel()
         
         periodicRefreshJob = viewModelScope.launch {
-            while (_connectionState.value == ConnectionState.CONNECTED) {
+            while (_connectionState.value == ConnectionState.CONNECTED && meshServiceManager.isConnected()) {
                 kotlinx.coroutines.delay(5000) // 5 sekund
-                refreshNodes()
+                
+                // Sprawdź ponownie przed odświeżeniem (serwis mógł się rozłączyć podczas delay)
+                if (_connectionState.value == ConnectionState.CONNECTED && meshServiceManager.isConnected()) {
+                    refreshNodes()
+                } else {
+                    Log.d(TAG, "Stopping periodic refresh - service disconnected")
+                    break
+                }
             }
         }
     }
@@ -199,6 +232,34 @@ class MapViewModel(application: Application) : AndroidViewModel(application),
     override fun onNodeChanged(nodeInfo: MeshNodeInfo) {
         viewModelScope.launch {
             val currentNodes = _nodes.value.toMutableMap()
+            val oldNode = currentNodes[nodeInfo.getId()]
+            
+            // Loguj szczegóły pozycji przed i po aktualizacji
+            if (oldNode != null && oldNode.hasValidPosition() && nodeInfo.hasValidPosition()) {
+                val oldPos = oldNode.position!!
+                val newPos = nodeInfo.position!!
+                Log.d(TAG, "Node ${nodeInfo.getDisplayName()} position update:")
+                Log.d(TAG, "  Old: lat=${oldPos.latitude}, lng=${oldPos.longitude}, time=${oldPos.time}, satellites=${oldPos.satellitesInView}, precisionBits=${oldPos.precisionBits}")
+                Log.d(TAG, "  New: lat=${newPos.latitude}, lng=${newPos.longitude}, time=${newPos.time}, satellites=${newPos.satellitesInView}, precisionBits=${newPos.precisionBits}")
+                if (oldPos.latitude == newPos.latitude && oldPos.longitude == newPos.longitude) {
+                    Log.w(TAG, "  WARNING: Position has NOT changed! Same coordinates.")
+                    Log.w(TAG, "  This suggests Meshtastic is sending the same cached position.")
+                    Log.w(TAG, "  Possible reasons:")
+                    Log.w(TAG, "    1. GPS has no new fix (node may be indoors)")
+                    Log.w(TAG, "    2. Position hasn't changed significantly (within threshold)")
+                    Log.w(TAG, "    3. Meshtastic is caching the last known position")
+                } else {
+                    val latDiff = Math.abs(newPos.latitude - oldPos.latitude)
+                    val lngDiff = Math.abs(newPos.longitude - oldPos.longitude)
+                    // Przybliżona odległość w metrach (dla szerokości geograficznej ~52°)
+                    val distanceMeters = Math.sqrt(latDiff * latDiff * 111000.0 * 111000.0 + lngDiff * lngDiff * 111000.0 * Math.cos(Math.toRadians(newPos.latitude)) * 111000.0 * Math.cos(Math.toRadians(newPos.latitude)))
+                    Log.d(TAG, "  Position changed by: lat=${latDiff}, lng=${lngDiff}, distance≈${String.format("%.1f", distanceMeters)}m")
+                }
+            } else if (nodeInfo.hasValidPosition()) {
+                val newPos = nodeInfo.position!!
+                Log.d(TAG, "Node ${nodeInfo.getDisplayName()} new position: lat=${newPos.latitude}, lng=${newPos.longitude}, time=${newPos.time}, satellites=${newPos.satellitesInView}, precisionBits=${newPos.precisionBits}")
+            }
+            
             currentNodes[nodeInfo.getId()] = nodeInfo
             _nodes.value = currentNodes
             Log.d(TAG, "Node updated: ${nodeInfo.getDisplayName()} (${nodeInfo.getId()})")
@@ -214,9 +275,17 @@ class MapViewModel(application: Application) : AndroidViewModel(application),
         viewModelScope.launch {
             Log.d(TAG, "Radio connected (from broadcast)")
             _connectionState.value = ConnectionState.CONNECTED
-            refreshNodes()
-            // Rozpocznij okresowe odświeżanie jeśli jeszcze nie działa
-            startPeriodicRefresh()
+            
+            // Sprawdź czy serwis jest połączony przed odświeżeniem
+            if (meshServiceManager.isConnected()) {
+                refreshNodes()
+                // Rozpocznij okresowe odświeżanie jeśli jeszcze nie działa
+                startPeriodicRefresh()
+            } else {
+                Log.w(TAG, "Radio connected but service not connected yet, waiting...")
+                _connectionState.value = ConnectionState.CONNECTING
+                startConnectionCheck()
+            }
         }
     }
     

@@ -58,6 +58,17 @@ data class MeshPosition(
                 android.util.Log.d("MeshPosition", "Declared methods: ${declaredMethods.map { it.name }.joinToString(", ")}")
                 android.util.Log.d("MeshPosition", "All methods: ${allMethods.map { it.name }.joinToString(", ")}")
                 android.util.Log.d("MeshPosition", "Declared fields: ${fields.map { it.name }.joinToString(", ")}")
+                
+                // Spróbuj odczytać wszystkie pola pozycji, aby zobaczyć surowe wartości
+                fields.forEach { field ->
+                    try {
+                        field.isAccessible = true
+                        val value = field.get(position)
+                        android.util.Log.d("MeshPosition", "Field '${field.name}': $value (type: ${field.type.name})")
+                    } catch (e: Exception) {
+                        // Ignoruj błędy dostępu do pól
+                    }
+                }
             } catch (e: Exception) {
                 android.util.Log.w("MeshPosition", "Could not list methods/fields: ${e.message}")
             }
@@ -69,11 +80,43 @@ data class MeshPosition(
                     val value = method.invoke(position)
                     android.util.Log.d("MeshPosition", "getLatitude() returned: $value (type: ${value?.javaClass?.name})")
                     val result = when (value) {
-                        is Double -> value
-                        is Float -> value.toDouble()
-                        is Int -> value / 1e7  // Meshtastic stores as degrees * 1e7
-                        is Long -> value / 1e7
-                        else -> (value as? Number)?.toDouble() ?: 0.0
+                        is Double -> {
+                            // Jeśli wartość jest Double, sprawdź czy wygląda na format E7
+                            // Wartości w formacie E7 dla Polski (52.0, 19.0) to około 520000000, 190000000
+                            // Wartości w stopniach to około 52.0, 19.0
+                            if (Math.abs(value) > 1000.0) {
+                                android.util.Log.w("MeshPosition", "WARNING: Latitude value ($value) looks like E7 format but is Double! Dividing by 1e7.")
+                                value / 1e7
+                            } else {
+                                value
+                            }
+                        }
+                        is Float -> {
+                            val doubleValue = value.toDouble()
+                            if (Math.abs(doubleValue) > 1000.0) {
+                                android.util.Log.w("MeshPosition", "WARNING: Latitude value ($doubleValue) looks like E7 format but is Float! Dividing by 1e7.")
+                                doubleValue / 1e7
+                            } else {
+                                doubleValue
+                            }
+                        }
+                        is Int -> {
+                            android.util.Log.d("MeshPosition", "Latitude is Int, dividing by 1e7: $value -> ${value / 1e7}")
+                            value / 1e7  // Meshtastic stores as degrees * 1e7
+                        }
+                        is Long -> {
+                            android.util.Log.d("MeshPosition", "Latitude is Long, dividing by 1e7: $value -> ${value / 1e7}")
+                            value / 1e7
+                        }
+                        else -> {
+                            val numValue = (value as? Number)?.toDouble() ?: 0.0
+                            if (Math.abs(numValue) > 1000.0) {
+                                android.util.Log.w("MeshPosition", "WARNING: Latitude value ($numValue) looks like E7 format! Dividing by 1e7.")
+                                numValue / 1e7
+                            } else {
+                                numValue
+                            }
+                        }
                     }
                     android.util.Log.d("MeshPosition", "Converted latitude: $result")
                     result
@@ -85,11 +128,40 @@ data class MeshPosition(
                         val value = latField.get(position)
                         android.util.Log.d("MeshPosition", "latitude field value: $value (type: ${value?.javaClass?.name})")
                         val result = when (value) {
-                            is Double -> value
-                            is Float -> value.toDouble()
-                            is Int -> value / 1e7  // Meshtastic stores as degrees * 1e7
-                            is Long -> value / 1e7
-                            else -> (value as? Number)?.toDouble() ?: 0.0
+                            is Double -> {
+                                if (Math.abs(value) > 1000.0) {
+                                    android.util.Log.w("MeshPosition", "WARNING: Latitude field value ($value) looks like E7 format but is Double! Dividing by 1e7.")
+                                    value / 1e7
+                                } else {
+                                    value
+                                }
+                            }
+                            is Float -> {
+                                val doubleValue = value.toDouble()
+                                if (Math.abs(doubleValue) > 1000.0) {
+                                    android.util.Log.w("MeshPosition", "WARNING: Latitude field value ($doubleValue) looks like E7 format but is Float! Dividing by 1e7.")
+                                    doubleValue / 1e7
+                                } else {
+                                    doubleValue
+                                }
+                            }
+                            is Int -> {
+                                android.util.Log.d("MeshPosition", "Latitude field is Int, dividing by 1e7: $value -> ${value / 1e7}")
+                                value / 1e7  // Meshtastic stores as degrees * 1e7
+                            }
+                            is Long -> {
+                                android.util.Log.d("MeshPosition", "Latitude field is Long, dividing by 1e7: $value -> ${value / 1e7}")
+                                value / 1e7
+                            }
+                            else -> {
+                                val numValue = (value as? Number)?.toDouble() ?: 0.0
+                                if (Math.abs(numValue) > 1000.0) {
+                                    android.util.Log.w("MeshPosition", "WARNING: Latitude field value ($numValue) looks like E7 format! Dividing by 1e7.")
+                                    numValue / 1e7
+                                } else {
+                                    numValue
+                                }
+                            }
                         }
                         android.util.Log.d("MeshPosition", "Converted latitude from field: $result")
                         result
@@ -108,11 +180,43 @@ data class MeshPosition(
                     val value = method.invoke(position)
                     android.util.Log.d("MeshPosition", "getLongitude() returned: $value (type: ${value?.javaClass?.name})")
                     val result = when (value) {
-                        is Double -> value
-                        is Float -> value.toDouble()
-                        is Int -> value / 1e7  // Meshtastic stores as degrees * 1e7
-                        is Long -> value / 1e7
-                        else -> (value as? Number)?.toDouble() ?: 0.0
+                        is Double -> {
+                            // Jeśli wartość jest Double, sprawdź czy wygląda na format E7
+                            // Wartości w formacie E7 dla Polski (52.0, 19.0) to około 520000000, 190000000
+                            // Wartości w stopniach to około 52.0, 19.0
+                            if (Math.abs(value) > 1000.0) {
+                                android.util.Log.w("MeshPosition", "WARNING: Longitude value ($value) looks like E7 format but is Double! Dividing by 1e7.")
+                                value / 1e7
+                            } else {
+                                value
+                            }
+                        }
+                        is Float -> {
+                            val doubleValue = value.toDouble()
+                            if (Math.abs(doubleValue) > 1000.0) {
+                                android.util.Log.w("MeshPosition", "WARNING: Longitude value ($doubleValue) looks like E7 format but is Float! Dividing by 1e7.")
+                                doubleValue / 1e7
+                            } else {
+                                doubleValue
+                            }
+                        }
+                        is Int -> {
+                            android.util.Log.d("MeshPosition", "Longitude is Int, dividing by 1e7: $value -> ${value / 1e7}")
+                            value / 1e7  // Meshtastic stores as degrees * 1e7
+                        }
+                        is Long -> {
+                            android.util.Log.d("MeshPosition", "Longitude is Long, dividing by 1e7: $value -> ${value / 1e7}")
+                            value / 1e7
+                        }
+                        else -> {
+                            val numValue = (value as? Number)?.toDouble() ?: 0.0
+                            if (Math.abs(numValue) > 1000.0) {
+                                android.util.Log.w("MeshPosition", "WARNING: Longitude value ($numValue) looks like E7 format! Dividing by 1e7.")
+                                numValue / 1e7
+                            } else {
+                                numValue
+                            }
+                        }
                     }
                     android.util.Log.d("MeshPosition", "Converted longitude: $result")
                     result
@@ -124,11 +228,40 @@ data class MeshPosition(
                         val value = lngField.get(position)
                         android.util.Log.d("MeshPosition", "longitude field value: $value (type: ${value?.javaClass?.name})")
                         val result = when (value) {
-                            is Double -> value
-                            is Float -> value.toDouble()
-                            is Int -> value / 1e7  // Meshtastic stores as degrees * 1e7
-                            is Long -> value / 1e7
-                            else -> (value as? Number)?.toDouble() ?: 0.0
+                            is Double -> {
+                                if (Math.abs(value) > 1000.0) {
+                                    android.util.Log.w("MeshPosition", "WARNING: Longitude field value ($value) looks like E7 format but is Double! Dividing by 1e7.")
+                                    value / 1e7
+                                } else {
+                                    value
+                                }
+                            }
+                            is Float -> {
+                                val doubleValue = value.toDouble()
+                                if (Math.abs(doubleValue) > 1000.0) {
+                                    android.util.Log.w("MeshPosition", "WARNING: Longitude field value ($doubleValue) looks like E7 format but is Float! Dividing by 1e7.")
+                                    doubleValue / 1e7
+                                } else {
+                                    doubleValue
+                                }
+                            }
+                            is Int -> {
+                                android.util.Log.d("MeshPosition", "Longitude field is Int, dividing by 1e7: $value -> ${value / 1e7}")
+                                value / 1e7  // Meshtastic stores as degrees * 1e7
+                            }
+                            is Long -> {
+                                android.util.Log.d("MeshPosition", "Longitude field is Long, dividing by 1e7: $value -> ${value / 1e7}")
+                                value / 1e7
+                            }
+                            else -> {
+                                val numValue = (value as? Number)?.toDouble() ?: 0.0
+                                if (Math.abs(numValue) > 1000.0) {
+                                    android.util.Log.w("MeshPosition", "WARNING: Longitude field value ($numValue) looks like E7 format! Dividing by 1e7.")
+                                    numValue / 1e7
+                                } else {
+                                    numValue
+                                }
+                            }
                         }
                         android.util.Log.d("MeshPosition", "Converted longitude from field: $result")
                         result
@@ -142,6 +275,17 @@ data class MeshPosition(
                 }
                 
                 android.util.Log.d("MeshPosition", "Final parsed lat=$lat, lng=$lng")
+                
+                // Sprawdź czy pozycja jest w rozsądnym zakresie (może wskazywać na błąd parsowania)
+                if (lat != 0.0 && lng != 0.0) {
+                    if (lat < -90.0 || lat > 90.0 || lng < -180.0 || lng > 180.0) {
+                        android.util.Log.w("MeshPosition", "WARNING: Position out of valid range! lat=$lat, lng=$lng")
+                    }
+                    // Sprawdź czy pozycja wygląda na nieprawidłową (np. bardzo małe wartości mogą wskazywać na błąd konwersji)
+                    if (Math.abs(lat) < 0.0001 || Math.abs(lng) < 0.0001) {
+                        android.util.Log.w("MeshPosition", "WARNING: Position values are very small, might indicate parsing error!")
+                    }
+                }
                 
                 val alt = try {
                     val method = position.javaClass.getMethod("getAltitude")
