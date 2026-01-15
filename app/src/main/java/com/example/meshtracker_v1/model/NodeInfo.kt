@@ -100,23 +100,30 @@ data class MeshNodeInfo(
                 
                 val userObj = try {
                     // Try getMethod first (includes inherited)
-                    nodeInfo.javaClass.getMethod("getUser").invoke(nodeInfo)
+                    val result = nodeInfo.javaClass.getMethod("getUser").invoke(nodeInfo)
+                    android.util.Log.d("MeshNodeInfo", "getUser() returned: ${if (result == null) "null" else "${result.javaClass.name} = $result"}")
+                    result
                 } catch (e: NoSuchMethodException) {
+                    android.util.Log.d("MeshNodeInfo", "getUser() method not found, trying field access...")
                     try {
                         // Try as a field
                         val userField = nodeInfo.javaClass.getDeclaredField("user")
                         userField.isAccessible = true
-                        userField.get(nodeInfo)
+                        val result = userField.get(nodeInfo)
+                        android.util.Log.d("MeshNodeInfo", "user field value: ${if (result == null) "null" else "${result.javaClass.name} = $result"}")
+                        result
                     } catch (e2: Exception) {
                         android.util.Log.w("MeshNodeInfo", "Error getting user (method and field): ${e.message}, ${e2.message}")
                         null
                     }
                 } catch (e: Exception) {
-                    android.util.Log.w("MeshNodeInfo", "Error getting user: ${e.message}")
+                    android.util.Log.w("MeshNodeInfo", "Error getting user: ${e.message}", e)
                     null
                 }
+                
+                android.util.Log.d("MeshNodeInfo", "userObj before parsing: ${if (userObj == null) "null" else "${userObj.javaClass.name}"}")
                 val user = MeshUserInfo.fromMeshtasticUser(userObj)
-                android.util.Log.d("MeshNodeInfo", "User: ${user?.getDisplayName() ?: "null"}")
+                android.util.Log.d("MeshNodeInfo", "Parsed user: ${if (user == null) "null" else "${user.getDisplayName()} (role: ${user.role})"}")
                 
                 // If num is still 0 and we have a user ID, try to derive a num from it
                 val finalNum = if (num == 0 && user?.id != null) {
