@@ -79,9 +79,9 @@ fun NodeItem(
             // Rola węzła (jeśli dostępna)
             node.user?.role?.let { role ->
                 val roleName = when (role) {
-                    0 -> "CLIENT"
-                    5 -> "TRACKER"
-                    else -> "Role: $role"
+                    0 -> "Klient (CLIENT)"
+                    5 -> "Tracker (TRACKER)"
+                    else -> "Rola: $role"
                 }
                 Text(
                     text = roleName,
@@ -95,23 +95,62 @@ fun NodeItem(
             }
             
             // Pozycja (jeśli dostępna)
-            if (node.hasValidPosition()) {
-                val position = node.position!!
+            val position = node.position
+            if (node.hasValidPosition() && position != null) {
                 Text(
-                    text = "Position: ${String.format("%.6f", position.latitude)}, ${String.format("%.6f", position.longitude)}",
+                    text = "Pozycja: ${String.format("%.6f", position.latitude)}, ${String.format("%.6f", position.longitude)}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 if (position.altitude > 0) {
                     Text(
-                        text = "Altitude: ${position.altitude} m",
+                        text = "Wysokość: ${position.altitude} m n.p.m.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
+                if (position.groundSpeed > 0) {
+                    Text(
+                        text = "Prędkość: ${position.groundSpeed} m/s",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                if (position.groundTrack > 0) {
+                    Text(
+                        text = "Kierunek: ${position.groundTrack}°",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                // Wiek pozycji GPS
+                if (position.time > 0) {
+                    val ageSeconds = (System.currentTimeMillis() / 1000 - position.time).toInt()
+                    val ageText = when {
+                        ageSeconds < 0    -> "brak czasu GPS"
+                        ageSeconds < 60   -> "${ageSeconds}s temu"
+                        ageSeconds < 3600 -> "${ageSeconds / 60} min temu"
+                        else              -> "${ageSeconds / 3600} h temu"
+                    }
+                    Text(
+                        text = "Pozycja: $ageText",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (ageSeconds > 600) MaterialTheme.colorScheme.error
+                                else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                // Ostrzeżenie o obniżonej precyzji GPS
+                if (position.precisionBits in 1..27) {
+                    val approxMeters = (Math.pow(2.0, (32 - position.precisionBits).toDouble()) * 1e-7 * 111_000).toInt()
+                    Text(
+                        text = "⚠ Obniżona precyzja GPS (~$approxMeters m)",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
             } else {
                 Text(
-                    text = "No position available",
+                    text = "Brak pozycji GPS",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.error
                 )
@@ -147,18 +186,25 @@ fun NodeItem(
             // Ostatnio słyszane
             if (node.lastHeard > 0) {
                 val lastHeardDate = Date(node.lastHeard * 1000L)
-                val dateFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+                val now = Date()
+                val isToday = SimpleDateFormat("yyyyMMdd", Locale.getDefault()).run {
+                    format(lastHeardDate) == format(now)
+                }
+                val dateFormat = if (isToday) {
+                    SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+                } else {
+                    SimpleDateFormat("dd.MM HH:mm", Locale.getDefault())
+                }
                 Text(
-                    text = "Last heard: ${dateFormat.format(lastHeardDate)}",
+                    text = "Ostatni kontakt: ${dateFormat.format(lastHeardDate)}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            
-            // Hops away
+
             if (node.hopsAway > 0) {
                 Text(
-                    text = "Hops away: ${node.hopsAway}",
+                    text = "Przeskoków: ${node.hopsAway}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

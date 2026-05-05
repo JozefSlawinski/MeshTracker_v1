@@ -41,7 +41,8 @@ fun MainScreen(
         topBar = {
             ConnectionStatusBar(
                 connectionState = connectionState,
-                nodeCount = nodeCount
+                nodeCount = nodeCount,
+                onRetry = viewModel::retryConnect
             )
         },
         bottomBar = {
