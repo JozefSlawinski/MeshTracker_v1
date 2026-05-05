@@ -165,6 +165,8 @@ class MeshtasticBroadcastReceiver(
                 val pos = meshNodeInfo.position!!
                 Log.d(TAG, "Node position: lat=${pos.latitude}, lng=${pos.longitude}, time=${pos.time}, satellites=${pos.satellitesInView}, precisionBits=${pos.precisionBits}")
                 Log.d(TAG, "Position valid: ${pos.isValid()}, inRange: ${pos.isInRange()}")
+                Log.d(TAG, "SPEED: ${pos.groundSpeed} m/s (raw: ${pos.groundSpeed})")
+                Log.d(TAG, "HEADING: ${pos.groundTrack}° (raw: ${pos.groundTrack})")
             }
             listener.onNodeChanged(meshNodeInfo)
             

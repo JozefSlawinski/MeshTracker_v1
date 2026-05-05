@@ -37,6 +37,20 @@ data class MeshPosition(
         return LatLng(latitude, longitude)
     }
     
+    /**
+     * Zwraca kierunek (heading) w stopniach (0-360, gdzie 0 to północ).
+     * Alias dla groundTrack.
+     */
+    val heading: Int
+        get() = groundTrack
+    
+    /**
+     * Zwraca prędkość w m/s.
+     * Alias dla groundSpeed.
+     */
+    val speed: Int
+        get() = groundSpeed
+    
     companion object {
         /**
          * Tworzy MeshPosition z org.meshtastic.core.model.Position.
@@ -326,7 +340,12 @@ data class MeshPosition(
                 }
                 
                 val speed = try {
-                    val method = position.javaClass.getMethod("getGroundSpeed")
+                    // Spróbuj najpierw getGroundSpeed(), potem getSpeed()
+                    val method = try {
+                        position.javaClass.getMethod("getGroundSpeed")
+                    } catch (e: NoSuchMethodException) {
+                        position.javaClass.getMethod("getSpeed")
+                    }
                     val value = method.invoke(position)
                     when (value) {
                         is Int -> value
@@ -334,18 +353,70 @@ data class MeshPosition(
                         else -> (value as? Number)?.toInt() ?: 0
                     }
                 } catch (e: Exception) {
+                    android.util.Log.w("MeshPosition", "Error getting speed: ${e.message}")
                     0
                 }
                 
                 val track = try {
-                    val method = position.javaClass.getMethod("getGroundTrack")
+                    // Spróbuj najpierw getGroundTrack(), potem getHeading()
+                    val method = try {
+                        position.javaClass.getMethod("getGroundTrack")
+                    } catch (e: NoSuchMethodException) {
+                        try {
+                            position.javaClass.getMethod("getHeading")
+                        } catch (e2: NoSuchMethodException) {
+                            position.javaClass.getMethod("getTrack")
+                        }
+                    }
                     val value = method.invoke(position)
-                    when (value) {
+                    val rawValue = when (value) {
                         is Int -> value
                         is Long -> value.toInt()
                         else -> (value as? Number)?.toInt() ?: 0
                     }
+                    
+                    android.util.Log.d("MeshPosition", "Raw groundTrack from method: $rawValue")
+                    
+                    // Meshtastic przechowuje heading w setnych stopniach (pomnożone przez 100000)
+                    // Jeśli wartość jest większa niż 360, musimy ją podzielić
+                    if (rawValue > 360) {
+                        android.util.Log.d("MeshPosition", "GroundTrack value ($rawValue) looks like it's in hundredths of degrees, dividing by 100000")
+                        val converted = (rawValue / 100000.0).toInt()
+                        android.util.Log.d("MeshPosition", "Converted groundTrack: $rawValue -> $converted degrees")
+                        converted
+                    } else {
+                        android.util.Log.d("MeshPosition", "GroundTrack value ($rawValue) is already in degrees")
+                        rawValue
+                    }
+                    } catch (e: NoSuchMethodException) {
+                    // Spróbuj odczytać z pola bezpośrednio
+                    try {
+                        val trackField = position.javaClass.getDeclaredField("groundTrack")
+                        trackField.isAccessible = true
+                        val value = trackField.get(position)
+                        val rawValue = when (value) {
+                            is Int -> value
+                            is Long -> value.toInt()
+                            else -> (value as? Number)?.toInt() ?: 0
+                        }
+                        android.util.Log.d("MeshPosition", "Got groundTrack from field: $rawValue (raw value from Meshtastic)")
+                        
+                        // Meshtastic przechowuje heading w setnych stopniach (pomnożone przez 100000)
+                        if (rawValue > 360) {
+                            android.util.Log.d("MeshPosition", "GroundTrack field value ($rawValue) looks like it's in hundredths of degrees, dividing by 100000")
+                            val converted = (rawValue / 100000.0).toInt()
+                            android.util.Log.d("MeshPosition", "Converted groundTrack from field: $rawValue -> $converted degrees")
+                            converted
+                        } else {
+                            android.util.Log.d("MeshPosition", "GroundTrack field value ($rawValue) is already in degrees")
+                            rawValue
+                        }
+                    } catch (e2: Exception) {
+                        android.util.Log.w("MeshPosition", "Error getting track/heading (method and field): ${e.message}, ${e2.message}")
+                        0
+                    }
                 } catch (e: Exception) {
+                    android.util.Log.w("MeshPosition", "Error getting track/heading: ${e.message}")
                     0
                 }
                 
@@ -362,7 +433,7 @@ data class MeshPosition(
                 }
                 
                 val result = MeshPosition(lat, lng, alt, time, satellites, speed, track, precision)
-                android.util.Log.d("MeshPosition", "Created MeshPosition: valid=${result.isValid()}, inRange=${result.isInRange()}")
+                android.util.Log.d("MeshPosition", "Created MeshPosition: valid=${result.isValid()}, inRange=${result.isInRange()}, speed=${result.groundSpeed} m/s, heading=${result.groundTrack}°")
                 result
             } catch (e: Exception) {
                 android.util.Log.e("MeshPosition", "Error parsing position", e)

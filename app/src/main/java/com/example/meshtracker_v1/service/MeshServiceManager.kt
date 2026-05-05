@@ -31,6 +31,7 @@ class MeshServiceManager private constructor(private val context: Context) {
     
     private var meshService: Any? = null // IMeshService używany przez reflection
     private var isBound = false
+    private var isIntentionalDisconnect = false
     private var connectionListener: ConnectionListener? = null
     
     /**
@@ -48,23 +49,30 @@ class MeshServiceManager private constructor(private val context: Context) {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             Log.d(TAG, "Service connected")
             try {
-                // Użyj reflection do uzyskania IMeshService.Stub
                 val stubClass = Class.forName("org.meshtastic.core.service.IMeshService\$Stub")
                 val asInterfaceMethod = stubClass.getMethod("asInterface", IBinder::class.java)
                 meshService = asInterfaceMethod.invoke(null, service)
                 isBound = true
                 connectionListener?.onServiceConnected()
-            } catch (e: Exception) {
-                Log.e(TAG, "Error connecting to service", e)
+            } catch (e: ClassNotFoundException) {
+                Log.e(TAG, "Meshtastic IMeshService not found — is Meshtastic installed?", e)
                 isBound = false
+                connectionListener?.onServiceDisconnected()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error binding to Meshtastic service", e)
+                isBound = false
+                connectionListener?.onServiceDisconnected()
             }
         }
         
         override fun onServiceDisconnected(name: ComponentName?) {
-            Log.d(TAG, "Service disconnected")
+            Log.d(TAG, "Service disconnected (intentional=$isIntentionalDisconnect)")
             meshService = null
             isBound = false
-            connectionListener?.onServiceDisconnected()
+            if (!isIntentionalDisconnect) {
+                connectionListener?.onServiceDisconnected()
+            }
+            isIntentionalDisconnect = false
         }
     }
     
@@ -101,14 +109,28 @@ class MeshServiceManager private constructor(private val context: Context) {
      */
     fun disconnect() {
         if (isBound) {
+            isIntentionalDisconnect = true
             try {
                 context.unbindService(serviceConnection)
                 Log.d(TAG, "Unbound from service")
             } catch (e: Exception) {
                 Log.e(TAG, "Error unbinding from service", e)
+                isIntentionalDisconnect = false
             }
             isBound = false
             meshService = null
+        }
+    }
+
+    /**
+     * Sprawdza czy aplikacja Meshtastic jest zainstalowana.
+     */
+    fun isMeshtasticInstalled(): Boolean {
+        return try {
+            context.packageManager.getPackageInfo(Constants.MESHTASTIC_PACKAGE, 0)
+            true
+        } catch (e: android.content.pm.PackageManager.NameNotFoundException) {
+            false
         }
     }
     
