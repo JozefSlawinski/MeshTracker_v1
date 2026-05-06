@@ -14,12 +14,11 @@
 
 ### Komponenty systemu
 
-Aplikacja Meshtastic ATAK Plugin składa się z następujących kluczowych komponentów:
+Aplikacja MeshTracker składa się z następujących kluczowych komponentów:
 
 1. **MeshServiceManager** - Zarządza połączeniem z serwisem IMeshService aplikacji Meshtastic
 2. **MeshtasticReceiver** - Odbiera broadcasty z Meshtastic (pozycje, węzły, wiadomości)
-3. **MeshtasticMapComponent** - Główny komponent integrujący z ATAK
-4. **CotEventProcessor** - Przetwarza zdarzenia CoT (Cursor on Target)
+3. **MapViewModel** - Przetwarza dane węzłów i aktualizuje warstwę mapy
 
 ### Przepływ danych
 
@@ -36,11 +35,11 @@ BroadcastReceiver (ACTION_NODE_CHANGE)
     ↓
 MeshtasticReceiver.onReceive()
     ↓
-NodeInfo → Position → CoT Event
+NodeInfo → Position
     ↓
-CotMapComponent.dispatch()
+MapViewModel (LiveData)
     ↓
-ATAK Map (wyświetlenie markera)
+MapFragment (wyświetlenie markera)
 ```
 
 ---
@@ -48,11 +47,6 @@ ATAK Map (wyświetlenie markera)
 ## IMeshService - Interfejs komunikacji
 
 ### Lokalizacja pliku AIDL
-
-Plik interfejsu znajduje się w:
-```
-C:\Users\slawi\repos\ATAK-Plugin\app\src\main\aidl\org\meshtastic\core\service\IMeshService.aidl
-```
 
 ### Kluczowe metody dla pozycji węzłów
 
@@ -165,7 +159,6 @@ Dodaj query dla aplikacji Meshtastic (wymagane w Android 11+):
 ### Krok 2: Inicjalizacja MeshServiceManager
 
 ```java
-import com.atakmap.android.meshtastic.service.MeshServiceManager;
 import org.meshtastic.core.model.NodeInfo;
 import org.meshtastic.core.model.Position;
 
@@ -219,7 +212,6 @@ public class YourMapComponent {
 ```java
 import android.content.BroadcastReceiver;
 import android.content.IntentFilter;
-import com.atakmap.android.meshtastic.util.Constants;
 
 public class YourMapComponent {
     private BroadcastReceiver meshtasticReceiver;
@@ -270,107 +262,36 @@ public class YourMapComponent {
 
 ### Krok 4: Wyświetlanie pozycji na mapie
 
-Dla aplikacji ATAK, pozycje są wyświetlane jako CoT Events:
+Pobrane dane węzła przekazujemy do ViewModelu, który aktualizuje warstwę mapy:
 
 ```java
-import com.atakmap.coremap.cot.event.CotEvent;
-import com.atakmap.coremap.cot.event.CotPoint;
-import com.atakmap.coremap.cot.event.CotDetail;
-import com.atakmap.coremap.maps.time.CoordinatedTime;
-import com.atakmap.android.cot.CotMapComponent;
-
 private void displayNodePosition(NodeInfo nodeInfo) {
     if (nodeInfo == null || nodeInfo.getUser() == null) {
         return;
     }
-    
+
     Position position = nodeInfo.getPosition();
     if (position == null) {
         Log.d(TAG, "Węzeł " + nodeInfo.getUser().getId() + " nie ma pozycji");
         return;
     }
-    
-    // Sprawdź czy pozycja jest prawidłowa
+
     if (position.getLatitude() == 0.0 && position.getLongitude() == 0.0) {
         Log.d(TAG, "Węzeł " + nodeInfo.getUser().getId() + " ma nieprawidłową pozycję (0,0)");
         return;
     }
-    
-    // Utwórz CoT Event
-    CotEvent cotEvent = new CotEvent();
-    
-    // Ustaw czas
-    CoordinatedTime time = new CoordinatedTime();
-    cotEvent.setTime(time);
-    cotEvent.setStart(time);
-    cotEvent.setStale(time.addMinutes(10)); // Pozycja ważna przez 10 minut
-    
-    // Ustaw UID (używamy ID węzła Meshtastic)
-    cotEvent.setUID(nodeInfo.getUser().getId());
-    
-    // Ustaw typ (a-f-G-E-S = sensor)
-    cotEvent.setType("a-f-G-E-S");
-    
-    // Ustaw sposób (m-g = mesh/gps)
-    cotEvent.setHow("m-g");
-    
-    // Ustaw pozycję
-    CotPoint cotPoint = new CotPoint(
-        position.getLatitude(),
-        position.getLongitude(),
-        position.getAltitude(),
-        CotPoint.UNKNOWN, // precision
-        CotPoint.UNKNOWN  // hae
-    );
-    cotEvent.setPoint(cotPoint);
-    
-    // Dodaj szczegóły
-    CotDetail cotDetail = new CotDetail("detail");
-    
-    // Informacje o kontakcie
-    CotDetail contactDetail = new CotDetail("contact");
-    contactDetail.setAttribute("callsign", nodeInfo.getUser().getLongName());
-    contactDetail.setAttribute("endpoint", "0.0.0.0:4242:tcp");
-    cotDetail.addChild(contactDetail);
-    
-    // Grupa (opcjonalnie)
-    CotDetail groupDetail = new CotDetail("__group");
-    groupDetail.setAttribute("role", "Team Member");
-    groupDetail.setAttribute("name", "Meshtastic");
-    cotDetail.addChild(groupDetail);
-    
-    // Status (bateria, jeśli dostępna)
-    if (nodeInfo.getDeviceMetrics() != null) {
-        CotDetail statusDetail = new CotDetail("status");
-        statusDetail.setAttribute("battery", 
-            String.valueOf(nodeInfo.getDeviceMetrics().getBatteryLevel()));
-        cotDetail.addChild(statusDetail);
-    }
-    
-    // Informacje o urządzeniu
-    CotDetail takvDetail = new CotDetail("takv");
-    takvDetail.setAttribute("platform", "Meshtastic");
-    takvDetail.setAttribute("device", nodeInfo.getUser().getHwModelString());
-    takvDetail.setAttribute("version", "1.0");
-    cotDetail.addChild(takvDetail);
-    
-    // UID detail
-    CotDetail uidDetail = new CotDetail("uid");
-    uidDetail.setAttribute("Droid", nodeInfo.getUser().getLongName());
-    cotDetail.addChild(uidDetail);
-    
-    // Oznacz jako pochodzący z Meshtastic (aby uniknąć pętli)
-    CotDetail meshDetail = new CotDetail("__meshtastic");
-    cotDetail.addChild(meshDetail);
-    
-    cotEvent.setDetail(cotDetail);
-    
-    // Wyślij do ATAK
-    if (cotEvent.isValid()) {
-        CotMapComponent.getInternalDispatcher().dispatch(cotEvent);
-        Log.d(TAG, "Wyświetlono pozycję węzła: " + nodeInfo.getUser().getLongName());
-    } else {
-        Log.e(TAG, "CoT Event nie jest prawidłowy");
+
+    String nodeId   = nodeInfo.getUser().getId();
+    String nodeName = nodeInfo.getUser().getLongName();
+    double lat      = position.getLatitude();
+    double lon      = position.getLongitude();
+    int    alt      = position.getAltitude();
+
+    Log.d(TAG, "Pozycja węzła: " + nodeName + " (" + lat + ", " + lon + ")");
+
+    // Przekaż do warstwy UI (np. przez ViewModel lub callback)
+    if (listener != null) {
+        listener.onNodePositionUpdated(nodeId, nodeName, lat, lon, alt);
     }
 }
 ```
@@ -406,13 +327,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.util.Log;
 
-import com.atakmap.android.cot.CotMapComponent;
-import com.atakmap.android.meshtastic.service.MeshServiceManager;
-import com.atakmap.android.meshtastic.util.Constants;
-import com.atakmap.coremap.cot.event.CotDetail;
-import com.atakmap.coremap.cot.event.CotEvent;
-import com.atakmap.coremap.cot.event.CotPoint;
-import com.atakmap.coremap.maps.time.CoordinatedTime;
 import org.meshtastic.core.model.NodeInfo;
 import org.meshtastic.core.model.Position;
 
@@ -420,56 +334,58 @@ import java.util.List;
 
 public class MeshtasticNodePositionDisplay {
     private static final String TAG = "MeshtasticNodePos";
-    
+
+    public interface NodePositionListener {
+        void onNodePositionUpdated(String nodeId, String nodeName,
+                                   double lat, double lon, int altitudeMeters);
+    }
+
     private Context context;
     private MeshServiceManager meshServiceManager;
     private BroadcastReceiver receiver;
-    
-    public MeshtasticNodePositionDisplay(Context context) {
-        this.context = context;
+    private final NodePositionListener listener;
+
+    public MeshtasticNodePositionDisplay(Context context, NodePositionListener listener) {
+        this.context  = context;
+        this.listener = listener;
         initialize();
     }
-    
+
     private void initialize() {
-        // Inicjalizuj MeshServiceManager
         meshServiceManager = MeshServiceManager.getInstance(context);
-        
-        // Ustaw listener połączenia
+
         meshServiceManager.setConnectionListener(new MeshServiceManager.ConnectionListener() {
             @Override
             public void onServiceConnected() {
                 Log.d(TAG, "Połączono z Meshtastic");
                 refreshNodes();
             }
-            
+
             @Override
             public void onServiceDisconnected() {
                 Log.d(TAG, "Rozłączono z Meshtastic");
             }
         });
-        
-        // Utwórz i zarejestruj receiver
+
         receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 handleBroadcast(intent);
             }
         };
-        
+
         IntentFilter filter = new IntentFilter();
         filter.addAction(Constants.ACTION_NODE_CHANGE);
         filter.addAction(Constants.ACTION_MESH_CONNECTED);
         filter.addAction(Constants.ACTION_MESH_DISCONNECTED);
-        
+
         context.registerReceiver(receiver, filter, Context.RECEIVER_EXPORTED);
-        
-        // Połącz z serwisem
         meshServiceManager.connect();
     }
-    
+
     private void handleBroadcast(Intent intent) {
         String action = intent.getAction();
-        
+
         if (Constants.ACTION_NODE_CHANGE.equals(action)) {
             NodeInfo nodeInfo = intent.getParcelableExtra("com.geeksville.mesh.NodeInfo");
             if (nodeInfo != null) {
@@ -482,12 +398,10 @@ public class MeshtasticNodePositionDisplay {
             }
         }
     }
-    
+
     private void refreshNodes() {
-        if (!meshServiceManager.isConnected()) {
-            return;
-        }
-        
+        if (!meshServiceManager.isConnected()) return;
+
         List<NodeInfo> nodes = meshServiceManager.getNodes();
         if (nodes != null) {
             for (NodeInfo node : nodes) {
@@ -495,89 +409,29 @@ public class MeshtasticNodePositionDisplay {
             }
         }
     }
-    
+
     private void displayNode(NodeInfo nodeInfo) {
-        if (nodeInfo == null || nodeInfo.getUser() == null) {
+        if (nodeInfo == null || nodeInfo.getUser() == null) return;
+
+        Position position = nodeInfo.getPosition();
+        if (position == null ||
+            (position.getLatitude() == 0.0 && position.getLongitude() == 0.0)) {
             return;
         }
-        
-        Position position = nodeInfo.getPosition();
-        if (position == null || 
-            (position.getLatitude() == 0.0 && position.getLongitude() == 0.0)) {
-            return; // Brak prawidłowej pozycji
-        }
-        
-        // Utwórz CoT Event
-        CotEvent cotEvent = createCotEvent(nodeInfo, position);
-        
-        if (cotEvent.isValid()) {
-            CotMapComponent.getInternalDispatcher().dispatch(cotEvent);
-            Log.d(TAG, "Wyświetlono węzeł: " + nodeInfo.getUser().getLongName());
+
+        Log.d(TAG, "Wyświetlono węzeł: " + nodeInfo.getUser().getLongName());
+
+        if (listener != null) {
+            listener.onNodePositionUpdated(
+                nodeInfo.getUser().getId(),
+                nodeInfo.getUser().getLongName(),
+                position.getLatitude(),
+                position.getLongitude(),
+                position.getAltitude()
+            );
         }
     }
-    
-    private CotEvent createCotEvent(NodeInfo nodeInfo, Position position) {
-        CotEvent cotEvent = new CotEvent();
-        
-        CoordinatedTime time = new CoordinatedTime();
-        cotEvent.setTime(time);
-        cotEvent.setStart(time);
-        cotEvent.setStale(time.addMinutes(10));
-        
-        cotEvent.setUID(nodeInfo.getUser().getId());
-        cotEvent.setType("a-f-G-E-S");
-        cotEvent.setHow("m-g");
-        
-        CotPoint cotPoint = new CotPoint(
-            position.getLatitude(),
-            position.getLongitude(),
-            position.getAltitude(),
-            CotPoint.UNKNOWN,
-            CotPoint.UNKNOWN
-        );
-        cotEvent.setPoint(cotPoint);
-        
-        CotDetail detail = new CotDetail("detail");
-        
-        // Contact
-        CotDetail contact = new CotDetail("contact");
-        contact.setAttribute("callsign", nodeInfo.getUser().getLongName());
-        contact.setAttribute("endpoint", "0.0.0.0:4242:tcp");
-        detail.addChild(contact);
-        
-        // Group
-        CotDetail group = new CotDetail("__group");
-        group.setAttribute("role", "Team Member");
-        group.setAttribute("name", "Meshtastic");
-        detail.addChild(group);
-        
-        // Status (bateria)
-        if (nodeInfo.getDeviceMetrics() != null) {
-            CotDetail status = new CotDetail("status");
-            status.setAttribute("battery", 
-                String.valueOf(nodeInfo.getDeviceMetrics().getBatteryLevel()));
-            detail.addChild(status);
-        }
-        
-        // TAKV
-        CotDetail takv = new CotDetail("takv");
-        takv.setAttribute("platform", "Meshtastic");
-        takv.setAttribute("device", nodeInfo.getUser().getHwModelString());
-        detail.addChild(takv);
-        
-        // UID
-        CotDetail uid = new CotDetail("uid");
-        uid.setAttribute("Droid", nodeInfo.getUser().getLongName());
-        detail.addChild(uid);
-        
-        // Marker Meshtastic
-        CotDetail mesh = new CotDetail("__meshtastic");
-        detail.addChild(mesh);
-        
-        cotEvent.setDetail(detail);
-        return cotEvent;
-    }
-    
+
     public void cleanup() {
         if (meshServiceManager != null) {
             meshServiceManager.disconnect();
@@ -636,19 +490,11 @@ Stwórz aplikację Android, która łączy się z aplikacją Meshtastic przez in
      - Sprawdź czy pozycja jest prawidłowa (latitude != 0.0 || longitude != 0.0)
 
 3. **Wyświetlanie na mapie:**
-   - Dla każdego węzła z prawidłową pozycją utwórz `CotEvent`:
-     - UID: `nodeInfo.getUser().getId()`
-     - Type: `"a-f-G-E-S"` (sensor)
-     - How: `"m-g"` (mesh/gps)
-     - Point: `new CotPoint(latitude, longitude, altitude, UNKNOWN, UNKNOWN)`
-     - Detail zawierający:
-       - `contact` z callsign i endpoint
-       - `__group` z role="Team Member"
-       - `status` z battery (jeśli dostępne)
-       - `takv` z platform="Meshtastic"
-       - `uid` z Droid=nazwa
-       - `__meshtastic` (marker aby uniknąć pętli)
-   - Wyślij przez `CotMapComponent.getInternalDispatcher().dispatch(cotEvent)`
+   - Dla każdego węzła z prawidłową pozycją wyodrębnij dane:
+     - `nodeInfo.getUser().getId()` — unikalny ID
+     - `nodeInfo.getUser().getLongName()` — nazwa wyświetlana
+     - `position.getLatitude()`, `position.getLongitude()`, `position.getAltitude()`
+   - Przekaż dane do ViewModelu lub callbacku warstwy mapy (np. Google Maps `MarkerOptions`)
 
 4. **Struktury danych:**
    - `NodeInfo` zawiera: `user` (MeshUser), `position` (Position), `deviceMetrics`
@@ -688,7 +534,7 @@ context.registerReceiver(receiver, filter, Context.RECEIVER_EXPORTED);
 // W onReceive:
 NodeInfo node = intent.getParcelableExtra("com.geeksville.mesh.NodeInfo");
 Position pos = node.getPosition();
-// Utwórz i wyślij CotEvent
+// Przekaż pozycję do warstwy mapy przez ViewModel lub callback
 ```
 
 **Oczekiwany rezultat:**
@@ -743,7 +589,7 @@ Ta dokumentacja zawiera wszystkie informacje potrzebne do stworzenia aplikacji w
 1. ✅ Połączenie z IMeshService przez MeshServiceManager
 2. ✅ Nasłuchiwanie broadcastów ACTION_NODE_CHANGE
 3. ✅ Przetwarzanie NodeInfo i Position
-4. ✅ Tworzenie i wysyłanie CotEvent do wyświetlenia na mapie
+4. ✅ Przekazywanie pozycji do warstwy mapy przez callback/ViewModel
 5. ✅ Zarządzanie cyklem życia i zasobami
 
 Gotowy prompt można użyć bezpośrednio z AI do automatycznego wygenerowania kodu.

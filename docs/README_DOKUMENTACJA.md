@@ -68,9 +68,8 @@
 
 ### Zależności
 Aplikacja musi mieć dostęp do:
-- `com.atakmap.android.meshtastic.service.MeshServiceManager`
-- `com.atakmap.android.meshtastic.util.Constants`
 - `org.meshtastic.core.model.*` (NodeInfo, Position, MeshUser)
+- `org.meshtastic.core.service.IMeshService` (AIDL)
 
 ### AndroidManifest.xml
 Dodaj do `<manifest>`:
@@ -98,9 +97,6 @@ Aplikacja Meshtastic musi być zainstalowana i uruchomiona na urządzeniu.
 **Q: Czy muszę używać wszystkich plików?**  
 A: Nie, wybierz to co Ci odpowiada. Jeśli chcesz szybko zacząć, użyj `PRZYKLADOWY_KOD.java`.
 
-**Q: Czy kod działa bez ATAK?**  
-A: Nie, kod używa klas ATAK (CotEvent, CotMapComponent). Jeśli tworzysz aplikację bez ATAK, musisz dostosować kod do własnego systemu wyświetlania mapy.
-
 **Q: Jak sprawdzić czy działa?**  
 A: 
 1. Upewnij się że aplikacja Meshtastic jest uruchomiona
@@ -120,5 +116,5 @@ Jeśli masz pytania lub problemy:
 
 ## Licencja
 
-Ta dokumentacja jest częścią projektu ATAK-Plugin i podlega tej samej licencji.
+Ta dokumentacja jest częścią projektu MeshTracker.
 
