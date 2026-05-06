@@ -1,36 +1,31 @@
 package com.example.meshtracker_v1.ui.map
 
-import android.app.Application
-import android.content.Context
-import android.content.IntentFilter
 import android.util.Log
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.meshtracker_v1.model.MeshNodeInfo
-import com.example.meshtracker_v1.receiver.MeshtasticBroadcastReceiver
-import com.example.meshtracker_v1.service.MeshServiceManager
+import com.example.meshtracker_v1.repository.MeshRepository
 import com.example.meshtracker_v1.util.Constants
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
+import javax.inject.Inject
 
-class MapViewModel(application: Application) : AndroidViewModel(application),
-    MeshtasticBroadcastReceiver.MeshtasticReceiverListener {
+/**
+ * ViewModel dla ekranu mapy.
+ * Zależy wyłącznie od [MeshRepository] — wymienialnego w testach na FakeMeshRepository.
+ */
+@HiltViewModel
+class MapViewModel @Inject constructor(
+    private val meshRepository: MeshRepository
+) : ViewModel(), MeshRepository.MeshEventListener {
 
     companion object {
         private const val TAG = "MapViewModel"
-        private const val INITIAL_RECONNECT_DELAY_MS = 2_000L
-        private const val MAX_RECONNECT_DELAY_MS = 60_000L
-        private const val CONNECTION_CHECK_INTERVAL_MS = 2_000L
     }
-
-    private val meshServiceManager = MeshServiceManager.getInstance(application)
-    private val meshtasticReceiver = MeshtasticBroadcastReceiver(this)
 
     private val _nodes = MutableStateFlow<Map<String, MeshNodeInfo>>(emptyMap())
     val nodes: StateFlow<Map<String, MeshNodeInfo>> = _nodes.asStateFlow()
@@ -38,220 +33,190 @@ class MapViewModel(application: Application) : AndroidViewModel(application),
     private val _selectedNodeId = MutableStateFlow<String?>(null)
     val selectedNodeId: StateFlow<String?> = _selectedNodeId.asStateFlow()
 
-    private val _connectionState = MutableStateFlow<ConnectionState>(ConnectionState.Connecting)
+    private val _connectionState = MutableStateFlow(ConnectionState.DISCONNECTED)
     val connectionState: StateFlow<ConnectionState> = _connectionState.asStateFlow()
 
-    private val nodesMutex = Mutex()
-    private var isReceiverRegistered = false
+    private var periodicRefreshJob: Job? = null
     private var connectionCheckJob: Job? = null
-    private var reconnectJob: Job? = null
-    private var reconnectAttemptCount = 0
 
     init {
-        setupServiceListener()
-        registerReceiver()
-        attemptConnect()
-    }
-
-    // ---- Połączenie ----
-
-    private fun setupServiceListener() {
-        meshServiceManager.setConnectionListener(object : MeshServiceManager.ConnectionListener {
-            override fun onServiceConnected() {
-                viewModelScope.launch {
-                    val radioState = meshServiceManager.getConnectionState()
-                    if (radioState == Constants.STATE_CONNECTED) {
-                        onFullyConnected()
-                    } else {
-                        _connectionState.value = ConnectionState.Connecting
-                        startConnectionCheck()
-                    }
-                }
-            }
-
-            override fun onServiceDisconnected() {
-                viewModelScope.launch {
-                    scheduleReconnect("Serwis Meshtastic rozłączony")
-                }
-            }
-        })
-    }
-
-    private fun registerReceiver() {
-        val context = getApplication<Application>()
-        val filter = IntentFilter().apply {
-            addAction(Constants.ACTION_NODE_CHANGE)
-            addAction(Constants.ACTION_MESH_CONNECTED)
-            addAction(Constants.ACTION_MESH_DISCONNECTED)
-        }
-        try {
-            context.registerReceiver(meshtasticReceiver, filter, Context.RECEIVER_EXPORTED)
-            isReceiverRegistered = true
-        } catch (e: Exception) {
-            Log.e(TAG, "Error registering receiver", e)
+        meshRepository.addListener(this)
+        val connected = meshRepository.connect()
+        if (!connected) {
+            Log.w(TAG, "Failed to start connection to Meshtastic service")
         }
     }
 
-    private fun attemptConnect() {
-        if (!meshServiceManager.isMeshtasticInstalled()) {
-            _connectionState.value = ConnectionState.MeshtasticNotInstalled
-            return
-        }
-        _connectionState.value = ConnectionState.Connecting
-        if (!meshServiceManager.connect()) {
-            scheduleReconnect("Nie można uruchomić połączenia z Meshtastic")
-        }
-    }
+    // ------------------------------------------------------------------ MeshEventListener
 
-    private fun scheduleReconnect(reason: String) {
-        reconnectJob?.cancel()
-        connectionCheckJob?.cancel()
-
-        _connectionState.value = ConnectionState.Disconnected(reason)
-
-        val delayMs = (INITIAL_RECONNECT_DELAY_MS * (1L shl minOf(reconnectAttemptCount, 5)))
-            .coerceAtMost(MAX_RECONNECT_DELAY_MS)
-        reconnectAttemptCount++
-
-        Log.d(TAG, "Scheduling reconnect in ${delayMs}ms (attempt #$reconnectAttemptCount), reason: $reason")
-
-        reconnectJob = viewModelScope.launch {
-            var remaining = (delayMs / 1000).toInt().coerceAtLeast(1)
-            while (remaining > 0) {
-                _connectionState.value = ConnectionState.Reconnecting(remaining)
-                delay(1000)
-                remaining--
-            }
-            attemptConnect()
-        }
-    }
-
-    private fun onFullyConnected() {
-        reconnectAttemptCount = 0
-        reconnectJob?.cancel()
-        reconnectJob = null
-        connectionCheckJob?.cancel()
-        connectionCheckJob = null
-        _connectionState.value = ConnectionState.Connected
-        refreshNodes()
-        Log.d(TAG, "Fully connected to Meshtastic")
-    }
-
-    /**
-     * Pozwala użytkownikowi ręcznie wyzwolić ponowne połączenie.
-     */
-    fun retryConnect() {
-        Log.d(TAG, "Manual retry triggered")
-        reconnectJob?.cancel()
-        reconnectAttemptCount = 0
-        attemptConnect()
-    }
-
-    // ---- Odświeżanie węzłów ----
-
-    fun refreshNodes() {
+    override fun onServiceConnected() {
+        Log.d(TAG, "Service connected")
         viewModelScope.launch {
-            if (!meshServiceManager.isConnected()) return@launch
-            if (meshServiceManager.getConnectionState() != Constants.STATE_CONNECTED) return@launch
-
-            val nodesList = meshServiceManager.getNodes() ?: return@launch
-
-            nodesMutex.withLock {
-                val updated = _nodes.value.toMutableMap()
-                nodesList.forEach { updated[it.getId()] = it }
-                _nodes.value = updated
-            }
-            Log.d(TAG, "Refreshed ${nodesList.size} nodes")
-        }
-    }
-
-    // ---- Connection check (serwis podłączony, czekamy na radio) ----
-
-    private fun startConnectionCheck() {
-        connectionCheckJob?.cancel()
-        connectionCheckJob = viewModelScope.launch {
-            while (true) {
-                delay(CONNECTION_CHECK_INTERVAL_MS)
-
-                if (!meshServiceManager.isConnected()) {
-                    scheduleReconnect("Serwis Meshtastic niedostępny")
-                    break
-                }
-
-                val radioState = meshServiceManager.getConnectionState()
-                if (radioState == Constants.STATE_CONNECTED) {
-                    onFullyConnected()
-                    break
-                }
+            val radioState = meshRepository.getConnectionState()
+            if (radioState == Constants.STATE_CONNECTED) {
+                _connectionState.value = ConnectionState.CONNECTED
+                refreshNodes()
+                startPeriodicRefresh()
+            } else {
+                _connectionState.value = ConnectionState.CONNECTING
+                startConnectionCheck()
             }
         }
     }
 
-    // ---- BroadcastReceiver callbacks ----
+    override fun onServiceDisconnected() {
+        Log.d(TAG, "Service disconnected")
+        viewModelScope.launch {
+            _connectionState.value = ConnectionState.DISCONNECTED
+            stopAllJobs()
+        }
+    }
 
     override fun onNodeChanged(nodeInfo: MeshNodeInfo) {
         viewModelScope.launch {
-            nodesMutex.withLock {
-                val updated = _nodes.value.toMutableMap()
-                updated[nodeInfo.getId()] = nodeInfo
-                _nodes.value = updated
+            val currentNodes = _nodes.value.toMutableMap()
+            val oldNode = currentNodes[nodeInfo.getId()]
+
+            if (oldNode != null && oldNode.hasValidPosition() && nodeInfo.hasValidPosition()) {
+                val oldPos = oldNode.position!!
+                val newPos = nodeInfo.position!!
+                if (oldPos.latitude == newPos.latitude && oldPos.longitude == newPos.longitude) {
+                    Log.d(TAG, "Node ${nodeInfo.getDisplayName()}: position unchanged")
+                } else {
+                    val dist = approximateDistanceMeters(oldPos.latitude, oldPos.longitude,
+                        newPos.latitude, newPos.longitude)
+                    Log.d(TAG, "Node ${nodeInfo.getDisplayName()}: moved ≈${String.format("%.1f", dist)}m")
+                }
+            } else if (nodeInfo.hasValidPosition()) {
+                val p = nodeInfo.position!!
+                Log.d(TAG, "Node ${nodeInfo.getDisplayName()}: new position (${p.latitude}, ${p.longitude})")
             }
+
+            currentNodes[nodeInfo.getId()] = nodeInfo
+            _nodes.value = currentNodes
+            Log.d(TAG, "Total nodes: ${_nodes.value.size}")
         }
     }
 
     override fun onMeshConnected() {
+        Log.d(TAG, "Radio connected (broadcast)")
         viewModelScope.launch {
-            if (meshServiceManager.isConnected()) {
-                onFullyConnected()
+            _connectionState.value = ConnectionState.CONNECTED
+            if (meshRepository.isConnected()) {
+                refreshNodes()
+                startPeriodicRefresh()
             } else {
-                _connectionState.value = ConnectionState.Connecting
+                _connectionState.value = ConnectionState.CONNECTING
                 startConnectionCheck()
             }
         }
     }
 
     override fun onMeshDisconnected() {
+        Log.d(TAG, "Radio disconnected (broadcast)")
         viewModelScope.launch {
-            scheduleReconnect("Radio Meshtastic rozłączone")
+            stopAllJobs()
+            if (meshRepository.isConnected()) {
+                _connectionState.value = ConnectionState.CONNECTING
+                startConnectionCheck()
+            } else {
+                _connectionState.value = ConnectionState.DISCONNECTED
+            }
         }
     }
 
-    // ---- Helpers ----
+    // ------------------------------------------------------------------ public API
+
+    fun refreshNodes() {
+        viewModelScope.launch {
+            if (!meshRepository.isConnected()) {
+                Log.w(TAG, "Cannot refresh — service not connected")
+                return@launch
+            }
+            if (meshRepository.getConnectionState() != Constants.STATE_CONNECTED) {
+                Log.w(TAG, "Cannot refresh — radio not connected")
+                return@launch
+            }
+            val nodesList = meshRepository.getNodes() ?: run {
+                Log.w(TAG, "getNodes() returned null")
+                return@launch
+            }
+            val updated = _nodes.value.toMutableMap()
+            nodesList.forEach { updated[it.getId()] = it }
+            _nodes.value = updated
+            Log.d(TAG, "Refreshed ${nodesList.size} nodes")
+        }
+    }
 
     fun selectNode(nodeId: String?) { _selectedNodeId.value = nodeId }
+
     fun getNode(nodeId: String): MeshNodeInfo? = _nodes.value[nodeId]
-    fun getNodesWithPosition(): List<MeshNodeInfo> = _nodes.value.values.filter { it.hasValidPosition() }
+
+    fun getNodesWithPosition(): List<MeshNodeInfo> =
+        _nodes.value.values.filter { it.hasValidPosition() }
+
+    // ------------------------------------------------------------------ private
+
+    private fun startConnectionCheck() {
+        connectionCheckJob?.cancel()
+        connectionCheckJob = viewModelScope.launch {
+            while (_connectionState.value == ConnectionState.CONNECTING
+                && meshRepository.isConnected()) {
+                kotlinx.coroutines.delay(2_000)
+                if (meshRepository.getConnectionState() == Constants.STATE_CONNECTED) {
+                    _connectionState.value = ConnectionState.CONNECTED
+                    refreshNodes()
+                    startPeriodicRefresh()
+                    break
+                }
+            }
+        }
+    }
+
+    private fun startPeriodicRefresh() {
+        periodicRefreshJob?.cancel()
+        periodicRefreshJob = viewModelScope.launch {
+            while (_connectionState.value == ConnectionState.CONNECTED
+                && meshRepository.isConnected()) {
+                kotlinx.coroutines.delay(5_000)
+                if (_connectionState.value == ConnectionState.CONNECTED
+                    && meshRepository.isConnected()) {
+                    refreshNodes()
+                } else break
+            }
+        }
+    }
+
+    private fun stopAllJobs() {
+        periodicRefreshJob?.cancel()
+        periodicRefreshJob = null
+        connectionCheckJob?.cancel()
+        connectionCheckJob = null
+    }
 
     override fun onCleared() {
         super.onCleared()
-        reconnectJob?.cancel()
-        connectionCheckJob?.cancel()
-        if (isReceiverRegistered) {
-            try {
-                getApplication<Application>().unregisterReceiver(meshtasticReceiver)
-            } catch (e: Exception) {
-                Log.e(TAG, "Error unregistering receiver", e)
-            }
-        }
-        meshServiceManager.disconnect()
+        stopAllJobs()
+        meshRepository.removeListener(this)
+        meshRepository.disconnect()
+        Log.d(TAG, "ViewModel cleared")
     }
 
-    // ---- Stan połączenia ----
+    // ------------------------------------------------------------------ helpers
 
-    sealed class ConnectionState {
-        /** Połączono z Meshtastic i radiem. */
-        object Connected : ConnectionState()
-
-        /** Trwa łączenie (serwis lub radio). */
-        object Connecting : ConnectionState()
-
-        /** Odliczanie do kolejnej próby połączenia. */
-        data class Reconnecting(val retryInSeconds: Int) : ConnectionState()
-
-        /** Rozłączono — [reason] opisuje przyczynę. */
-        data class Disconnected(val reason: String) : ConnectionState()
-
-        /** Aplikacja Meshtastic nie jest zainstalowana. */
-        object MeshtasticNotInstalled : ConnectionState()
+    private fun approximateDistanceMeters(
+        lat1: Double, lon1: Double, lat2: Double, lon2: Double
+    ): Double {
+        val dLat = lat2 - lat1
+        val dLon = lon2 - lon1
+        val cosLat = Math.cos(Math.toRadians((lat1 + lat2) / 2))
+        return Math.sqrt(
+            dLat * dLat * 111_000.0 * 111_000.0 +
+            dLon * dLon * (111_000.0 * cosLat) * (111_000.0 * cosLat)
+        )
     }
+
+    // ------------------------------------------------------------------ enums
+
+    enum class ConnectionState { CONNECTED, DISCONNECTED, CONNECTING }
 }

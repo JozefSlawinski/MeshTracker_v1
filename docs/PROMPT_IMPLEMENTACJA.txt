@@ -17,19 +17,11 @@ WYMAGANIA:
      * Sprawdź czy pozycja jest prawidłowa (latitude != 0.0 || longitude != 0.0)
 
 3. WYŚWIETLANIE NA MAPIE:
-   - Dla każdego węzła z prawidłową pozycją utwórz CotEvent:
-     * UID: nodeInfo.getUser().getId()
-     * Type: "a-f-G-E-S" (sensor)
-     * How: "m-g" (mesh/gps)
-     * Point: new CotPoint(latitude, longitude, altitude, UNKNOWN, UNKNOWN)
-     * Detail zawierający:
-       - contact z callsign i endpoint
-       - __group z role="Team Member"
-       - status z battery (jeśli dostępne)
-       - takv z platform="Meshtastic"
-       - uid z Droid=nazwa
-       - __meshtastic (marker aby uniknąć pętli)
-   - Wyślij przez CotMapComponent.getInternalDispatcher().dispatch(cotEvent)
+   - Dla każdego węzła z prawidłową pozycją wyodrębnij dane:
+     * nodeInfo.getUser().getId() — unikalny ID węzła
+     * nodeInfo.getUser().getLongName() — nazwa wyświetlana
+     * position.getLatitude(), position.getLongitude(), position.getAltitude()
+   - Przekaż dane do ViewModelu lub callbacku warstwy mapy
 
 4. STRUKTURY DANYCH:
    - NodeInfo zawiera: user (MeshUser), position (Position), deviceMetrics
@@ -68,14 +60,12 @@ context.registerReceiver(receiver, filter, Context.RECEIVER_EXPORTED);
 // W onReceive:
 NodeInfo node = intent.getParcelableExtra("com.geeksville.mesh.NodeInfo");
 Position pos = node.getPosition();
-// Utwórz i wyślij CotEvent
+// Przekaż pozycję do warstwy mapy przez ViewModel lub callback
 
 OCZEKIWANY REZULTAT:
 Aplikacja powinna automatycznie wyświetlać markery na mapie dla wszystkich węzłów Meshtastic, które mają prawidłową pozycję GPS. Markery powinny aktualizować się automatycznie gdy węzły zmieniają pozycję lub pojawiają się nowe węzły w sieci.
 
 DODATKOWE WYMAGANIA:
-- Użyj klas z pakietu com.atakmap.android.meshtastic.service.MeshServiceManager
-- Użyj stałych z com.atakmap.android.meshtastic.util.Constants
 - Obsłuż wyjątki RemoteException przy wywołaniach IMeshService
 - Dodaj logowanie dla debugowania (Log.d, Log.w, Log.e)
 - Sprawdź czy serwis jest połączony przed każdym wywołaniem metody

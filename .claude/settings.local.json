@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -r \"//.*disabled\\\\|//.*commented\\\\|// \\\\*\\\\|/\\\\*\" /c/Users/slawi/AndroidStudioProjects/MeshTracker_v1/app/src/main/java --include=\"*.kt\")"
+    ]
+  }
+}
