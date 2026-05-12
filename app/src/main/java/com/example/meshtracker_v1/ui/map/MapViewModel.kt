@@ -8,11 +8,14 @@ import com.example.meshtracker_v1.model.MeshNodeInfo
 import com.example.meshtracker_v1.repository.MeshRepository
 import com.example.meshtracker_v1.util.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel
+import com.example.meshtracker_v1.ui.nodes.NodeFilterState
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -56,7 +59,41 @@ class MapViewModel @Inject constructor(
     private val refreshIntervalSeconds: StateFlow<Int> = appPreferences.refreshIntervalSeconds
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppPreferences.DEFAULT_REFRESH_INTERVAL)
 
+    private val _filterState = MutableStateFlow(NodeFilterState())
+    val filterState: StateFlow<NodeFilterState> = _filterState.asStateFlow()
+
+    val filteredNodes: StateFlow<List<MeshNodeInfo>> = combine(
+        _nodes, _filterState, onlineThresholdSeconds
+    ) { nodesMap, filter, threshold ->
+        nodesMap.values
+            .filter { node ->
+                val matchesQuery = filter.searchQuery.isEmpty() ||
+                        node.getDisplayName().contains(filter.searchQuery, ignoreCase = true) ||
+                        node.getId().contains(filter.searchQuery, ignoreCase = true)
+                val matchesOnline = !filter.showOnlineOnly || node.isOnline(threshold)
+                val matchesGps = !filter.showWithGpsOnly || node.hasValidPosition()
+                matchesQuery && matchesOnline && matchesGps
+            }
+            .sortedWith(
+                compareBy<MeshNodeInfo> { !it.isOnline(threshold) }.thenBy { it.getDisplayName() }
+            )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    fun updateFilter(filter: NodeFilterState) { _filterState.value = filter }
+    fun clearFilter() { _filterState.value = NodeFilterState() }
+
     init {
+        // Załaduj domyślne filtry z ustawień przy pierwszym uruchomieniu
+        viewModelScope.launch {
+            val onlineDefault = appPreferences.defaultOnlineFilter.first()
+            val gpsDefault = appPreferences.defaultGpsFilter.first()
+            if (onlineDefault || gpsDefault) {
+                _filterState.value = NodeFilterState(
+                    showOnlineOnly = onlineDefault,
+                    showWithGpsOnly = gpsDefault
+                )
+            }
+        }
         meshRepository.addListener(this)
         if (!meshRepository.isMeshtasticInstalled()) {
             Log.w(TAG, "Meshtastic app not installed")
