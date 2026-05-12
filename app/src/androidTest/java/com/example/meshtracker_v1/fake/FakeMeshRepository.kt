@@ -28,6 +28,8 @@ class FakeMeshRepository @Inject constructor() : MeshRepository {
 
     // ------------------------------------------------------------------ MeshRepository
 
+    override fun isMeshtasticInstalled(): Boolean = true  // w testach zawsze "zainstalowane"
+
     override fun connect(): Boolean = true   // w fake, "połączenie" jest natychmiastowe
 
     override fun disconnect() {

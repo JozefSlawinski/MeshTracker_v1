@@ -2,6 +2,7 @@ package com.example.meshtracker_v1.repository
 
 import android.content.Context
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.util.Log
 import com.example.meshtracker_v1.model.MeshNodeInfo
 import com.example.meshtracker_v1.receiver.MeshtasticBroadcastReceiver
@@ -55,6 +56,13 @@ class MeshServiceRepository @Inject constructor(
                 listeners.forEach { it.onServiceDisconnected() }
             }
         })
+    }
+
+    override fun isMeshtasticInstalled(): Boolean = try {
+        context.packageManager.getPackageInfo("com.geeksville.mesh", 0)
+        true
+    } catch (e: PackageManager.NameNotFoundException) {
+        false
     }
 
     override fun connect(): Boolean {

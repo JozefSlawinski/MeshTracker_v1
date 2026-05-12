@@ -16,15 +16,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.meshtracker_v1.model.MeshNodeInfo
 import com.example.meshtracker_v1.ui.map.MapViewModel
 
 @Composable
 fun NodeListScreen(
-    viewModel: MapViewModel = viewModel(),
+    viewModel: MapViewModel = hiltViewModel(),
     onNodeClick: (String) -> Unit = {},
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues()
 ) {
     val nodes by viewModel.nodes.collectAsState()
     val connectionState by viewModel.connectionState.collectAsState()
@@ -36,7 +37,9 @@ fun NodeListScreen(
             connectionState is MapViewModel.ConnectionState.Reconnecting
 
     Box(
-        modifier = modifier.fillMaxSize()
+        modifier = modifier
+            .fillMaxSize()
+            .padding(contentPadding)
     ) {
         when {
             isConnecting && sortedNodes.isEmpty() -> {

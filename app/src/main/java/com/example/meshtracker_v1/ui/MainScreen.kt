@@ -17,7 +17,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.meshtracker_v1.ui.components.ConnectionStatusBar
 import com.example.meshtracker_v1.ui.map.MapScreen
 import com.example.meshtracker_v1.ui.map.MapViewModel
@@ -28,7 +28,7 @@ import com.example.meshtracker_v1.ui.nodes.NodeListScreen
  */
 @Composable
 fun MainScreen(
-    viewModel: MapViewModel = viewModel(),
+    viewModel: MapViewModel = hiltViewModel(),
     modifier: Modifier = Modifier
 ) {
     var currentScreen by remember { mutableStateOf(Screen.Map) }
@@ -66,18 +66,19 @@ fun MainScreen(
             Screen.Map -> {
                 MapScreen(
                     viewModel = viewModel,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = paddingValues
                 )
             }
             Screen.List -> {
                 NodeListScreen(
                     viewModel = viewModel,
                     onNodeClick = { nodeId ->
-                        // Przełącz na mapę i zaznacz węzeł
                         currentScreen = Screen.Map
                         viewModel.selectNode(nodeId)
                     },
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = paddingValues
                 )
             }
         }

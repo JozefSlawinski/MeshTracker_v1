@@ -25,6 +25,7 @@ class MapViewModel @Inject constructor(
 
     companion object {
         private const val TAG = "MapViewModel"
+        private const val RECONNECT_INTERVAL_SECONDS = 30
     }
 
     private val _nodes = MutableStateFlow<Map<String, MeshNodeInfo>>(emptyMap())
@@ -38,12 +39,18 @@ class MapViewModel @Inject constructor(
 
     private var periodicRefreshJob: Job? = null
     private var connectionCheckJob: Job? = null
+    private var reconnectJob: Job? = null
 
     init {
         meshRepository.addListener(this)
-        val connected = meshRepository.connect()
-        if (!connected) {
-            Log.w(TAG, "Failed to start connection to Meshtastic service")
+        if (!meshRepository.isMeshtasticInstalled()) {
+            Log.w(TAG, "Meshtastic app not installed")
+            _connectionState.value = ConnectionState.MeshtasticNotInstalled
+        } else {
+            val connected = meshRepository.connect()
+            if (!connected) {
+                Log.w(TAG, "Failed to start connection to Meshtastic service")
+            }
         }
     }
 
@@ -117,8 +124,7 @@ class MapViewModel @Inject constructor(
         viewModelScope.launch {
             stopAllJobs()
             if (meshRepository.isConnected()) {
-                _connectionState.value = ConnectionState.Connecting
-                startConnectionCheck()
+                startReconnecting()
             } else {
                 _connectionState.value = ConnectionState.Disconnected()
             }
@@ -152,6 +158,12 @@ class MapViewModel @Inject constructor(
 
     fun retryConnect() {
         Log.d(TAG, "retryConnect() called")
+        stopAllJobs()
+        if (!meshRepository.isMeshtasticInstalled()) {
+            Log.w(TAG, "retryConnect: Meshtastic not installed")
+            _connectionState.value = ConnectionState.MeshtasticNotInstalled
+            return
+        }
         _connectionState.value = ConnectionState.Connecting
         val connected = meshRepository.connect()
         if (!connected) {
@@ -199,11 +211,40 @@ class MapViewModel @Inject constructor(
         }
     }
 
+    private fun startReconnecting() {
+        reconnectJob?.cancel()
+        reconnectJob = viewModelScope.launch {
+            var attempt = 1
+            while (true) {
+                Log.d(TAG, "Reconnect attempt $attempt — waiting ${RECONNECT_INTERVAL_SECONDS}s")
+                for (remaining in RECONNECT_INTERVAL_SECONDS downTo 1) {
+                    _connectionState.value = ConnectionState.Reconnecting(remaining)
+                    kotlinx.coroutines.delay(1_000)
+                    if (_connectionState.value !is ConnectionState.Reconnecting) return@launch
+                }
+                if (!meshRepository.isConnected()) {
+                    _connectionState.value = ConnectionState.Disconnected("Utracono połączenie z serwisem")
+                    return@launch
+                }
+                val state = meshRepository.getConnectionState()
+                if (state == Constants.STATE_CONNECTED) {
+                    _connectionState.value = ConnectionState.Connected
+                    refreshNodes()
+                    startPeriodicRefresh()
+                    return@launch
+                }
+                attempt++
+            }
+        }
+    }
+
     private fun stopAllJobs() {
         periodicRefreshJob?.cancel()
         periodicRefreshJob = null
         connectionCheckJob?.cancel()
         connectionCheckJob = null
+        reconnectJob?.cancel()
+        reconnectJob = null
     }
 
     override fun onCleared() {

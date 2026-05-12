@@ -12,11 +12,11 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -30,7 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -47,8 +47,9 @@ import com.example.meshtracker_v1.model.MeshNodeInfo
  */
 @Composable
 fun MapScreen(
-    viewModel: MapViewModel = viewModel(),
-    modifier: Modifier = Modifier
+    viewModel: MapViewModel = hiltViewModel(),
+    modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues()
 ) {
     val nodes by viewModel.nodes.collectAsState()
     val selectedNodeId by viewModel.selectedNodeId.collectAsState()
@@ -106,89 +107,73 @@ fun MapScreen(
         }
     }
     
-    Scaffold(
+    Box(
         modifier = modifier
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
+            .fillMaxSize()
+            .padding(contentPadding)
+    ) {
+        GoogleMap(
+            modifier = Modifier.fillMaxSize(),
+            cameraPositionState = cameraPositionState,
+            onMapClick = { viewModel.selectNode(null) },
+            properties = com.google.maps.android.compose.MapProperties(
+                isMyLocationEnabled = hasLocationPermission
+            )
         ) {
-            GoogleMap(
-                modifier = Modifier.fillMaxSize(),
-                cameraPositionState = cameraPositionState,
-                onMapClick = { viewModel.selectNode(null) },
-                properties = com.google.maps.android.compose.MapProperties(
-                    isMyLocationEnabled = hasLocationPermission
-                )
-            ) {
-                // Wyświetl markery dla wszystkich węzłów
-                nodesWithPosition.forEach { node ->
-                    val position = node.position ?: return@forEach
-                    val isSelected = node.getId() == selectedNodeId
+            nodesWithPosition.forEach { node ->
+                val position = node.position ?: return@forEach
+                val isSelected = node.getId() == selectedNodeId
 
-                    Marker(
-                        state = MarkerState(position = position.toLatLng()),
-                        title = node.getDisplayName(),
-                        snippet = buildMarkerSnippet(node),
-                        icon = getMarkerIcon(node, isSelected, iconCache),
-                        zIndex = if (isSelected) 1f else 0f,
-                        onClick = {
-                            viewModel.selectNode(node.getId())
-                            true
-                        }
-                    )
-                }
+                Marker(
+                    state = MarkerState(position = position.toLatLng()),
+                    title = node.getDisplayName(),
+                    snippet = buildMarkerSnippet(node),
+                    icon = getMarkerIcon(node, isSelected, iconCache),
+                    zIndex = if (isSelected) 1f else 0f,
+                    onClick = {
+                        viewModel.selectNode(node.getId())
+                        true
+                    }
+                )
             }
-            
-            // Wyświetl informacje gdy brak węzłów z pozycją
-            if (nodesWithPosition.isEmpty() && connectionState is MapViewModel.ConnectionState.Connected) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    contentAlignment = Alignment.Center
+        }
+
+        if (nodesWithPosition.isEmpty() && connectionState is MapViewModel.ConnectionState.Connected) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)
-                    ) {
+                    Text(
+                        text = if (nodes.isEmpty()) "Brak węzłów w sieci" else "Brak węzłów z pozycją GPS",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    if (nodes.isNotEmpty()) {
                         Text(
-                            text = if (nodes.isEmpty()) {
-                                "Brak węzłów w sieci"
-                            } else {
-                                "Brak węzłów z pozycją GPS"
-                            },
-                            style = MaterialTheme.typography.bodyMedium
+                            text = "Węzły: ${nodes.size} (bez pozycji GPS)",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        if (nodes.isNotEmpty()) {
-                            Text(
-                                text = "Total nodes: ${nodes.size}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Text(
-                                text = "Check the Nodes tab to see all nodes",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
                     }
                 }
             }
-            
-            // Wyświetl wskaźnik połączenia
-            val isConnecting = connectionState is MapViewModel.ConnectionState.Connecting ||
-                    connectionState is MapViewModel.ConnectionState.Reconnecting
-            if (isConnecting) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    contentAlignment = Alignment.TopCenter
-                ) {
-                    CircularProgressIndicator()
-                }
+        }
+
+        val isConnecting = connectionState is MapViewModel.ConnectionState.Connecting ||
+                connectionState is MapViewModel.ConnectionState.Reconnecting
+        if (isConnecting) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                contentAlignment = Alignment.TopCenter
+            ) {
+                CircularProgressIndicator()
             }
         }
     }

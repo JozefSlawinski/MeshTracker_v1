@@ -8,6 +8,9 @@ import com.example.meshtracker_v1.model.MeshNodeInfo
  */
 interface MeshRepository {
 
+    /** @return true jeśli aplikacja Meshtastic jest zainstalowana na urządzeniu. */
+    fun isMeshtasticInstalled(): Boolean
+
     /** Nawiązuje połączenie z serwisem Meshtastic. @return true jeśli binding się rozpoczął. */
     fun connect(): Boolean
 
