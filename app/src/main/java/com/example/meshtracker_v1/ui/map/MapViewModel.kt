@@ -60,13 +60,22 @@ class MapViewModel @Inject constructor(
         Log.d(TAG, "Service connected")
         viewModelScope.launch {
             val radioState = meshRepository.getConnectionState()
-            if (radioState == Constants.STATE_CONNECTED) {
-                _connectionState.value = ConnectionState.Connected
-                refreshNodes()
-                startPeriodicRefresh()
-            } else {
-                _connectionState.value = ConnectionState.Connecting
-                startConnectionCheck()
+            when {
+                radioState == Constants.STATE_CONNECTED -> {
+                    _connectionState.value = ConnectionState.Connected
+                    refreshNodes()
+                    startPeriodicRefresh()
+                }
+                radioState != null -> {
+                    // AIDL dostępne, ale radio jeszcze nie połączone
+                    _connectionState.value = ConnectionState.Connecting
+                    startConnectionCheck()
+                }
+                else -> {
+                    // Brak AIDL (broadcast-only mode) — czekamy na broadcast lub węzeł
+                    Log.d(TAG, "AIDL unavailable — waiting for broadcast to determine state")
+                    _connectionState.value = ConnectionState.Connecting
+                }
             }
         }
     }
@@ -81,6 +90,14 @@ class MapViewModel @Inject constructor(
 
     override fun onNodeChanged(nodeInfo: MeshNodeInfo) {
         viewModelScope.launch {
+            // Jeśli węzeł dotarł, radio musi być połączone — naprawia "already connected" race
+            val state = _connectionState.value
+            if (state is ConnectionState.Connecting || state is ConnectionState.Disconnected) {
+                Log.d(TAG, "Node received while not Connected — inferring radio is up")
+                _connectionState.value = ConnectionState.Connected
+                startPeriodicRefresh()
+            }
+
             val currentNodes = _nodes.value.toMutableMap()
             val oldNode = currentNodes[nodeInfo.getId()]
 
@@ -109,13 +126,8 @@ class MapViewModel @Inject constructor(
         Log.d(TAG, "Radio connected (broadcast)")
         viewModelScope.launch {
             _connectionState.value = ConnectionState.Connected
-            if (meshRepository.isConnected()) {
-                refreshNodes()
-                startPeriodicRefresh()
-            } else {
-                _connectionState.value = ConnectionState.Connecting
-                startConnectionCheck()
-            }
+            refreshNodes()
+            startPeriodicRefresh()
         }
     }
 

@@ -48,21 +48,21 @@ class MeshServiceManager private constructor(private val context: Context) {
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             Log.d(TAG, "Service connected")
+            isBound = true
             try {
                 val stubClass = Class.forName("org.meshtastic.core.service.IMeshService\$Stub")
                 val asInterfaceMethod = stubClass.getMethod("asInterface", IBinder::class.java)
                 meshService = asInterfaceMethod.invoke(null, service)
-                isBound = true
-                connectionListener?.onServiceConnected()
+                Log.d(TAG, "AIDL interface bound successfully")
             } catch (e: ClassNotFoundException) {
-                Log.e(TAG, "Meshtastic IMeshService not found — is Meshtastic installed?", e)
-                isBound = false
-                connectionListener?.onServiceDisconnected()
+                // AIDL Stub not in our classpath — broadcast-only mode still works
+                Log.w(TAG, "AIDL class not found — operating in broadcast-only mode")
+                meshService = null
             } catch (e: Exception) {
-                Log.e(TAG, "Error binding to Meshtastic service", e)
-                isBound = false
-                connectionListener?.onServiceDisconnected()
+                Log.e(TAG, "Error binding AIDL interface", e)
+                meshService = null
             }
+            connectionListener?.onServiceConnected()
         }
         
         override fun onServiceDisconnected(name: ComponentName?) {
@@ -135,11 +135,12 @@ class MeshServiceManager private constructor(private val context: Context) {
     }
     
     /**
-     * Sprawdza czy serwis jest połączony.
+     * Sprawdza czy serwis jest zbindowany (niekoniecznie z działającym AIDL).
      */
-    fun isConnected(): Boolean {
-        return isBound && meshService != null
-    }
+    fun isConnected(): Boolean = isBound
+
+    /** @return true jeśli AIDL jest dostępne i można wywoływać metody serwisu. */
+    fun isAidlAvailable(): Boolean = meshService != null
     
     /**
      * Ustawia listener dla zmian połączenia.
