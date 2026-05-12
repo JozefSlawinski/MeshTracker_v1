@@ -29,9 +29,10 @@ fun NodeListScreen(
 ) {
     val nodes by viewModel.nodes.collectAsState()
     val connectionState by viewModel.connectionState.collectAsState()
+    val onlineThresholdSeconds by viewModel.onlineThresholdSeconds.collectAsState()
 
     val sortedNodes = nodes.values
-        .sortedWith(compareBy<MeshNodeInfo> { !it.isOnline() }.thenBy { it.getDisplayName() })
+        .sortedWith(compareBy<MeshNodeInfo> { !it.isOnline(onlineThresholdSeconds) }.thenBy { it.getDisplayName() })
 
     val isConnecting = connectionState is MapViewModel.ConnectionState.Connecting ||
             connectionState is MapViewModel.ConnectionState.Reconnecting
@@ -79,6 +80,7 @@ fun NodeListScreen(
                     items(sortedNodes, key = { it.getId() }) { node ->
                         NodeItem(
                             node = node,
+                            onlineThresholdSeconds = onlineThresholdSeconds,
                             onClick = { onNodeClick(node.getId()) }
                         )
                     }

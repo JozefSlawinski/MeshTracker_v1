@@ -25,11 +25,10 @@ data class MeshNodeInfo(
     /**
      * Sprawdza czy węzeł jest online (ostatnio słyszany w ciągu ostatnich 5 minut).
      */
-    fun isOnline(): Boolean {
+    fun isOnline(thresholdSeconds: Int = 300): Boolean {
         if (lastHeard == 0) return false
         val currentTime = System.currentTimeMillis() / 1000
-        val timeDiff = currentTime - lastHeard
-        return timeDiff < 300 // 5 minut
+        return (currentTime - lastHeard) < thresholdSeconds
     }
     
     /**

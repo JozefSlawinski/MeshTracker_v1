@@ -26,13 +26,14 @@ import java.util.Locale
 fun NodeItem(
     node: MeshNodeInfo,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onlineThresholdSeconds: Int = 300
 ) {
     Card(
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = if (node.isOnline()) {
+            containerColor = if (node.isOnline(onlineThresholdSeconds)) {
                 MaterialTheme.colorScheme.surface
             } else {
                 MaterialTheme.colorScheme.surfaceVariant
@@ -59,9 +60,9 @@ fun NodeItem(
                 
                 // Status online/offline
                 Text(
-                    text = if (node.isOnline()) "● Online" else "○ Offline",
+                    text = if (node.isOnline(onlineThresholdSeconds)) "● Online" else "○ Offline",
                     style = MaterialTheme.typography.bodySmall,
-                    color = if (node.isOnline()) {
+                    color = if (node.isOnline(onlineThresholdSeconds)) {
                         MaterialTheme.colorScheme.primary
                     } else {
                         MaterialTheme.colorScheme.onSurfaceVariant

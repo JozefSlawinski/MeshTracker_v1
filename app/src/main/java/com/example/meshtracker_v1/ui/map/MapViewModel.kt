@@ -3,14 +3,18 @@ package com.example.meshtracker_v1.ui.map
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.meshtracker_v1.data.AppPreferences
 import com.example.meshtracker_v1.model.MeshNodeInfo
 import com.example.meshtracker_v1.repository.MeshRepository
 import com.example.meshtracker_v1.util.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -20,7 +24,8 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class MapViewModel @Inject constructor(
-    private val meshRepository: MeshRepository
+    private val meshRepository: MeshRepository,
+    private val appPreferences: AppPreferences
 ) : ViewModel(), MeshRepository.MeshEventListener {
 
     companion object {
@@ -40,6 +45,16 @@ class MapViewModel @Inject constructor(
     private var periodicRefreshJob: Job? = null
     private var connectionCheckJob: Job? = null
     private var reconnectJob: Job? = null
+
+    val onlineThresholdSeconds: StateFlow<Int> = appPreferences.onlineThresholdMinutes
+        .map { it * 60 }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 300)
+
+    val mapType: StateFlow<Int> = appPreferences.mapType
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppPreferences.DEFAULT_MAP_TYPE)
+
+    private val refreshIntervalSeconds: StateFlow<Int> = appPreferences.refreshIntervalSeconds
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppPreferences.DEFAULT_REFRESH_INTERVAL)
 
     init {
         meshRepository.addListener(this)
@@ -214,7 +229,8 @@ class MapViewModel @Inject constructor(
         periodicRefreshJob = viewModelScope.launch {
             while (_connectionState.value is ConnectionState.Connected
                 && meshRepository.isConnected()) {
-                kotlinx.coroutines.delay(5_000)
+                val delayMs = refreshIntervalSeconds.value * 1_000L
+                kotlinx.coroutines.delay(delayMs)
                 if (_connectionState.value is ConnectionState.Connected
                     && meshRepository.isConnected()) {
                     refreshNodes()

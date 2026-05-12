@@ -37,6 +37,8 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapProperties
+import com.google.maps.android.compose.MapType
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
@@ -54,6 +56,13 @@ fun MapScreen(
     val nodes by viewModel.nodes.collectAsState()
     val selectedNodeId by viewModel.selectedNodeId.collectAsState()
     val connectionState by viewModel.connectionState.collectAsState()
+    val mapTypeIndex by viewModel.mapType.collectAsState()
+    val googleMapType = when (mapTypeIndex) {
+        1 -> MapType.SATELLITE
+        2 -> MapType.TERRAIN
+        3 -> MapType.HYBRID
+        else -> MapType.NORMAL
+    }
     
     val context = LocalContext.current
     val iconCache = remember { mutableMapOf<Triple<Int, Int, Boolean>, BitmapDescriptor>() }
@@ -116,8 +125,9 @@ fun MapScreen(
             modifier = Modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState,
             onMapClick = { viewModel.selectNode(null) },
-            properties = com.google.maps.android.compose.MapProperties(
-                isMyLocationEnabled = hasLocationPermission
+            properties = MapProperties(
+                isMyLocationEnabled = hasLocationPermission,
+                mapType = googleMapType
             )
         ) {
             nodesWithPosition.forEach { node ->
