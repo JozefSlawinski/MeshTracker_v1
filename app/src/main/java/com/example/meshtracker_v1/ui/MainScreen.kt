@@ -21,6 +21,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.meshtracker_v1.ui.components.ConnectionStatusBar
 import com.example.meshtracker_v1.ui.map.MapScreen
 import com.example.meshtracker_v1.ui.map.MapViewModel
+import com.example.meshtracker_v1.ui.nodes.NodeDetailScreen
 import com.example.meshtracker_v1.ui.nodes.NodeListScreen
 import com.example.meshtracker_v1.ui.settings.SettingsScreen
 
@@ -36,7 +37,7 @@ fun MainScreen(
     Scaffold(
         modifier = modifier,
         topBar = {
-            if (currentScreen != Screen.Settings) {
+            if (currentScreen != Screen.Settings && currentScreen !is Screen.NodeDetail) {
                 ConnectionStatusBar(
                     connectionState = connectionState,
                     nodeCount = nodes.size,
@@ -45,25 +46,27 @@ fun MainScreen(
             }
         },
         bottomBar = {
-            NavigationBar {
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Place, contentDescription = "Mapa") },
-                    label = { Text("Mapa") },
-                    selected = currentScreen == Screen.Map,
-                    onClick = { currentScreen = Screen.Map }
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.List, contentDescription = "Węzły") },
-                    label = { Text("Węzły") },
-                    selected = currentScreen == Screen.List,
-                    onClick = { currentScreen = Screen.List }
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Settings, contentDescription = "Ustawienia") },
-                    label = { Text("Ustawienia") },
-                    selected = currentScreen == Screen.Settings,
-                    onClick = { currentScreen = Screen.Settings }
-                )
+            if (currentScreen !is Screen.NodeDetail) {
+                NavigationBar {
+                    NavigationBarItem(
+                        icon = { Icon(Icons.Default.Place, contentDescription = "Mapa") },
+                        label = { Text("Mapa") },
+                        selected = currentScreen == Screen.Map,
+                        onClick = { currentScreen = Screen.Map }
+                    )
+                    NavigationBarItem(
+                        icon = { Icon(Icons.Default.List, contentDescription = "Węzły") },
+                        label = { Text("Węzły") },
+                        selected = currentScreen == Screen.List,
+                        onClick = { currentScreen = Screen.List }
+                    )
+                    NavigationBarItem(
+                        icon = { Icon(Icons.Default.Settings, contentDescription = "Ustawienia") },
+                        label = { Text("Ustawienia") },
+                        selected = currentScreen == Screen.Settings,
+                        onClick = { currentScreen = Screen.Settings }
+                    )
+                }
             }
         }
     ) { paddingValues ->
@@ -76,12 +79,25 @@ fun MainScreen(
             Screen.List -> NodeListScreen(
                 viewModel = viewModel,
                 onNodeClick = { nodeId ->
-                    currentScreen = Screen.Map
-                    viewModel.selectNode(nodeId)
+                    currentScreen = Screen.NodeDetail(nodeId)
                 },
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = paddingValues
             )
+            is Screen.NodeDetail -> {
+                val screen = currentScreen as Screen.NodeDetail
+                NodeDetailScreen(
+                    nodeId = screen.nodeId,
+                    onBack = { currentScreen = Screen.List },
+                    onShowOnMap = { nodeId ->
+                        currentScreen = Screen.Map
+                        viewModel.selectNode(nodeId)
+                    },
+                    viewModel = viewModel,
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = paddingValues
+                )
+            }
             Screen.Settings -> SettingsScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = paddingValues
@@ -94,4 +110,5 @@ sealed class Screen {
     object Map : Screen()
     object List : Screen()
     object Settings : Screen()
+    data class NodeDetail(val nodeId: String) : Screen()
 }

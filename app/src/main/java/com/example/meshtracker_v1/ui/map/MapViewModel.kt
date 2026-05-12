@@ -5,7 +5,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.meshtracker_v1.data.AppPreferences
 import com.example.meshtracker_v1.model.MeshNodeInfo
+import com.example.meshtracker_v1.model.TimedPosition
 import com.example.meshtracker_v1.repository.MeshRepository
+import com.example.meshtracker_v1.repository.PositionHistoryRepository
 import com.example.meshtracker_v1.util.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel
 import com.example.meshtracker_v1.ui.nodes.NodeFilterState
@@ -28,7 +30,8 @@ import javax.inject.Inject
 @HiltViewModel
 class MapViewModel @Inject constructor(
     private val meshRepository: MeshRepository,
-    private val appPreferences: AppPreferences
+    private val appPreferences: AppPreferences,
+    private val positionHistoryRepository: PositionHistoryRepository
 ) : ViewModel(), MeshRepository.MeshEventListener {
 
     companion object {
@@ -61,6 +64,14 @@ class MapViewModel @Inject constructor(
 
     private val _filterState = MutableStateFlow(NodeFilterState())
     val filterState: StateFlow<NodeFilterState> = _filterState.asStateFlow()
+
+    private val historyMaxPoints: StateFlow<Int> = appPreferences.historyMaxPoints
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppPreferences.DEFAULT_HISTORY_MAX_POINTS)
+
+    private val historyMinDistanceM: StateFlow<Int> = appPreferences.historyMinDistanceM
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppPreferences.DEFAULT_HISTORY_MIN_DIST_M)
+
+    val nodeHistory: StateFlow<Map<String, List<TimedPosition>>> = positionHistoryRepository.history
 
     val filteredNodes: StateFlow<List<MeshNodeInfo>> = combine(
         _nodes, _filterState, onlineThresholdSeconds
@@ -171,6 +182,15 @@ class MapViewModel @Inject constructor(
             currentNodes[nodeInfo.getId()] = nodeInfo
             _nodes.value = currentNodes
             Log.d(TAG, "Total nodes: ${_nodes.value.size}")
+
+            if (nodeInfo.hasValidPosition()) {
+                positionHistoryRepository.record(
+                    nodeId = nodeInfo.getId(),
+                    position = nodeInfo.position!!,
+                    maxPoints = historyMaxPoints.value,
+                    minDistanceM = historyMinDistanceM.value
+                )
+            }
         }
     }
 

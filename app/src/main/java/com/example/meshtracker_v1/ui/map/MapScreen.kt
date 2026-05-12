@@ -41,6 +41,7 @@ import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapType
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.example.meshtracker_v1.model.MeshNodeInfo
 
@@ -57,6 +58,7 @@ fun MapScreen(
     val selectedNodeId by viewModel.selectedNodeId.collectAsState()
     val connectionState by viewModel.connectionState.collectAsState()
     val mapTypeIndex by viewModel.mapType.collectAsState()
+    val nodeHistory by viewModel.nodeHistory.collectAsState()
     val googleMapType = when (mapTypeIndex) {
         1 -> MapType.SATELLITE
         2 -> MapType.TERRAIN
@@ -130,6 +132,17 @@ fun MapScreen(
                 mapType = googleMapType
             )
         ) {
+            // Polyline dla historii pozycji zaznaczonego węzła
+            val historyPoints = selectedNodeId?.let { nodeHistory[it] }
+            if (historyPoints != null && historyPoints.size >= 2) {
+                Polyline(
+                    points = historyPoints.map { LatLng(it.latitude, it.longitude) },
+                    color = androidx.compose.ui.graphics.Color(0xFF2196F3.toInt()),
+                    width = 6f,
+                    zIndex = 0.5f
+                )
+            }
+
             nodesWithPosition.forEach { node ->
                 val position = node.position ?: return@forEach
                 val isSelected = node.getId() == selectedNodeId
