@@ -71,7 +71,7 @@ class MapViewModelTest {
     fun `po emitConnected stan połączenia zmienia się na CONNECTED`() = runTest {
         fakeRepository.emitConnected()
 
-        assertEquals(MapViewModel.ConnectionState.CONNECTED, viewModel.connectionState.value)
+        assertTrue(viewModel.connectionState.value is MapViewModel.ConnectionState.Connected)
     }
 
     @Test
@@ -79,7 +79,7 @@ class MapViewModelTest {
         fakeRepository.emitConnected()
         fakeRepository.emitDisconnected()
 
-        assertEquals(MapViewModel.ConnectionState.DISCONNECTED, viewModel.connectionState.value)
+        assertTrue(viewModel.connectionState.value is MapViewModel.ConnectionState.Disconnected)
     }
 
     // ================================================================== TESTY WĘZŁÓW

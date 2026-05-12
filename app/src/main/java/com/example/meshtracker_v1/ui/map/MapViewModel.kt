@@ -33,7 +33,7 @@ class MapViewModel @Inject constructor(
     private val _selectedNodeId = MutableStateFlow<String?>(null)
     val selectedNodeId: StateFlow<String?> = _selectedNodeId.asStateFlow()
 
-    private val _connectionState = MutableStateFlow(ConnectionState.DISCONNECTED)
+    private val _connectionState = MutableStateFlow<ConnectionState>(ConnectionState.Disconnected())
     val connectionState: StateFlow<ConnectionState> = _connectionState.asStateFlow()
 
     private var periodicRefreshJob: Job? = null
@@ -54,11 +54,11 @@ class MapViewModel @Inject constructor(
         viewModelScope.launch {
             val radioState = meshRepository.getConnectionState()
             if (radioState == Constants.STATE_CONNECTED) {
-                _connectionState.value = ConnectionState.CONNECTED
+                _connectionState.value = ConnectionState.Connected
                 refreshNodes()
                 startPeriodicRefresh()
             } else {
-                _connectionState.value = ConnectionState.CONNECTING
+                _connectionState.value = ConnectionState.Connecting
                 startConnectionCheck()
             }
         }
@@ -67,7 +67,7 @@ class MapViewModel @Inject constructor(
     override fun onServiceDisconnected() {
         Log.d(TAG, "Service disconnected")
         viewModelScope.launch {
-            _connectionState.value = ConnectionState.DISCONNECTED
+            _connectionState.value = ConnectionState.Disconnected()
             stopAllJobs()
         }
     }
@@ -101,12 +101,12 @@ class MapViewModel @Inject constructor(
     override fun onMeshConnected() {
         Log.d(TAG, "Radio connected (broadcast)")
         viewModelScope.launch {
-            _connectionState.value = ConnectionState.CONNECTED
+            _connectionState.value = ConnectionState.Connected
             if (meshRepository.isConnected()) {
                 refreshNodes()
                 startPeriodicRefresh()
             } else {
-                _connectionState.value = ConnectionState.CONNECTING
+                _connectionState.value = ConnectionState.Connecting
                 startConnectionCheck()
             }
         }
@@ -117,10 +117,10 @@ class MapViewModel @Inject constructor(
         viewModelScope.launch {
             stopAllJobs()
             if (meshRepository.isConnected()) {
-                _connectionState.value = ConnectionState.CONNECTING
+                _connectionState.value = ConnectionState.Connecting
                 startConnectionCheck()
             } else {
-                _connectionState.value = ConnectionState.DISCONNECTED
+                _connectionState.value = ConnectionState.Disconnected()
             }
         }
     }
@@ -150,6 +150,18 @@ class MapViewModel @Inject constructor(
 
     fun selectNode(nodeId: String?) { _selectedNodeId.value = nodeId }
 
+    fun retryConnect() {
+        Log.d(TAG, "retryConnect() called")
+        _connectionState.value = ConnectionState.Connecting
+        val connected = meshRepository.connect()
+        if (!connected) {
+            Log.w(TAG, "retryConnect: Failed to start connection")
+            _connectionState.value = ConnectionState.Disconnected("Nie można połączyć")
+        } else {
+            startConnectionCheck()
+        }
+    }
+
     fun getNode(nodeId: String): MeshNodeInfo? = _nodes.value[nodeId]
 
     fun getNodesWithPosition(): List<MeshNodeInfo> =
@@ -160,11 +172,11 @@ class MapViewModel @Inject constructor(
     private fun startConnectionCheck() {
         connectionCheckJob?.cancel()
         connectionCheckJob = viewModelScope.launch {
-            while (_connectionState.value == ConnectionState.CONNECTING
+            while (_connectionState.value is ConnectionState.Connecting
                 && meshRepository.isConnected()) {
                 kotlinx.coroutines.delay(2_000)
                 if (meshRepository.getConnectionState() == Constants.STATE_CONNECTED) {
-                    _connectionState.value = ConnectionState.CONNECTED
+                    _connectionState.value = ConnectionState.Connected
                     refreshNodes()
                     startPeriodicRefresh()
                     break
@@ -176,10 +188,10 @@ class MapViewModel @Inject constructor(
     private fun startPeriodicRefresh() {
         periodicRefreshJob?.cancel()
         periodicRefreshJob = viewModelScope.launch {
-            while (_connectionState.value == ConnectionState.CONNECTED
+            while (_connectionState.value is ConnectionState.Connected
                 && meshRepository.isConnected()) {
                 kotlinx.coroutines.delay(5_000)
-                if (_connectionState.value == ConnectionState.CONNECTED
+                if (_connectionState.value is ConnectionState.Connected
                     && meshRepository.isConnected()) {
                     refreshNodes()
                 } else break
@@ -216,7 +228,13 @@ class MapViewModel @Inject constructor(
         )
     }
 
-    // ------------------------------------------------------------------ enums
+    // ------------------------------------------------------------------ sealed class
 
-    enum class ConnectionState { CONNECTED, DISCONNECTED, CONNECTING }
+    sealed class ConnectionState {
+        object Connected : ConnectionState()
+        object Connecting : ConnectionState()
+        data class Reconnecting(val retryInSeconds: Int) : ConnectionState()
+        data class Disconnected(val reason: String = "Rozłączono") : ConnectionState()
+        object MeshtasticNotInstalled : ConnectionState()
+    }
 }
