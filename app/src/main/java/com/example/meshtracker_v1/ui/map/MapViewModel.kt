@@ -4,10 +4,13 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.meshtracker_v1.data.AppPreferences
+import com.example.meshtracker_v1.logic.GeofenceChecker
 import com.example.meshtracker_v1.model.MeshNodeInfo
 import com.example.meshtracker_v1.model.TimedPosition
+import com.example.meshtracker_v1.model.Zone
 import com.example.meshtracker_v1.repository.MeshRepository
 import com.example.meshtracker_v1.repository.PositionHistoryRepository
+import com.example.meshtracker_v1.repository.ZoneRepository
 import com.example.meshtracker_v1.util.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel
 import com.example.meshtracker_v1.ui.nodes.NodeFilterState
@@ -31,7 +34,8 @@ import javax.inject.Inject
 class MapViewModel @Inject constructor(
     private val meshRepository: MeshRepository,
     private val appPreferences: AppPreferences,
-    private val positionHistoryRepository: PositionHistoryRepository
+    private val positionHistoryRepository: PositionHistoryRepository,
+    private val zoneRepository: ZoneRepository
 ) : ViewModel(), MeshRepository.MeshEventListener {
 
     companion object {
@@ -72,6 +76,22 @@ class MapViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppPreferences.DEFAULT_HISTORY_MIN_DIST_M)
 
     val nodeHistory: StateFlow<Map<String, List<TimedPosition>>> = positionHistoryRepository.history
+
+    /** Aktywne strefy geofencingu — do renderowania na mapie i sprawdzania pozycji. */
+    val activeZones: StateFlow<List<Zone>> = zoneRepository.allZones
+        .map { zones -> zones.filter { it.isActive } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    /**
+     * Mapa nodeId → Set<zoneId> z aktualnym rozmieszczeniem węzłów w strefach.
+     * Reaktywnie przeliczana gdy zmienią się węzły lub aktywne strefy.
+     * Używana przez MapScreen (kolorowanie markerów) i NodeDetailScreen (badge strefy).
+     */
+    val nodesInZones: StateFlow<Map<String, Set<String>>> = combine(
+        _nodes, activeZones
+    ) { nodesMap, zones ->
+        GeofenceChecker.computeNodeZoneMap(nodesMap.values, zones)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
 
     val filteredNodes: StateFlow<List<MeshNodeInfo>> = combine(
         _nodes, _filterState, onlineThresholdSeconds
