@@ -2,10 +2,17 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Uprawnienia -->
+    <!-- Uprawnienia sieciowe i lokalizacja -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <!-- Foreground Service (geofencing) -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+
+    <!-- Powiadomienia (wymagane runtime na Android 13+) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <!-- Query dla aplikacji Meshtastic (wymagane w Android 11+) -->
     <queries>
@@ -28,6 +35,12 @@
             android:value="${MAPS_API_KEY}" />
        
         
+        <!-- ZoneMonitorService — Foreground Service monitorujący strefy geofencingu -->
+        <service
+            android:name=".service.ZoneMonitorService"
+            android:foregroundServiceType="dataSync"
+            android:exported="false" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

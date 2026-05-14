@@ -1,12 +1,15 @@
 package com.example.meshtracker_v1.ui.zones
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.meshtracker_v1.model.Zone
 import com.example.meshtracker_v1.model.ZoneEvent
 import com.example.meshtracker_v1.model.ZoneVertex
 import com.example.meshtracker_v1.repository.ZoneRepository
+import com.example.meshtracker_v1.service.ZoneMonitorService
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -18,7 +21,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ZoneViewModel @Inject constructor(
-    private val zoneRepository: ZoneRepository
+    private val zoneRepository: ZoneRepository,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     // ------------------------------------------------------------------ Lista stref
@@ -26,6 +30,19 @@ class ZoneViewModel @Inject constructor(
     /** Wszystkie strefy posortowane alfabetycznie — obserwowany Flow z Room. */
     val allZones: StateFlow<List<Zone>> = zoneRepository.allZones
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    init {
+        // Start / stop ZoneMonitorService zależnie od tego czy istnieje ≥1 aktywna strefa
+        viewModelScope.launch {
+            zoneRepository.allZones.collect { zones ->
+                if (zones.any { it.isActive }) {
+                    ZoneMonitorService.start(context)
+                } else {
+                    ZoneMonitorService.stop(context)
+                }
+            }
+        }
+    }
 
     // ------------------------------------------------------------------ Zaznaczona strefa
 
