@@ -24,7 +24,15 @@ import com.example.meshtracker_v1.ui.map.MapViewModel
 import com.example.meshtracker_v1.ui.nodes.NodeDetailScreen
 import com.example.meshtracker_v1.ui.nodes.NodeListScreen
 import com.example.meshtracker_v1.ui.settings.SettingsScreen
+import com.example.meshtracker_v1.ui.zones.ZoneDetailScreen
 
+/**
+ * Główny ekran aplikacji — zarządza nawigacją między ekranami.
+ *
+ * Ekrany bez dolnej belki nawigacyjnej:
+ *  - [Screen.NodeDetail] — szczegóły węzła
+ *  - [Screen.ZoneDetail] — szczegóły strefy geofencingu
+ */
 @Composable
 fun MainScreen(
     viewModel: MapViewModel = hiltViewModel(),
@@ -34,10 +42,13 @@ fun MainScreen(
     val connectionState by viewModel.connectionState.collectAsState()
     val nodes by viewModel.nodes.collectAsState()
 
+    /** True gdy bieżący ekran to ekran szczegółów (bez nav bar i status bar). */
+    val isDetailScreen = currentScreen is Screen.NodeDetail || currentScreen is Screen.ZoneDetail
+
     Scaffold(
         modifier = modifier,
         topBar = {
-            if (currentScreen != Screen.Settings && currentScreen !is Screen.NodeDetail) {
+            if (currentScreen != Screen.Settings && !isDetailScreen) {
                 ConnectionStatusBar(
                     connectionState = connectionState,
                     nodeCount = nodes.size,
@@ -46,69 +57,93 @@ fun MainScreen(
             }
         },
         bottomBar = {
-            if (currentScreen !is Screen.NodeDetail) {
+            if (!isDetailScreen) {
                 NavigationBar {
                     NavigationBarItem(
-                        icon = { Icon(Icons.Default.Place, contentDescription = "Mapa") },
-                        label = { Text("Mapa") },
+                        icon     = { Icon(Icons.Default.Place, contentDescription = "Mapa") },
+                        label    = { Text("Mapa") },
                         selected = currentScreen == Screen.Map,
-                        onClick = { currentScreen = Screen.Map }
+                        onClick  = { currentScreen = Screen.Map }
                     )
                     NavigationBarItem(
-                        icon = { Icon(Icons.Default.List, contentDescription = "Węzły") },
-                        label = { Text("Węzły") },
+                        icon     = { Icon(Icons.Default.List, contentDescription = "Węzły") },
+                        label    = { Text("Węzły") },
                         selected = currentScreen == Screen.List,
-                        onClick = { currentScreen = Screen.List }
+                        onClick  = { currentScreen = Screen.List }
                     )
                     NavigationBarItem(
-                        icon = { Icon(Icons.Default.Settings, contentDescription = "Ustawienia") },
-                        label = { Text("Ustawienia") },
+                        icon     = { Icon(Icons.Default.Settings, contentDescription = "Ustawienia") },
+                        label    = { Text("Ustawienia") },
                         selected = currentScreen == Screen.Settings,
-                        onClick = { currentScreen = Screen.Settings }
+                        onClick  = { currentScreen = Screen.Settings }
                     )
                 }
             }
         }
     ) { paddingValues ->
         when (currentScreen) {
+
+            // ---- Mapa ----
             Screen.Map -> MapScreen(
-                viewModel = viewModel,
-                modifier = Modifier.fillMaxSize(),
+                viewModel  = viewModel,
+                onNavigateToZoneDetail = { zoneId ->
+                    currentScreen = Screen.ZoneDetail(zoneId)
+                },
+                modifier      = Modifier.fillMaxSize(),
                 contentPadding = paddingValues
             )
+
+            // ---- Lista węzłów ----
             Screen.List -> NodeListScreen(
                 viewModel = viewModel,
                 onNodeClick = { nodeId ->
                     currentScreen = Screen.NodeDetail(nodeId)
                 },
-                modifier = Modifier.fillMaxSize(),
+                modifier       = Modifier.fillMaxSize(),
                 contentPadding = paddingValues
             )
+
+            // ---- Szczegóły węzła ----
             is Screen.NodeDetail -> {
                 val screen = currentScreen as Screen.NodeDetail
                 NodeDetailScreen(
-                    nodeId = screen.nodeId,
-                    onBack = { currentScreen = Screen.List },
+                    nodeId     = screen.nodeId,
+                    onBack     = { currentScreen = Screen.List },
                     onShowOnMap = { nodeId ->
                         currentScreen = Screen.Map
                         viewModel.selectNode(nodeId)
                     },
-                    viewModel = viewModel,
-                    modifier = Modifier.fillMaxSize(),
+                    viewModel      = viewModel,
+                    modifier       = Modifier.fillMaxSize(),
                     contentPadding = paddingValues
                 )
             }
+
+            // ---- Szczegóły strefy ----
+            is Screen.ZoneDetail -> {
+                val screen = currentScreen as Screen.ZoneDetail
+                ZoneDetailScreen(
+                    zoneId   = screen.zoneId,
+                    onBack   = { currentScreen = Screen.Map },
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+
+            // ---- Ustawienia ----
             Screen.Settings -> SettingsScreen(
-                modifier = Modifier.fillMaxSize(),
+                modifier       = Modifier.fillMaxSize(),
                 contentPadding = paddingValues
             )
         }
     }
 }
 
+// ------------------------------------------------------------------ ekrany nawigacji
+
 sealed class Screen {
-    object Map : Screen()
-    object List : Screen()
+    object Map      : Screen()
+    object List     : Screen()
     object Settings : Screen()
     data class NodeDetail(val nodeId: String) : Screen()
+    data class ZoneDetail(val zoneId: String) : Screen()
 }
