@@ -194,12 +194,18 @@ private fun NodeDetailContent(
 
         // ---- Signal section
         DetailSection(title = "Sygnał") {
+            // SNR — brak dla węzła lokalnego (BT) i węzłów multi-hop
             if (node.snr != Float.MAX_VALUE) {
                 val snrLabel = snrQualityLabel(node.snr)
                 DetailRow("SNR", "${String.format("%.1f", node.snr)} dB  ($snrLabel)")
+            } else {
+                DetailRow("SNR", "— (brak pomiaru RF)")
             }
+            // RSSI
             if (node.rssi != Int.MAX_VALUE) {
                 DetailRow("RSSI", "${node.rssi} dBm")
+            } else {
+                DetailRow("RSSI", "—")
             }
             if (node.batteryLevel > 0) {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
