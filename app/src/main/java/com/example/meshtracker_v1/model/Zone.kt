@@ -6,6 +6,9 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.util.UUID
 
+// ZoneVertex zdefiniowany w ZoneVertex.kt (osobny plik — brak zależności Android,
+// dzięki czemu GeofenceCheckerTest może działać jako czysty test JVM)
+
 /**
  * Strefa geofencingu — obszar wielokątny monitorujący wybrane węzły.
  * Wierzchołki i lista węzłów przechowywane jako JSON string (brak TypeConverter).
@@ -79,6 +82,3 @@ data class Zone(
         )
     }
 }
-
-/** Pojedynczy wierzchołek wielokąta strefy. */
-data class ZoneVertex(val lat: Double, val lon: Double)
