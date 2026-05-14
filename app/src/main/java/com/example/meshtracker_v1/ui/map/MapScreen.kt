@@ -37,6 +37,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color as ComposeColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -94,7 +95,7 @@ fun MapScreen(
     }
 
     val context = LocalContext.current
-    val iconCache = remember { mutableMapOf<Triple<Int, Int, Boolean>, BitmapDescriptor>() }
+    val iconCache = remember { mutableMapOf<MarkerKey, BitmapDescriptor>() }
 
     // Sheet stref widoczny gdy użytkownik tapnie FAB
     var showZoneSheet by remember { mutableStateOf(false) }
@@ -227,12 +228,15 @@ fun MapScreen(
                 val position = node.position ?: return@forEach
                 val isSelected = node.getId() == selectedNodeId
                 val inZone = node.getId() in nodesInZones
+                val isMoving = (position.groundTrack) > 0
 
                 Marker(
                     state   = MarkerState(position = position.toLatLng()),
                     title   = node.getDisplayName(),
                     snippet = buildMarkerSnippet(node),
                     icon    = getMarkerIcon(node, isSelected, inZone, iconCache),
+                    // Węzeł w ruchu: anchor = środek kółka; statyczny: anchor = czubek pina
+                    anchor  = if (isMoving) Offset(0.5f, 0.5f) else Offset(0.5f, 1.0f),
                     zIndex  = if (isSelected) 1f else 0f,
                     onClick = {
                         viewModel.selectNode(node.getId())
@@ -428,117 +432,262 @@ private fun precisionToMeters(precisionBits: Int): Int {
     return (degrees * 111_000).toInt()
 }
 
+// ================================================================== Marker helpers
+
 /**
- * Zwraca kolor (hue) markera na podstawie roli węzła.
+ * Klucz cache markera — wszystkie właściwości wizualne wpływające na wygląd Bitmapy.
+ * Przy 2-5 węzłach cache jest trywialnie mały.
  */
-private fun getMarkerHue(node: MeshNodeInfo): Float {
-    val role = node.user?.role
-    if (role == null) {
-        android.util.Log.d("MapScreen", "Node ${node.getDisplayName()} has no user or role, using default color")
-        return BitmapDescriptorFactory.HUE_AZURE
-    }
-    android.util.Log.d("MapScreen", "Node ${node.getDisplayName()} has role: $role")
-    return when (role) {
-        0 -> BitmapDescriptorFactory.HUE_RED    // CLIENT
-        5 -> BitmapDescriptorFactory.HUE_GREEN  // TRACKER
-        else -> BitmapDescriptorFactory.HUE_AZURE
+private data class MarkerKey(
+    val initials: String,
+    val fillColor: Int,
+    val heading: Int,     // 0 = statyczny; >0 = kierunek ruchu w stopniach
+    val selected: Boolean,
+    val snrColor: Int     // kolor dota SNR (android.graphics.Color int)
+)
+
+/** Wyciąga 1-2 znaki identyfikatora: shortName węzła lub prefix node ID. */
+private fun getInitials(node: MeshNodeInfo): String {
+    val short = node.user?.shortName?.trim()
+    if (!short.isNullOrEmpty()) return short.take(2).uppercase()
+    return node.getId().removePrefix("!").take(2).uppercase()
+}
+
+/**
+ * Kolor wypełnienia kółka markera.
+ * Kolejność priorytetów: zaznaczony → offline → w strefie → rola.
+ */
+private fun getMarkerFillColor(
+    node: MeshNodeInfo,
+    selected: Boolean,
+    inZone: Boolean
+): Int = when {
+    selected         -> Color.parseColor("#FFC107")   // żółty — zaznaczony
+    !node.isOnline() -> Color.parseColor("#9E9E9E")   // szary — offline
+    inZone           -> Color.parseColor("#E91E63")   // magenta — w strefie
+    else -> when (node.user?.role) {
+        0    -> Color.parseColor("#F44336")  // CLIENT      → czerwony
+        2, 3 -> Color.parseColor("#2196F3")  // ROUTER/RC   → niebieski
+        5    -> Color.parseColor("#4CAF50")  // TRACKER     → zielony
+        else -> Color.parseColor("#03A9F4")  // pozostałe   → jasnoniebieski
     }
 }
 
 /**
- * Tworzy BitmapDescriptor ze strzałką wskazującą kierunek (HEADING).
+ * Kolor dota SNR:
+ *  ≥ 5 dB  → zielony (doskonały)
+ *  ≥ 0 dB  → jasnozielony (dobry)
+ *  ≥ −5 dB → pomarańczowy (słaby)
+ *  < −5 dB → czerwony (bardzo słaby)
+ *  brak    → szary
  */
-private fun createArrowIcon(
+private fun getSnrDotColor(snr: Float): Int = when {
+    snr == Float.MAX_VALUE -> Color.parseColor("#9E9E9E")   // brak danych
+    snr >= 5f  -> Color.parseColor("#4CAF50")               // doskonały
+    snr >= 0f  -> Color.parseColor("#8BC34A")               // dobry
+    snr >= -5f -> Color.parseColor("#FF9800")               // słaby
+    else       -> Color.parseColor("#F44336")               // bardzo słaby
+}
+
+/**
+ * Rysuje kompozytowy marker na Canvas.
+ *
+ * Węzeł statyczny (heading == 0):
+ *   ● dot SNR (prawy górny róg kółka)
+ *  ┌──────┐
+ *  │  AB  │  kółko z inicjałami; kolor = stan/rola
+ *  └──┬───┘
+ *     ▼  pin (anchor = czubek)
+ *
+ * Węzeł w ruchu (heading > 0):
+ *   Strzałka wychodząca z krawędzi kółka w kierunku ruchu (tylko strzałka się obraca,
+ *   kółko i inicjały pozostają w pionie).
+ *   ● dot SNR (prawy górny róg kółka, pozycja stała)
+ *   Anchor = środek kółka (0.5f, 0.5f).
+ */
+private fun createCompositeMarker(
+    initials: String,
+    fillColor: Int,
     heading: Int,
-    color: Int = Color.BLUE,
-    selected: Boolean = false
+    selected: Boolean,
+    snrColor: Int
 ): BitmapDescriptor {
-    val size = if (selected) 130 else 100
-    val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
-    val canvas = Canvas(bitmap)
+    // ---- wymiary (px przy gęstości ekranu ~2.5 MDPI) ----
+    val circleR   = if (selected) 34f else 26f    // promień kółka
+    val pinH      = if (selected) 26f else 20f    // wysokość pina (tylko statyczny)
+    val snrR      = if (selected) 9f  else 7f     // promień dota SNR
+    val arrowLen  = if (selected) 42f else 32f    // długość strzałki poza kółkiem
+    val arrowBase = circleR * 0.55f               // szerokość podstawy grotu strzałki
+    val ringW     = 5f                            // grubość białej obwódki (selected)
 
-    canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
+    val paint = Paint().apply { isAntiAlias = true }
 
-    val centerX = size / 2f
-    val centerY = size / 2f
-    val arrowLength = size * 0.35f
-    val arrowWidth  = size * 0.15f
+    return if (heading == 0) {
+        // ---- STATYCZNY: kółko + pin ----
+        val w = ((circleR + snrR + ringW + 2) * 2).toInt()
+        val h = (circleR * 2 + pinH + ringW * 2 + snrR + 2).toInt()
+        val bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
 
-    canvas.save()
-    canvas.translate(centerX, centerY)
-    canvas.rotate(heading.toFloat())
-    canvas.translate(-centerX, -centerY)
+        val cx = w / 2f
+        val cy = snrR + ringW + circleR   // środek kółka (zostawia miejsce na dot SNR nad nim)
 
-    if (selected) {
-        val outlinePaint = Paint().apply {
-            this.color = Color.WHITE
-            style = Paint.Style.FILL
-            isAntiAlias = true
+        // Biała obwódka (zaznaczony)
+        if (selected) {
+            paint.color = Color.WHITE
+            paint.style = Paint.Style.FILL
+            canvas.drawCircle(cx, cy, circleR + ringW, paint)
+            // Pin obwódka
+            val pinPath = Path().apply {
+                moveTo(cx - (arrowBase * 0.4f) - ringW, cy + circleR)
+                lineTo(cx, h.toFloat())
+                lineTo(cx + (arrowBase * 0.4f) + ringW, cy + circleR)
+                close()
+            }
+            canvas.drawPath(pinPath, paint)
         }
-        val outlinePath = Path().apply {
-            val o = 6f
-            moveTo(centerX, centerY - arrowLength - o)
-            lineTo(centerX - arrowWidth / 2 - o, centerY - arrowLength / 3)
-            lineTo(centerX, centerY + o)
-            lineTo(centerX + arrowWidth / 2 + o, centerY - arrowLength / 3)
+
+        // Pin
+        paint.color = fillColor
+        paint.style = Paint.Style.FILL
+        val pinPath = Path().apply {
+            val pw = arrowBase * 0.4f
+            moveTo(cx - pw, cy + circleR - 2f)
+            lineTo(cx, (cy + circleR + pinH))
+            lineTo(cx + pw, cy + circleR - 2f)
             close()
         }
-        canvas.drawPath(outlinePath, outlinePaint)
-        outlinePaint.apply { this.color = Color.WHITE }
-        canvas.drawCircle(centerX, centerY, size * 0.08f + 4f, outlinePaint)
+        canvas.drawPath(pinPath, paint)
+
+        // Kółko
+        canvas.drawCircle(cx, cy, circleR, paint)
+
+        // Dot SNR (prawy górny róg kółka)
+        val snrX = cx + circleR * 0.68f
+        val snrY = cy - circleR * 0.68f
+        paint.color = snrColor
+        canvas.drawCircle(snrX, snrY, snrR, paint)
+        paint.color = Color.WHITE
+        paint.style = Paint.Style.STROKE
+        paint.strokeWidth = 2f
+        canvas.drawCircle(snrX, snrY, snrR, paint)
+
+        // Inicjały
+        paint.color = Color.WHITE
+        paint.style = Paint.Style.FILL
+        paint.textSize = circleR * 0.82f
+        paint.typeface = android.graphics.Typeface.DEFAULT_BOLD
+        paint.textAlign = Paint.Align.CENTER
+        val textY = cy - (paint.descent() + paint.ascent()) / 2f
+        canvas.drawText(initials, cx, textY, paint)
+
+        BitmapDescriptorFactory.fromBitmap(bitmap)
+
+    } else {
+        // ---- W RUCHU: kwadrat ze strzałką wychodząca z kółka ----
+        val margin = arrowLen + snrR + ringW + 4f
+        val s = ((circleR + margin) * 2).toInt()
+        val bitmap = Bitmap.createBitmap(s, s, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
+
+        val cx = s / 2f
+        val cy = s / 2f
+
+        // Kierunek strzałki: heading 0=N (↑), 90=E (→), 180=S (↓), 270=W (←)
+        val rad = Math.toRadians(heading.toDouble())
+        val dx = Math.sin(rad).toFloat()
+        val dy = (-Math.cos(rad)).toFloat()
+
+        // ---- Strzałka (rysowana PRZED kółkiem, pod nim) ----
+        val arrowTipX  = cx + dx * (circleR + arrowLen)
+        val arrowTipY  = cy + dy * (circleR + arrowLen)
+        val arrowBaseX = cx + dx * circleR
+        val arrowBaseY = cy + dy * circleR
+        // Prostopadły (do obrócenia w kierunku strzałki)
+        val perpX = -dy
+        val perpY =  dx
+
+        // Biała obwódka strzałki (selected)
+        if (selected) {
+            paint.color = Color.WHITE
+            paint.style = Paint.Style.FILL
+            val outPath = Path().apply {
+                moveTo(arrowTipX, arrowTipY)
+                lineTo(arrowBaseX + perpX * (arrowBase + ringW), arrowBaseY + perpY * (arrowBase + ringW))
+                lineTo(arrowBaseX - perpX * (arrowBase + ringW), arrowBaseY - perpY * (arrowBase + ringW))
+                close()
+            }
+            canvas.drawPath(outPath, paint)
+        }
+
+        // Grot strzałki
+        paint.color = fillColor
+        paint.style = Paint.Style.FILL
+        val arrowPath = Path().apply {
+            moveTo(arrowTipX, arrowTipY)
+            lineTo(arrowBaseX + perpX * arrowBase, arrowBaseY + perpY * arrowBase)
+            lineTo(arrowBaseX - perpX * arrowBase, arrowBaseY - perpY * arrowBase)
+            close()
+        }
+        canvas.drawPath(arrowPath, paint)
+
+        // ---- Kółko ----
+        if (selected) {
+            paint.color = Color.WHITE
+            canvas.drawCircle(cx, cy, circleR + ringW, paint)
+        }
+        paint.color = fillColor
+        canvas.drawCircle(cx, cy, circleR, paint)
+
+        // Dot SNR (stały, prawy górny róg — nie obraca się z heading)
+        val snrX = cx + circleR * 0.68f
+        val snrY = cy - circleR * 0.68f
+        paint.color = snrColor
+        canvas.drawCircle(snrX, snrY, snrR, paint)
+        paint.color = Color.WHITE
+        paint.style = Paint.Style.STROKE
+        paint.strokeWidth = 2f
+        canvas.drawCircle(snrX, snrY, snrR, paint)
+
+        // Inicjały
+        paint.color = Color.WHITE
+        paint.style = Paint.Style.FILL
+        paint.textSize = circleR * 0.82f
+        paint.typeface = android.graphics.Typeface.DEFAULT_BOLD
+        paint.textAlign = Paint.Align.CENTER
+        val textY = cy - (paint.descent() + paint.ascent()) / 2f
+        canvas.drawText(initials, cx, textY, paint)
+
+        BitmapDescriptorFactory.fromBitmap(bitmap)
     }
-
-    val paint = Paint().apply {
-        this.color = color
-        style = Paint.Style.FILL
-        isAntiAlias = true
-    }
-
-    val path = Path().apply {
-        moveTo(centerX, centerY - arrowLength)
-        lineTo(centerX - arrowWidth / 2, centerY - arrowLength / 3)
-        lineTo(centerX, centerY)
-        lineTo(centerX + arrowWidth / 2, centerY - arrowLength / 3)
-        close()
-    }
-    canvas.drawPath(path, paint)
-    canvas.drawCircle(centerX, centerY, size * 0.08f, paint)
-
-    canvas.restore()
-
-    return BitmapDescriptorFactory.fromBitmap(bitmap)
 }
 
 /**
- * Zwraca ikonę markera z cache.
- *
- * @param inZone true gdy węzeł jest wewnątrz co najmniej jednej aktywnej strefy —
- *               węzeł nie-zaznaczony dostaje kolor MAGENTA
+ * Zwraca ikonę markera z cache — rysuje [createCompositeMarker] tylko przy pierwszym
+ * wywołaniu dla danej kombinacji właściwości wizualnych.
  */
 private fun getMarkerIcon(
     node: MeshNodeInfo,
     selected: Boolean,
     inZone: Boolean,
-    cache: MutableMap<Triple<Int, Int, Boolean>, BitmapDescriptor>
+    cache: MutableMap<MarkerKey, BitmapDescriptor>
 ): BitmapDescriptor {
-    val heading = node.position?.groundTrack ?: 0
-
-    if (heading > 0) {
-        // Węzeł w strefie (i nie zaznaczony) → kolor magenta, inaczej rola-based
-        val color = if (inZone && !selected) Color.MAGENTA else when (node.user?.role) {
-            0 -> Color.RED
-            5 -> Color.GREEN
-            else -> Color.BLUE
-        }
-        return cache.getOrPut(Triple(heading, color, selected)) {
-            createArrowIcon(heading, color, selected)
-        }
-    }
-
-    // Domyślny marker pinezka
-    return when {
-        selected -> BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)
-        inZone   -> BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA)
-        else     -> BitmapDescriptorFactory.defaultMarker(getMarkerHue(node))
+    val key = MarkerKey(
+        initials  = getInitials(node),
+        fillColor = getMarkerFillColor(node, selected, inZone),
+        heading   = node.position?.groundTrack ?: 0,
+        selected  = selected,
+        snrColor  = getSnrDotColor(node.snr)
+    )
+    return cache.getOrPut(key) {
+        createCompositeMarker(
+            initials  = key.initials,
+            fillColor = key.fillColor,
+            heading   = key.heading,
+            selected  = key.selected,
+            snrColor  = key.snrColor
+        )
     }
 }
