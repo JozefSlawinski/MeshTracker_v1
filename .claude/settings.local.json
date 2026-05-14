@@ -1,7 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Bash(grep -r \"//.*disabled\\\\|//.*commented\\\\|// \\\\*\\\\|/\\\\*\" /c/Users/slawi/AndroidStudioProjects/MeshTracker_v1/app/src/main/java --include=\"*.kt\")"
+      "Bash(grep -r \"//.*disabled\\\\|//.*commented\\\\|// \\\\*\\\\|/\\\\*\" /c/Users/slawi/AndroidStudioProjects/MeshTracker_v1/app/src/main/java --include=\"*.kt\")",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(gh pr create --title 'Fix critical architectural bugs: hiltViewModel, padding, Reconnecting state, MeshtasticNotInstalled' --body ' *)",
+      "Bash(./gradlew compileDebugKotlin)"
     ]
   }
 }
