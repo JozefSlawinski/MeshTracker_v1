@@ -46,6 +46,141 @@ data class MeshNodeInfo(
     }
     
     companion object {
+
+        private const val TAG = "MeshNodeInfo"
+
+        /**
+         * Odczytuje SNR z obiektu NodeInfo Meshtastic.
+         * Próbuje kolejno: getSnr() → pole 'snr' → getRxSnr() → pole 'rxSnr'.
+         * Zwraca Float.MAX_VALUE gdy żadna metoda nie zadziała.
+         */
+        private fun readSnr(nodeInfo: Any): Float {
+            // 1. Metoda getSnr()
+            try {
+                val v = nodeInfo.javaClass.getMethod("getSnr").invoke(nodeInfo)
+                android.util.Log.d(TAG, "SNR via getSnr(): $v (type=${v?.javaClass?.name})")
+                val f = when (v) {
+                    is Float  -> v
+                    is Double -> v.toFloat()
+                    is Number -> v.toFloat()
+                    else      -> null
+                }
+                if (f != null) return f
+            } catch (e: NoSuchMethodException) {
+                android.util.Log.d(TAG, "getSnr() not found: ${e.message}")
+            } catch (e: Exception) {
+                android.util.Log.w(TAG, "getSnr() error: ${e.message}")
+            }
+
+            // 2. Pole 'snr'
+            try {
+                val field = nodeInfo.javaClass.getDeclaredField("snr")
+                field.isAccessible = true
+                val v = field.get(nodeInfo)
+                android.util.Log.d(TAG, "SNR via field 'snr': $v")
+                val f = when (v) {
+                    is Float  -> v
+                    is Double -> v.toFloat()
+                    is Number -> v.toFloat()
+                    else      -> null
+                }
+                if (f != null) return f
+            } catch (e: Exception) {
+                android.util.Log.d(TAG, "field 'snr' not found: ${e.message}")
+            }
+
+            // 3. Metoda getRxSnr() (starsze wersje Meshtastic)
+            try {
+                val v = nodeInfo.javaClass.getMethod("getRxSnr").invoke(nodeInfo)
+                android.util.Log.d(TAG, "SNR via getRxSnr(): $v")
+                val f = when (v) {
+                    is Float  -> v
+                    is Double -> v.toFloat()
+                    is Number -> v.toFloat()
+                    else      -> null
+                }
+                if (f != null) return f
+            } catch (e: Exception) {
+                android.util.Log.d(TAG, "getRxSnr() not found: ${e.message}")
+            }
+
+            // 4. Pole 'rxSnr'
+            try {
+                val field = nodeInfo.javaClass.getDeclaredField("rxSnr")
+                field.isAccessible = true
+                val v = field.get(nodeInfo)
+                android.util.Log.d(TAG, "SNR via field 'rxSnr': $v")
+                val f = when (v) {
+                    is Float  -> v
+                    is Double -> v.toFloat()
+                    is Number -> v.toFloat()
+                    else      -> null
+                }
+                if (f != null) return f
+            } catch (e: Exception) {
+                android.util.Log.d(TAG, "field 'rxSnr' not found: ${e.message}")
+            }
+
+            android.util.Log.w(TAG, "Could not read SNR from NodeInfo ${nodeInfo.javaClass.name} — returning MAX_VALUE")
+            return Float.MAX_VALUE
+        }
+
+        /**
+         * Odczytuje RSSI z obiektu NodeInfo Meshtastic.
+         * Próbuje kolejno: getRssi() → pole 'rssi' → getRxRssi() → pole 'rxRssi'.
+         * Zwraca Int.MAX_VALUE gdy żadna metoda nie zadziała.
+         */
+        private fun readRssi(nodeInfo: Any): Int {
+            // 1. Metoda getRssi()
+            try {
+                val v = nodeInfo.javaClass.getMethod("getRssi").invoke(nodeInfo)
+                android.util.Log.d(TAG, "RSSI via getRssi(): $v (type=${v?.javaClass?.name})")
+                val i = (v as? Number)?.toInt()
+                if (i != null) return i
+            } catch (e: NoSuchMethodException) {
+                android.util.Log.d(TAG, "getRssi() not found: ${e.message}")
+            } catch (e: Exception) {
+                android.util.Log.w(TAG, "getRssi() error: ${e.message}")
+            }
+
+            // 2. Pole 'rssi'
+            try {
+                val field = nodeInfo.javaClass.getDeclaredField("rssi")
+                field.isAccessible = true
+                val v = field.get(nodeInfo)
+                android.util.Log.d(TAG, "RSSI via field 'rssi': $v")
+                val i = (v as? Number)?.toInt()
+                if (i != null) return i
+            } catch (e: Exception) {
+                android.util.Log.d(TAG, "field 'rssi' not found: ${e.message}")
+            }
+
+            // 3. Metoda getRxRssi() (starsze wersje Meshtastic)
+            try {
+                val v = nodeInfo.javaClass.getMethod("getRxRssi").invoke(nodeInfo)
+                android.util.Log.d(TAG, "RSSI via getRxRssi(): $v")
+                val i = (v as? Number)?.toInt()
+                if (i != null) return i
+            } catch (e: Exception) {
+                android.util.Log.d(TAG, "getRxRssi() not found: ${e.message}")
+            }
+
+            // 4. Pole 'rxRssi'
+            try {
+                val field = nodeInfo.javaClass.getDeclaredField("rxRssi")
+                field.isAccessible = true
+                val v = field.get(nodeInfo)
+                android.util.Log.d(TAG, "RSSI via field 'rxRssi': $v")
+                val i = (v as? Number)?.toInt()
+                if (i != null) return i
+            } catch (e: Exception) {
+                android.util.Log.d(TAG, "field 'rxRssi' not found: ${e.message}")
+            }
+
+            android.util.Log.w(TAG, "Could not read RSSI from NodeInfo ${nodeInfo.javaClass.name} — returning MAX_VALUE")
+            return Int.MAX_VALUE
+        }
+
         /**
          * Tworzy MeshNodeInfo z org.meshtastic.core.model.NodeInfo.
          * Używa reflection, jeśli klasa nie jest dostępna bezpośrednio.
@@ -187,17 +322,11 @@ data class MeshNodeInfo(
                 val position = MeshPosition.fromMeshtasticPosition(positionObj)
                 android.util.Log.d("MeshNodeInfo", "Parsed position: ${if (position != null) "${position.latitude}, ${position.longitude} (valid: ${position.isValid()}, inRange: ${position.isInRange()})" else "null"}")
                 
-                val snr = try {
-                    (nodeInfo.javaClass.getMethod("getSnr").invoke(nodeInfo) as? Float) ?: Float.MAX_VALUE
-                } catch (e: Exception) {
-                    Float.MAX_VALUE
-                }
-                
-                val rssi = try {
-                    (nodeInfo.javaClass.getMethod("getRssi").invoke(nodeInfo) as? Int) ?: Int.MAX_VALUE
-                } catch (e: Exception) {
-                    Int.MAX_VALUE
-                }
+                // ---- SNR ----
+                val snr = readSnr(nodeInfo)
+
+                // ---- RSSI ----
+                val rssi = readRssi(nodeInfo)
                 
                 val lastHeard = try {
                     // Try getMethod first (includes inherited)
