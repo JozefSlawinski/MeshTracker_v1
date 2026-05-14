@@ -230,7 +230,9 @@ fun MapScreen(
                 val nodeId   = node.getId()
                 val isSelected   = nodeId == selectedNodeId
                 val inZone       = nodeId in nodesInZones
-                val isLocalNode  = nodeId == myNodeId
+                // Węzeł lokalny (BLE) nie ma pomiaru RF → snr = Float.MAX_VALUE.
+                // Używamy tego jako wskaźnika zamiast porównania ID (getMyId() może nie istnieć w AIDL).
+                val isLocalNode  = node.snr == Float.MAX_VALUE
                 val isMoving     = position.groundTrack > 0
 
                 Marker(

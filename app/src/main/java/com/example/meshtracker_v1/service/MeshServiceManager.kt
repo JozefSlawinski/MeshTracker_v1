@@ -186,17 +186,43 @@ class MeshServiceManager private constructor(private val context: Context) {
             return null
         }
         
-        return try {
-            // Użyj reflection do wywołania getMyId()
-            val getMyIdMethod = meshService?.javaClass?.getMethod("getMyId")
-            getMyIdMethod?.invoke(meshService) as? String
-        } catch (e: RemoteException) {
-            Log.e(TAG, "Error getting my node ID", e)
-            null
-        } catch (e: Exception) {
-            Log.e(TAG, "Unexpected error getting my node ID", e)
-            null
+        // Próbuj kolejno znanych nazw metod AIDL (różne wersje Meshtastic)
+        val candidateMethods = listOf("getMyId", "getMyNodeId", "myId", "getOwnerId")
+        for (name in candidateMethods) {
+            try {
+                val result = meshService?.javaClass?.getMethod(name)?.invoke(meshService) as? String
+                if (result != null) {
+                    Log.d(TAG, "Got my node ID via $name(): $result")
+                    return result
+                }
+            } catch (e: Exception) {
+                Log.d(TAG, "$name() not available: ${e.message}")
+            }
         }
+
+        // Fallback: getMyNodeInfo().myNodeNum → "!" + hex
+        try {
+            val myNodeInfo = meshService?.javaClass?.getMethod("getMyNodeInfo")?.invoke(meshService)
+            if (myNodeInfo != null) {
+                val num = try {
+                    myNodeInfo.javaClass.getMethod("getMyNodeNum").invoke(myNodeInfo) as? Int
+                } catch (e: Exception) {
+                    val field = myNodeInfo.javaClass.getDeclaredField("myNodeNum")
+                    field.isAccessible = true
+                    field.get(myNodeInfo) as? Int
+                }
+                if (num != null && num != 0) {
+                    val id = "!" + Integer.toHexString(num).padStart(8, '0')
+                    Log.d(TAG, "Got my node ID via getMyNodeInfo().myNodeNum: $id")
+                    return id
+                }
+            }
+        } catch (e: Exception) {
+            Log.d(TAG, "getMyNodeInfo() fallback failed: ${e.message}")
+        }
+
+        Log.w(TAG, "Could not determine my node ID — local node detection falls back to SNR heuristic")
+        return null
     }
     
     /**
