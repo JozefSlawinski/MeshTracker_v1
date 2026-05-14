@@ -49,6 +49,10 @@ class MapViewModel @Inject constructor(
     private val _selectedNodeId = MutableStateFlow<String?>(null)
     val selectedNodeId: StateFlow<String?> = _selectedNodeId.asStateFlow()
 
+    /** ID własnego węzła (podłączonego przez BT/WiFi do telefonu). Null przed połączeniem. */
+    private val _myNodeId = MutableStateFlow<String?>(null)
+    val myNodeId: StateFlow<String?> = _myNodeId.asStateFlow()
+
     private val _connectionState = MutableStateFlow<ConnectionState>(ConnectionState.Disconnected())
     val connectionState: StateFlow<ConnectionState> = _connectionState.asStateFlow()
 
@@ -142,6 +146,13 @@ class MapViewModel @Inject constructor(
     override fun onServiceConnected() {
         Log.d(TAG, "Service connected")
         viewModelScope.launch {
+            // Pobierz ID własnego węzła (dostępne gdy serwis jest zbindowany)
+            val nodeId = meshRepository.getMyNodeId()
+            if (nodeId != null) {
+                _myNodeId.value = nodeId
+                Log.d(TAG, "My node ID: $nodeId")
+            }
+
             val radioState = meshRepository.getConnectionState()
             when {
                 radioState == Constants.STATE_CONNECTED -> {

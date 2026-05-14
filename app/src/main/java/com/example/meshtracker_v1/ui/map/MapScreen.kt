@@ -83,6 +83,7 @@ fun MapScreen(
     val nodeHistory     by viewModel.nodeHistory.collectAsState()
     val activeZones     by viewModel.activeZones.collectAsState()
     val nodesInZones    by viewModel.nodesInZones.collectAsState()
+    val myNodeId        by viewModel.myNodeId.collectAsState()
 
     val allZones        by zoneViewModel.allZones.collectAsState()
     val drawingState    by zoneViewModel.drawingState.collectAsState()
@@ -226,20 +227,22 @@ fun MapScreen(
             // ---- Markery węzłów ----
             nodesWithPosition.forEach { node ->
                 val position = node.position ?: return@forEach
-                val isSelected = node.getId() == selectedNodeId
-                val inZone = node.getId() in nodesInZones
-                val isMoving = (position.groundTrack) > 0
+                val nodeId   = node.getId()
+                val isSelected   = nodeId == selectedNodeId
+                val inZone       = nodeId in nodesInZones
+                val isLocalNode  = nodeId == myNodeId
+                val isMoving     = position.groundTrack > 0
 
                 Marker(
                     state   = MarkerState(position = position.toLatLng()),
                     title   = node.getDisplayName(),
                     snippet = buildMarkerSnippet(node),
-                    icon    = getMarkerIcon(node, isSelected, inZone, iconCache),
+                    icon    = getMarkerIcon(node, isSelected, inZone, isLocalNode, iconCache),
                     // Węzeł w ruchu: anchor = środek kółka; statyczny: anchor = czubek pina
                     anchor  = if (isMoving) Offset(0.5f, 0.5f) else Offset(0.5f, 1.0f),
                     zIndex  = if (isSelected) 1f else 0f,
                     onClick = {
-                        viewModel.selectNode(node.getId())
+                        viewModel.selectNode(nodeId)
                         true
                     }
                 )
@@ -441,9 +444,10 @@ private fun precisionToMeters(precisionBits: Int): Int {
 private data class MarkerKey(
     val initials: String,
     val fillColor: Int,
-    val heading: Int,     // 0 = statyczny; >0 = kierunek ruchu w stopniach
+    val heading: Int,        // 0 = statyczny; >0 = kierunek ruchu w stopniach
     val selected: Boolean,
-    val snrColor: Int     // kolor dota SNR (android.graphics.Color int)
+    val snrColor: Int,       // kolor dota SNR (android.graphics.Color int)
+    val isLocalNode: Boolean // węzeł podłączony bezpośrednio przez BT/USB
 )
 
 /** Wyciąga 1-2 znaki identyfikatora: shortName węzła lub prefix node ID. */
@@ -510,7 +514,8 @@ private fun createCompositeMarker(
     fillColor: Int,
     heading: Int,
     selected: Boolean,
-    snrColor: Int
+    snrColor: Int,
+    isLocalNode: Boolean = false
 ): BitmapDescriptor {
     // ---- wymiary (px przy gęstości ekranu ~2.5 MDPI) ----
     val circleR   = if (selected) 34f else 26f    // promień kółka
@@ -563,15 +568,20 @@ private fun createCompositeMarker(
         // Kółko
         canvas.drawCircle(cx, cy, circleR, paint)
 
-        // Dot SNR (prawy górny róg kółka)
-        val snrX = cx + circleR * 0.68f
-        val snrY = cy - circleR * 0.68f
-        paint.color = snrColor
-        canvas.drawCircle(snrX, snrY, snrR, paint)
-        paint.color = Color.WHITE
-        paint.style = Paint.Style.STROKE
-        paint.strokeWidth = 2f
-        canvas.drawCircle(snrX, snrY, snrR, paint)
+        // Badge w prawym górnym rogu kółka: ikonka telefonu (węzeł lokalny) lub dot SNR
+        val badgeX = cx + circleR * 0.68f
+        val badgeY = cy - circleR * 0.68f
+        if (isLocalNode) {
+            drawPhoneBadge(canvas, badgeX, badgeY, snrR + 2f, paint)
+        } else {
+            paint.color = snrColor
+            paint.style = Paint.Style.FILL
+            canvas.drawCircle(badgeX, badgeY, snrR, paint)
+            paint.color = Color.WHITE
+            paint.style = Paint.Style.STROKE
+            paint.strokeWidth = 2f
+            canvas.drawCircle(badgeX, badgeY, snrR, paint)
+        }
 
         // Inicjały
         paint.color = Color.WHITE
@@ -641,15 +651,20 @@ private fun createCompositeMarker(
         paint.color = fillColor
         canvas.drawCircle(cx, cy, circleR, paint)
 
-        // Dot SNR (stały, prawy górny róg — nie obraca się z heading)
+        // Badge SNR / telefon (stały, prawy górny róg — nie obraca się z heading)
         val snrX = cx + circleR * 0.68f
         val snrY = cy - circleR * 0.68f
-        paint.color = snrColor
-        canvas.drawCircle(snrX, snrY, snrR, paint)
-        paint.color = Color.WHITE
-        paint.style = Paint.Style.STROKE
-        paint.strokeWidth = 2f
-        canvas.drawCircle(snrX, snrY, snrR, paint)
+        if (isLocalNode) {
+            drawPhoneBadge(canvas, snrX, snrY, snrR + 2f, paint)
+        } else {
+            paint.color = snrColor
+            paint.style = Paint.Style.FILL
+            canvas.drawCircle(snrX, snrY, snrR, paint)
+            paint.color = Color.WHITE
+            paint.style = Paint.Style.STROKE
+            paint.strokeWidth = 2f
+            canvas.drawCircle(snrX, snrY, snrR, paint)
+        }
 
         // Inicjały
         paint.color = Color.WHITE
@@ -665,6 +680,31 @@ private fun createCompositeMarker(
 }
 
 /**
+ * Rysuje badge z ikoną telefonu (BLE) zamiast dota SNR dla węzła lokalnego.
+ * [cx],[cy] = środek badge, [r] = promień tła.
+ */
+private fun drawPhoneBadge(canvas: Canvas, cx: Float, cy: Float, r: Float, paint: Paint) {
+    // Niebieskie tło
+    paint.color = Color.parseColor("#1565C0")
+    paint.style = Paint.Style.FILL
+    canvas.drawCircle(cx, cy, r, paint)
+    // Biała obwódka
+    paint.color = Color.WHITE
+    paint.style = Paint.Style.STROKE
+    paint.strokeWidth = 1.5f
+    canvas.drawCircle(cx, cy, r, paint)
+    // Obrys telefonu (zaokrąglony prostokąt)
+    val w = r * 0.55f
+    val h = r * 0.9f
+    paint.style = Paint.Style.STROKE
+    paint.strokeWidth = 1.5f
+    canvas.drawRoundRect(cx - w, cy - h, cx + w, cy + h, w * 0.3f, w * 0.3f, paint)
+    // Głośniczek
+    paint.strokeWidth = 1.2f
+    canvas.drawLine(cx - w * 0.35f, cy - h * 0.78f, cx + w * 0.35f, cy - h * 0.78f, paint)
+}
+
+/**
  * Zwraca ikonę markera z cache — rysuje [createCompositeMarker] tylko przy pierwszym
  * wywołaniu dla danej kombinacji właściwości wizualnych.
  */
@@ -672,22 +712,25 @@ private fun getMarkerIcon(
     node: MeshNodeInfo,
     selected: Boolean,
     inZone: Boolean,
+    isLocalNode: Boolean,
     cache: MutableMap<MarkerKey, BitmapDescriptor>
 ): BitmapDescriptor {
     val key = MarkerKey(
-        initials  = getInitials(node),
-        fillColor = getMarkerFillColor(node, selected, inZone),
-        heading   = node.position?.groundTrack ?: 0,
-        selected  = selected,
-        snrColor  = getSnrDotColor(node.snr)
+        initials    = getInitials(node),
+        fillColor   = getMarkerFillColor(node, selected, inZone),
+        heading     = node.position?.groundTrack ?: 0,
+        selected    = selected,
+        snrColor    = getSnrDotColor(node.snr),
+        isLocalNode = isLocalNode
     )
     return cache.getOrPut(key) {
         createCompositeMarker(
-            initials  = key.initials,
-            fillColor = key.fillColor,
-            heading   = key.heading,
-            selected  = key.selected,
-            snrColor  = key.snrColor
+            initials    = key.initials,
+            fillColor   = key.fillColor,
+            heading     = key.heading,
+            selected    = key.selected,
+            snrColor    = key.snrColor,
+            isLocalNode = key.isLocalNode
         )
     }
 }
