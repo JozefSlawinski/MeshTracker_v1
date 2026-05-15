@@ -18,7 +18,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.CardDefaults
@@ -28,13 +30,19 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -43,11 +51,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.meshtracker_v1.model.MeshNodeInfo
+import com.example.meshtracker_v1.model.PacketStats
 import com.example.meshtracker_v1.model.TimedPosition
 import com.example.meshtracker_v1.ui.map.MapViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlin.math.cos
+import kotlin.math.sqrt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,8 +73,26 @@ fun NodeDetailScreen(
     val nodes by viewModel.nodes.collectAsState()
     val onlineThresholdSeconds by viewModel.onlineThresholdSeconds.collectAsState()
     val nodeHistoryMap by viewModel.nodeHistory.collectAsState()
+    val packetStatsMap by viewModel.packetStats.collectAsState()
+    val expectedInterval by viewModel.expectedBroadcastInterval.collectAsState()
     val node = nodes[nodeId]
     val history = nodeHistoryMap[nodeId] ?: emptyList()
+    val stats = packetStatsMap[nodeId]
+
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        viewModel.exportEvent.collect { result ->
+            result.onSuccess { uri ->
+                val intent = Intent(Intent.ACTION_SEND).apply {
+                    type = "text/csv"
+                    putExtra(Intent.EXTRA_STREAM, uri)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                context.startActivity(Intent.createChooser(intent, "Eksportuj dane węzła"))
+            }
+        }
+    }
 
     Scaffold(
         modifier = modifier.padding(contentPadding),
@@ -94,8 +123,12 @@ fun NodeDetailScreen(
             NodeDetailContent(
                 node = node,
                 history = history,
+                stats = stats,
+                expectedInterval = expectedInterval,
                 onlineThresholdSeconds = onlineThresholdSeconds,
                 onShowOnMap = { onShowOnMap(nodeId) },
+                onResetStats = { viewModel.resetStatsForNode(nodeId) },
+                onExport = { viewModel.exportNodeData(nodeId) },
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
@@ -108,12 +141,17 @@ fun NodeDetailScreen(
 private fun NodeDetailContent(
     node: MeshNodeInfo,
     history: List<TimedPosition>,
+    stats: PacketStats?,
+    expectedInterval: Int,
     onlineThresholdSeconds: Int,
     onShowOnMap: () -> Unit,
+    onResetStats: () -> Unit,
+    onExport: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val isOnline = node.isOnline(onlineThresholdSeconds)
+    var showResetStatsDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
@@ -194,14 +232,12 @@ private fun NodeDetailContent(
 
         // ---- Signal section
         DetailSection(title = "Sygnał") {
-            // SNR — brak dla węzła lokalnego (BT) i węzłów multi-hop
             if (node.snr != Float.MAX_VALUE) {
                 val snrLabel = snrQualityLabel(node.snr)
                 DetailRow("SNR", "${String.format("%.1f", node.snr)} dB  ($snrLabel)")
             } else {
                 DetailRow("SNR", "— (brak pomiaru RF)")
             }
-            // RSSI
             if (node.rssi != Int.MAX_VALUE) {
                 DetailRow("RSSI", "${node.rssi} dBm")
             } else {
@@ -219,6 +255,47 @@ private fun NodeDetailContent(
                             else -> MaterialTheme.colorScheme.error
                         }
                     )
+                }
+            }
+        }
+
+        // ---- Packet stats section
+        DetailSection(title = "Statystyki odbioru") {
+            if (stats == null || stats.receivedCount == 0) {
+                Text(
+                    text = "Brak danych — oczekiwanie na pakiety",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                DetailRow("Odebrano pakietów", stats.receivedCount.toString())
+                if (stats.receivedCount < 5) {
+                    DetailRow("Avg Δt", "Za mało danych")
+                    DetailRow("PDR (est.)", "Za mało danych")
+                } else {
+                    DetailRow("Avg Δt", "${String.format("%.1f", stats.avgDeltaT)} s")
+                    DetailRow("Min / Max Δt", "${stats.minDeltaT} s / ${stats.maxDeltaT} s")
+                    val pdr = stats.pdr(expectedInterval)
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        DetailRow("PDR (est.)", "${String.format("%.0f", pdr)}%")
+                        LinearProgressIndicator(
+                            progress = { (pdr / 100.0).toFloat() },
+                            modifier = Modifier.fillMaxWidth(),
+                            color = when {
+                                pdr >= 90.0 -> MaterialTheme.colorScheme.primary
+                                pdr >= 70.0 -> MaterialTheme.colorScheme.tertiary
+                                else -> MaterialTheme.colorScheme.error
+                            }
+                        )
+                    }
+                }
+                DetailRow("Oczekiwany interwał", "${expectedInterval} s (z ustawień)")
+                Spacer(modifier = Modifier.height(4.dp))
+                OutlinedButton(
+                    onClick = { showResetStatsDialog = true },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Resetuj statystyki")
                 }
             }
         }
@@ -266,9 +343,10 @@ private fun NodeDetailContent(
 
         // ---- Position history section
         if (history.isNotEmpty()) {
-            DetailSection(title = "Historia pozycji (${history.size})") {
+            val totalDistKm = trackDistanceKm(history)
+            val distLabel = if (totalDistKm >= 0.01) " — dystans: ~${String.format("%.2f", totalDistKm)} km" else ""
+            DetailSection(title = "Historia pozycji (${history.size})$distLabel") {
                 val dateFormat = SimpleDateFormat("MM-dd HH:mm:ss", Locale.getDefault())
-                // Show newest first, up to 10 rows
                 history.reversed().take(10).forEachIndexed { index, pos ->
                     if (index > 0) {
                         HorizontalDivider(
@@ -352,7 +430,33 @@ private fun NodeDetailContent(
             }
         }
 
+        if (history.isNotEmpty()) {
+            FilledTonalButton(
+                onClick = onExport,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Eksportuj dane CSV")
+            }
+        }
+
         Spacer(modifier = Modifier.height(8.dp))
+    }
+
+    if (showResetStatsDialog) {
+        AlertDialog(
+            onDismissRequest = { showResetStatsDialog = false },
+            title = { Text("Resetuj statystyki?") },
+            text = { Text("Liczniki pakietów i Δt dla tego węzła zostaną wyzerowane. Historia pozycji pozostanie niezmieniona.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    onResetStats()
+                    showResetStatsDialog = false
+                }) { Text("Resetuj") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showResetStatsDialog = false }) { Text("Anuluj") }
+            }
+        )
     }
 }
 
@@ -395,6 +499,22 @@ private fun DetailRow(label: String, value: String) {
             modifier = Modifier.weight(0.55f)
         )
     }
+}
+
+private fun trackDistanceKm(history: List<TimedPosition>): Double {
+    var total = 0.0
+    for (i in 1 until history.size) {
+        val a = history[i - 1]
+        val b = history[i]
+        val dLat = b.latitude - a.latitude
+        val dLon = b.longitude - a.longitude
+        val cosLat = cos(Math.toRadians((a.latitude + b.latitude) / 2))
+        total += sqrt(
+            dLat * dLat * 111_000.0 * 111_000.0 +
+            dLon * dLon * (111_000.0 * cosLat) * (111_000.0 * cosLat)
+        )
+    }
+    return total / 1000.0
 }
 
 private fun roleLabel(role: Int): String = when (role) {

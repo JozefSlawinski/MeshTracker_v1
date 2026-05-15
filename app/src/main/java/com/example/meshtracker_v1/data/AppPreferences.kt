@@ -25,14 +25,18 @@ class AppPreferences @Inject constructor(
         val KEY_DEFAULT_ONLINE_FILTER = booleanPreferencesKey("default_online_filter")
         val KEY_DEFAULT_GPS_FILTER  = booleanPreferencesKey("default_gps_filter")
         val KEY_MAP_TYPE            = intPreferencesKey("map_type")
-        val KEY_HISTORY_MAX_POINTS  = intPreferencesKey("history_max_points")
-        val KEY_HISTORY_MIN_DIST_M  = intPreferencesKey("history_min_distance_m")
+        val KEY_HISTORY_MAX_POINTS        = intPreferencesKey("history_max_points")
+        val KEY_HISTORY_MIN_DIST_M        = intPreferencesKey("history_min_distance_m")
+        val KEY_SHOW_ALL_TRACKS           = booleanPreferencesKey("show_all_tracks")
+        val KEY_EXPECTED_BROADCAST_INTERVAL = intPreferencesKey("expected_broadcast_interval")
 
-        const val DEFAULT_REFRESH_INTERVAL    = 5
-        const val DEFAULT_ONLINE_THRESHOLD    = 5   // minutes
-        const val DEFAULT_MAP_TYPE            = 0   // NORMAL
-        const val DEFAULT_HISTORY_MAX_POINTS  = 50
-        const val DEFAULT_HISTORY_MIN_DIST_M  = 20
+        const val DEFAULT_REFRESH_INTERVAL           = 5
+        const val DEFAULT_ONLINE_THRESHOLD           = 5   // minutes
+        const val DEFAULT_MAP_TYPE                   = 0   // NORMAL
+        const val DEFAULT_HISTORY_MAX_POINTS         = 50
+        const val DEFAULT_HISTORY_MIN_DIST_M         = 20
+        const val DEFAULT_SHOW_ALL_TRACKS            = true
+        const val DEFAULT_EXPECTED_BROADCAST_INTERVAL = 30  // seconds
     }
 
     val refreshIntervalSeconds: Flow<Int> = context.dataStore.data
@@ -56,6 +60,12 @@ class AppPreferences @Inject constructor(
     val historyMinDistanceM: Flow<Int> = context.dataStore.data
         .map { it[KEY_HISTORY_MIN_DIST_M] ?: DEFAULT_HISTORY_MIN_DIST_M }
 
+    val showAllTracks: Flow<Boolean> = context.dataStore.data
+        .map { it[KEY_SHOW_ALL_TRACKS] ?: DEFAULT_SHOW_ALL_TRACKS }
+
+    val expectedBroadcastInterval: Flow<Int> = context.dataStore.data
+        .map { it[KEY_EXPECTED_BROADCAST_INTERVAL] ?: DEFAULT_EXPECTED_BROADCAST_INTERVAL }
+
     suspend fun setRefreshInterval(seconds: Int) =
         context.dataStore.edit { it[KEY_REFRESH_INTERVAL] = seconds }
 
@@ -76,6 +86,12 @@ class AppPreferences @Inject constructor(
 
     suspend fun setHistoryMinDistanceM(distance: Int) =
         context.dataStore.edit { it[KEY_HISTORY_MIN_DIST_M] = distance }
+
+    suspend fun setShowAllTracks(enabled: Boolean) =
+        context.dataStore.edit { it[KEY_SHOW_ALL_TRACKS] = enabled }
+
+    suspend fun setExpectedBroadcastInterval(seconds: Int) =
+        context.dataStore.edit { it[KEY_EXPECTED_BROADCAST_INTERVAL] = seconds }
 
     suspend fun resetToDefaults() =
         context.dataStore.edit { it.clear() }

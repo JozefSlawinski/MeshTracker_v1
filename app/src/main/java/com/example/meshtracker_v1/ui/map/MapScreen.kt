@@ -84,6 +84,7 @@ fun MapScreen(
     val activeZones     by viewModel.activeZones.collectAsState()
     val nodesInZones    by viewModel.nodesInZones.collectAsState()
     val myNodeId        by viewModel.myNodeId.collectAsState()
+    val showAllTracks   by viewModel.showAllTracks.collectAsState()
 
     val allZones        by zoneViewModel.allZones.collectAsState()
     val drawingState    by zoneViewModel.drawingState.collectAsState()
@@ -213,15 +214,40 @@ fun MapScreen(
                 }
             }
 
-            // ---- Historia pozycji zaznaczonego węzła ----
-            val historyPoints = selectedNodeId?.let { nodeHistory[it] }
-            if (historyPoints != null && historyPoints.size >= 2) {
-                Polyline(
-                    points = historyPoints.map { LatLng(it.latitude, it.longitude) },
-                    color  = ComposeColor(0xFF2196F3.toInt()),
-                    width  = 6f,
-                    zIndex = 0.5f
-                )
+            // ---- Historia pozycji węzłów ----
+            if (showAllTracks) {
+                nodeHistory.forEach { (nodeId, history) ->
+                    if (history.size < 2) return@forEach
+                    val isSelected = nodeId == selectedNodeId
+                    val node = nodes[nodeId]
+                    val isTracker = node?.user?.role == 5
+                    val color = when {
+                        isSelected  -> ComposeColor(0xFF2196F3.toInt())
+                        isTracker   -> ComposeColor(0xFF4CAF50.toInt()).copy(alpha = 0.85f)
+                        else        -> ComposeColor(0xFF9E9E9E.toInt()).copy(alpha = 0.5f)
+                    }
+                    val width = when {
+                        isSelected -> 6f
+                        isTracker  -> 5f
+                        else       -> 3f
+                    }
+                    Polyline(
+                        points = history.map { LatLng(it.latitude, it.longitude) },
+                        color  = color,
+                        width  = width,
+                        zIndex = if (isSelected) 0.6f else 0.5f
+                    )
+                }
+            } else {
+                val historyPoints = selectedNodeId?.let { nodeHistory[it] }
+                if (historyPoints != null && historyPoints.size >= 2) {
+                    Polyline(
+                        points = historyPoints.map { LatLng(it.latitude, it.longitude) },
+                        color  = ComposeColor(0xFF2196F3.toInt()),
+                        width  = 6f,
+                        zIndex = 0.5f
+                    )
+                }
             }
 
             // ---- Markery węzłów ----

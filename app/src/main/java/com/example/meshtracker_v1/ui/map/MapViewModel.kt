@@ -6,12 +6,18 @@ import androidx.lifecycle.viewModelScope
 import com.example.meshtracker_v1.data.AppPreferences
 import com.example.meshtracker_v1.logic.GeofenceChecker
 import com.example.meshtracker_v1.model.MeshNodeInfo
+import com.example.meshtracker_v1.model.PacketStats
 import com.example.meshtracker_v1.model.TimedPosition
 import com.example.meshtracker_v1.model.Zone
 import com.example.meshtracker_v1.repository.MeshRepository
+import com.example.meshtracker_v1.repository.PacketStatsRepository
 import com.example.meshtracker_v1.repository.PositionHistoryRepository
 import com.example.meshtracker_v1.repository.ZoneRepository
 import com.example.meshtracker_v1.util.Constants
+import com.example.meshtracker_v1.util.CsvExporter
+import android.net.Uri
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import com.example.meshtracker_v1.ui.nodes.NodeFilterState
 import kotlinx.coroutines.Job
@@ -35,7 +41,9 @@ class MapViewModel @Inject constructor(
     private val meshRepository: MeshRepository,
     private val appPreferences: AppPreferences,
     private val positionHistoryRepository: PositionHistoryRepository,
-    private val zoneRepository: ZoneRepository
+    private val packetStatsRepository: PacketStatsRepository,
+    private val zoneRepository: ZoneRepository,
+    private val csvExporter: CsvExporter
 ) : ViewModel(), MeshRepository.MeshEventListener {
 
     companion object {
@@ -80,6 +88,17 @@ class MapViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppPreferences.DEFAULT_HISTORY_MIN_DIST_M)
 
     val nodeHistory: StateFlow<Map<String, List<TimedPosition>>> = positionHistoryRepository.history
+
+    val packetStats: StateFlow<Map<String, PacketStats>> = packetStatsRepository.stats
+
+    val showAllTracks: StateFlow<Boolean> = appPreferences.showAllTracks
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppPreferences.DEFAULT_SHOW_ALL_TRACKS)
+
+    val expectedBroadcastInterval: StateFlow<Int> = appPreferences.expectedBroadcastInterval
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppPreferences.DEFAULT_EXPECTED_BROADCAST_INTERVAL)
+
+    private val _exportEvent = Channel<Result<Uri>>(Channel.BUFFERED)
+    val exportEvent = _exportEvent.receiveAsFlow()
 
     /** Aktywne strefy geofencingu — do renderowania na mapie i sprawdzania pozycji. */
     val activeZones: StateFlow<List<Zone>> = zoneRepository.allZones
@@ -222,6 +241,11 @@ class MapViewModel @Inject constructor(
                     minDistanceM = historyMinDistanceM.value
                 )
             }
+
+            packetStatsRepository.record(
+                nodeId = nodeInfo.getId(),
+                timestampSeconds = (System.currentTimeMillis() / 1000).toInt()
+            )
         }
     }
 
@@ -247,6 +271,17 @@ class MapViewModel @Inject constructor(
     }
 
     // ------------------------------------------------------------------ public API
+
+    fun resetStatsForNode(nodeId: String) {
+        packetStatsRepository.resetForNode(nodeId)
+    }
+
+    fun exportNodeData(nodeId: String) {
+        viewModelScope.launch {
+            val result = csvExporter.export(nodes = _nodes.value, filterNodeId = nodeId)
+            _exportEvent.send(result)
+        }
+    }
 
     fun refreshNodes() {
         viewModelScope.launch {
