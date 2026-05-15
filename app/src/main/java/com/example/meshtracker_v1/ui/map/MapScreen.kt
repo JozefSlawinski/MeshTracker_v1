@@ -55,6 +55,7 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.Polygon
 import com.google.maps.android.compose.Polyline
+import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.example.meshtracker_v1.model.MeshNodeInfo
 import com.example.meshtracker_v1.ui.zones.ZoneBottomSheet
@@ -71,6 +72,9 @@ import com.example.meshtracker_v1.ui.zones.ZoneViewModel
 fun MapScreen(
     viewModel: MapViewModel = hiltViewModel(),
     zoneViewModel: ZoneViewModel = hiltViewModel(),
+    cameraPositionState: CameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(LatLng(52.0, 19.0), 6f)
+    },
     onNavigateToZoneDetail: (String) -> Unit = {},
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues()
@@ -126,12 +130,6 @@ fun MapScreen(
                 )
             )
         }
-    }
-
-    // ------------------------------------------------------------------ kamera
-    val defaultLocation = LatLng(52.0, 19.0)
-    val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(defaultLocation, 6f)
     }
 
     val nodesWithPosition = nodes.values.filter { it.hasValidPosition() }
@@ -338,13 +336,13 @@ fun MapScreen(
             }
         }
 
-        // ---- FABs (prawy dolny róg) ----
+        // ---- FABs (lewy dolny róg — nie zasłania przycisków zoom Google Maps) ----
         Column(
             modifier = Modifier
-                .align(Alignment.BottomEnd)
+                .align(Alignment.BottomStart)
                 .padding(16.dp),
             verticalArrangement  = Arrangement.spacedBy(8.dp),
-            horizontalAlignment  = Alignment.End
+            horizontalAlignment  = Alignment.Start
         ) {
             when (val state = drawingState) {
 
@@ -558,7 +556,11 @@ private fun createCompositeMarker(
     return if (heading == 0) {
         // ---- STATYCZNY: kółko + pin ----
         val w = ((circleR + snrR + ringW + 2) * 2).toInt()
-        val h = (circleR * 2 + pinH + ringW * 2 + snrR + 2).toInt()
+        val h = if (selected) {
+            (circleR * 2 + pinH + ringW * 2 + snrR + 2).toInt()
+        } else {
+            (snrR + ringW + circleR * 2 + pinH + 1).toInt()
+        }
         val bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)

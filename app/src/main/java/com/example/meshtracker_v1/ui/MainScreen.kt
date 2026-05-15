@@ -25,6 +25,9 @@ import com.example.meshtracker_v1.ui.nodes.NodeDetailScreen
 import com.example.meshtracker_v1.ui.nodes.NodeListScreen
 import com.example.meshtracker_v1.ui.settings.SettingsScreen
 import com.example.meshtracker_v1.ui.zones.ZoneDetailScreen
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.rememberCameraPositionState
 
 /**
  * Główny ekran aplikacji — zarządza nawigacją między ekranami.
@@ -41,6 +44,11 @@ fun MainScreen(
     var currentScreen by remember { mutableStateOf<Screen>(Screen.Map) }
     val connectionState by viewModel.connectionState.collectAsState()
     val nodes by viewModel.nodes.collectAsState()
+
+    // Kamera mapy żyje w MainScreen — przeżywa przełączanie zakładek
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(LatLng(52.0, 19.0), 6f)
+    }
 
     /** True gdy bieżący ekran to ekran szczegółów (bez nav bar i status bar). */
     val isDetailScreen = currentScreen is Screen.NodeDetail || currentScreen is Screen.ZoneDetail
@@ -86,6 +94,7 @@ fun MainScreen(
             // ---- Mapa ----
             Screen.Map -> MapScreen(
                 viewModel  = viewModel,
+                cameraPositionState = cameraPositionState,
                 onNavigateToZoneDetail = { zoneId ->
                     currentScreen = Screen.ZoneDetail(zoneId)
                 },
