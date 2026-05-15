@@ -14,6 +14,11 @@
     <!-- Powiadomienia (wymagane runtime na Android 13+) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <!-- Eksport CSV do Downloads — wymagane tylko na Android 9 i starszych -->
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+
     <!-- Query dla aplikacji Meshtastic (wymagane w Android 11+) -->
     <queries>
         <package android:name="com.geeksville.mesh" />
