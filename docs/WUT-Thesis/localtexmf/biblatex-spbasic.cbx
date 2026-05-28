@@ -1,0 +1,77 @@
+% biblatex-spbasic.cbx, Herbert Voß
+% Herbert Voß -- 2021
+% this style is an biblatex style for Springer's spbasic.bst
+%
+%% This material is subject to the LaTeX Project Public License. 
+%% See  https://latex-project.org/lppl/ for the details of that license.
+%%
+\ProvidesFile{biblatex-spbasic.cbx}[2021/12/29 v0.04 biblatex bibliography style]
+% Release Notes can be found in the README
+
+\RequireCitationStyle{authoryear}
+\ExecuteBibliographyOptions{uniquename=init}
+
+\renewbibmacro*{textcite}{%
+  \ifnameundef{labelname}
+    {\iffieldundef{shorthand}
+       {\usebibmacro{cite:label}%
+        \setunit{%
+          \global\booltrue{cbx:parens}%
+          \printtext[bibhyperref]{\printdelim{nonameyeardelim}\bibopenparen}}%
+        \ifnumequal{\value{citecount}}{1}
+          {\usebibmacro{prenote}}
+          {}%
+        \usebibmacro{cite:labeldate+extradate}}
+       {\usebibmacro{cite:shorthand}}}
+    {\printtext[bibhyperref]{\printnames{labelname}}%
+     \setunit{%
+       \global\booltrue{cbx:parens}%
+%       \printtext[bibhyperref]{\printdelim{nameyeardelim}\bibopenparen}}%
+       \printdelim{nameyeardelim}\bibopenparen}%
+     \ifnumequal{\value{citecount}}{1}
+       {\usebibmacro{prenote}}
+       {}%
+     \usebibmacro{citeyear}}}
+
+\renewbibmacro*{cite}{%
+  \iffieldundef{shorthand}
+    {\ifthenelse{\ifnameundef{labelname}\OR\iffieldundef{labelyear}}
+       {\usebibmacro{cite:label}%
+        \setunit{\printdelim{nonameyeardelim}}}
+       {\printtext[bibhyperref]{\printnames{labelname}}%
+        \setunit{\printdelim{nameyeardelim}}}%
+     \usebibmacro{cite:labeldate+extradate}}
+    {\usebibmacro{cite:shorthand}}}
+
+\renewbibmacro*{textcite:postnote}{%
+  \iffieldundef{postnote}%
+    {\ifbool{cbx:parens}%
+       {\bibcloseparen}%
+%       {\printtext[bibhyperref]{\bibcloseparen}}%
+       {}}%
+    {\ifbool{cbx:parens}%
+%       {\setunit{\printtext[bibhyperref]{\printdelim{postnotedelim}}}}%
+       {\setunit{\printdelim{postnotedelim}}}%
+%       {\setunit{\printtext[bibhyperref]{\printdelim{extpostnotedelim}\bibopenparen}}}%
+       {\setunit{\printdelim{extpostnotedelim}\bibopenparen}}%
+     \printtext[bibhyperref]{\printfield{postnote}}\bibcloseparen}}
+
+\renewbibmacro*{prenote}{%
+  \iffieldundef{prenote}
+    {}
+    {\printtext[bibhyperref]{\printfield{prenote}}%
+%     \setunit{\printtext[bibhyperref]{\printdelim{prenotedelim}}}}}
+     \setunit{\printdelim{prenotedelim}}}}
+
+\renewbibmacro*{postnote}{%
+  \iffieldundef{postnote}
+    {}
+%    {\setunit{\printtext[bibhyperref]{\printdelim{postnotedelim}}}%
+    {\setunit{\printdelim{postnotedelim}}%
+     \printtext[bibhyperref]{\printfield{postnote}}}}
+
+
+
+
+\endinput
+

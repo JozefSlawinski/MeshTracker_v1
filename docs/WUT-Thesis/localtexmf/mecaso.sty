@@ -1,0 +1,281 @@
+%Mecaso, un package LaTeX pour les formules en mécanique du solide
+%Conçu par : Youssef DERRAZI, version 1.0
+%Distribué sous la license GNU Public License V3.0
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{mecaso}[2021/08/27 v1.0]
+
+\RequirePackage{amsmath}
+\RequirePackage{amssymb}
+\RequirePackage{mathrsfs}
+
+%Commands :
+\newcommand{\R}{\mathbb{R}}
+
+%Derivative on line \Dex[R]{u(t)} :
+\newcommand{\Dex}[2][R]{\frac{d}{dt}{#2}\bigg|_{#1}}
+
+%Derivative on fraction \Din[R]{u(t)} :
+\newcommand{\Din}[2][R]{\frac{d{#2}}{dt}\bigg|_{#1}}
+
+%Vector representation \Vct{AB} :
+\newcommand{\Vct}[1]{\overrightarrow{#1}}
+
+%################################### A-Kinematics :
+
+%Rotation vector definition \Rotation[R]{S} :
+\newcommand{\Rotation}[2][R]{\Vct{\omega}_{#2/#1}}
+
+%Velocity vector definition \Vel[R]{A}{S} :
+\newcommand{\Vel}[3][R]{\Vct{v}_{#2\in #3/#1}}
+
+%Transport formula for velocities \VARK[R]{A}{B}{S} :
+\newcommand{\VARK}[4][R]{\Vel[#1]{#3}{#4}=\Vel[#1]{#2}{#4}+\Rotation[#1]{#4}\times\Vct{#2 #3}}
+
+%################################### B-Statics :
+
+%Force vector definition \Force[S]{Ext} :
+\newcommand{\Force}[2][S]{\Vct{F}_{#2\rightarrow #1}}
+
+%Moment vector definition with force precision \Moment[S]{Ext}{A} :
+\newcommand{\Moment}[3][S]{\Vct{M}_{#3}(\Vct{F}_{#2\rightarrow #1})}
+
+%Moment vector definition without force precision \Gmoment{Force}{A} :
+\newcommand{\Gmoment}[2]{\Vct{M}_{#2}(#1)}
+
+%Transport formula for moments with force precision \VARS[S]{A}{B}{Ext} :
+\newcommand{\VARS}[4][S]{\Moment[#1]{#4}{#3}=\Moment[#1]{#4}{#2}+\Force[#1]{#4}\times\Vct{#2 #3}}
+
+%Transport formula for moments without force precision \GVARS{Force}{A}{B} :
+\newcommand{\GVARS}[3]{\Gmoment{#1}{#3}=\Gmoment{#1}{#2}+{#1}\times\Vct{#2 #3}}
+
+%Volumetric force resultant \Vnet[S]{f}{Ext} :
+\newcommand{\Vnet}[3][S]{\iiint_{M \in #1}\Vct{#2}_{#3\rightarrow #1}(M)dm}
+
+%Volumetric force resultant with explicit volume \VVnet[S]{f}{Ext} :
+\newcommand{\VVnet}[3][S]{\iiint_{M \in #1}\rho(M)\Vct{#2}_{#3\rightarrow #1}(M)dV}
+
+%Surface force resultant \Snet[S]{T}{Ext} :
+\newcommand{\Snet}[3][S]{\iint_{M \in \partial #1}\Vct{#2}_{#3\rightarrow #1}(M)dS}
+
+%Surface force resultant with explicit normal \SSnet[S]{T}{Ext}{n} :
+\newcommand{\SSnet}[4][S]{\iint_{M \in \partial #1}{#2}_{#3\rightarrow #1}(M)\Vct{#4}dS}
+
+%################################### C-Kinetics :
+
+%Momentum vector definition \Psr[R]{S} :
+\newcommand{\Psr}[2][R]{\Vct{p}_{#2/#1}}
+
+%Momentum vector 2nd definition \Mv[R]{S} :
+\newcommand{\Mv}[2][R]{m_{#2}\Vel[#1]{G}{#2}}
+
+%Angular momentum integral def \Lmi[R]{A}{S}:
+\newcommand{\Lmi}[3][R]{\int_{M \in {#3}}\Vct{#2 M}\times \Vel[#1]{M}{#3} dm}
+
+%Angular momentum definition \Lm[R]{A}{S} :
+\newcommand{\Lm}[3][R]{\Vct{L}_{#2, #3/#1}}
+
+%Transport formula for angular momenta \VARC[R]{A}{B}{S} :
+\newcommand{\VARC}[4][R]{\Lm[#1]{#3}{#4}=\Lm[#1]{#2}{#4}+\Psr[#1]{#4}\times\Vct{#2 #3}}
+
+%Alternate transport formula for angular momenta \AVARC[R]{A}{B}{S} :
+\newcommand{\AVARC}[4][R]{\Lm[#1]{#3}{#4}=\Lm[#1]{#2}{#4}+\Mv[#1]{#4}\times\Vct{#2 #3}}
+
+%Inertia tensor definition \Inertia[R]{A}{S} :
+\newcommand{\Inertia}[3][R]{\overline{\overline{I}}_{#2}(#3/#1)}
+
+%Angular momentum general definition on arbitrary point \LA[R]{A}{S} :
+\newcommand{\LA}[3][R]{m_{#3}\Vct{#2 G}\times \Vel[#1]{G}{#3}+\Inertia[#1]{#2}{#3} \cdot \Rotation[#1]{#3}}
+
+%Angular momentum general definition on fixed point and/or center of gravity \LF[R]{A}{S} :
+\newcommand{\LF}[3][R]{\Inertia[#1]{#2}{#3} \cdot \Rotation[#1]{#3}}
+
+%Transport inertia tensor from G to A \Ip[S]{G}{A} :
+\newcommand{\Ip}[3][S]{\overline{\overline{I}}_{\Vct{#3 #2}}(#1)}
+
+%Huygens formula \Huygens[R]{G}{A}{S} :
+\newcommand{\Huygens}[4][R]{\Inertia[#1]{#3}{#4}=\Inertia[#1]{#2}{#4}+ \Ip[#4]{#2}{#3}}
+
+%Standard inertia tensor explicit expression \InertiaE[R]{A}{S} :
+\newcommand{\InertiaE}[3][R]{\begin{Bmatrix}
+A_{#3} & -D_{#3} & -E_{#3} \\ 
+-D_{#3} & B_{#3} & -F_{#3} \\ 
+-E_{#3} & -F_{#3} & C_{#3}
+\end{Bmatrix}_{ (#3 / #1) }}
+
+%################################### C-Dynamics :
+
+%Acceleration vector definition \Acc[R]{A}{S} :
+\newcommand{\Acc}[3][R]{\Vct{\Gamma}_{#2\in #3/#1}}
+
+%Acceleration vector differential definition \Accd[R]{A}{S} :
+\newcommand{\Accd}[3][R]{\Dex[#1]{\Vel[#1]{#2}{#3}}}
+
+%Coriolis acceleration vector \Coriolis{R_0}{R_1}{A}{S} :
+\newcommand{\Coriolis}[4]{2\Rotation[#1]{#2}\times\Vel[#2]{#3}{#4}}
+
+%Transport acceleration vector \Entr{R_0}{R_1}{O}{A} :
+\newcommand{\Entr}[4]{\Acc[#1]{#3}{#2}+\Rotation[#1]{#2}\times(\Rotation[#1]{#2}\times \Vct{#3 #4})+\Dex[#1]{\Rotation[#1]{#2}}\times\Vct{#3 #4}}
+
+%Acceleration momentum vector definition \Am[R]{S} :
+\newcommand{\Am}[2][R]{\Vct{d}_{#2/#1}}
+
+%Acceleration momentum vector 2nd definition \Amg[R]{S} :
+\newcommand{\Amg}[2][R]{m_{#2}\Acc[#1]{G}{#2}}
+
+%Dynamic momentum integral def \IDelta[R]{A}{S}:
+\newcommand{\IDelta}[3][R]{\int_{M \in {#3}}\Vct{#2 M}\times \Acc[#1]{M}{#3} dm}
+
+%Dynamic momentum definition \ADelta[R]{A}{S} :
+\newcommand{\ADelta}[3][R]{\Vct{\delta}_{#2, #3/#1}}
+
+%Transport formula for dynamic momenta \VARD[R]{A}{B}{S} :
+\newcommand{\VARD}[4][R]{\ADelta[#1]{#3}{#4}=\ADelta[#1]{#2}{#4}+\Am[#1]{#4}\times\Vct{#2 #3}}
+
+%Alternate transport formula for dynamic momenta \AARD[R]{A}{B}{S} :
+\newcommand{\AVARD}[4][R]{\ADelta[#1]{#3}{#4}=\ADelta[#1]{#2}{#4}+\Amg[#1]{#4}\times\Vct{#2 #3}}
+
+%Dynamic momentum general expression \EDelta[R]{A}{S} :
+\newcommand{\EDelta}[3][R]{\Dex[#1]{\Lm[#1]{#2}{#3}}+m_{#3}\Vct{v}_{#2/#1}\times\Vct{v}_{G/#1}}
+
+%Dynamic momentum general expression for fixed point or center of gravity \FDelta[R]{G}{S} :
+\newcommand{\FDelta}[3][R]{\Dex[#1]{\Lm[#1]{#2}{#3}}}
+
+%################################### D-Screw field representation :
+
+%Kinematic screw field on a point \Ktor[R]{A}{S}:
+\newcommand{\Ktor}[3][R]{\begin{Bmatrix}
+\mathscr{V}_{({#3}/{#1})}
+\end{Bmatrix}=
+\begin{Bmatrix}
+\Rotation[#3]{#1} \\ 
+\Vel[#1]{#2}{#3}
+\end{Bmatrix}_{#2}}
+
+%Explicit kinematic screw field for a support \EKtor[R]{A}{S} :
+\newcommand{\EKtor}[3][R]{\begin{Bmatrix}
+\mathscr{V}_{({#3}/{#1})}
+\end{Bmatrix}=
+\begin{Bmatrix}
+\omega_{x,({#3}/{#1})} & v_{x,(#2\in #3/#1)} \\ 
+\omega_{y,({#3}/{#1})} & v_{y,(#2\in #3/#1)} \\ 
+\omega_{z,({#3}/{#1})} & v_{z,(#2\in #3/#1)}
+\end{Bmatrix}_{#2}}
+
+%Static screw field on a point \Stor[S]{Ext}{A}:
+\newcommand{\Stor}[3][S]{\begin{Bmatrix}
+\mathscr{T}_{({#2}\rightarrow{#1})}
+\end{Bmatrix}=
+\begin{Bmatrix}
+\Force[#1]{#2} \\ 
+\Moment[#1]{#2}{#3}
+\end{Bmatrix}_{#3}}
+
+%Kinetic screw field on a point \Ctor[R]{A}{S}:
+\newcommand{\Ctor}[3][R]{\begin{Bmatrix}
+\mathscr{C}_{({#3}/{#1})}
+\end{Bmatrix}=
+\begin{Bmatrix}
+\Psr[#3]{#1} \\ 
+\Lm[#1]{#2}{#3}
+\end{Bmatrix}_{#2}}
+
+%Dynamic screw field on a point \Dtor[R]{A}{S}:
+\newcommand{\Dtor}[3][R]{\begin{Bmatrix}
+\mathscr{D}_{({#3}/{#1})}
+\end{Bmatrix}=
+\begin{Bmatrix}
+\Am[#3]{#1} \\ 
+\ADelta[#1]{#2}{#3}
+\end{Bmatrix}_{#2}}
+
+%Explicit static screw field for a support \Ltor{S_1}{S_2}{A} :
+\newcommand{\Ltor}[3]{\begin{Bmatrix}
+\mathscr{L}_{({#1}\rightarrow{#2})}
+\end{Bmatrix}=
+\begin{Bmatrix}
+X_{({#1}\rightarrow{#2})} & L_{({#1}\rightarrow{#2})} \\ 
+Y_{({#1}\rightarrow{#2})} & M_{({#1}\rightarrow{#2})} \\ 
+Z_{({#1}\rightarrow{#2})} & N_{({#1}\rightarrow{#2})}
+\end{Bmatrix}_{#3}}
+
+%Explicit static screw field for a planar support \Lptor{S_1}{S_2}{A} :
+\newcommand{\Lptor}[3]{\begin{Bmatrix}
+\mathscr{L}_{({#1}\rightarrow{#2})}
+\end{Bmatrix}=
+\begin{Bmatrix}
+X_{({#1}\rightarrow{#2})} & 0 \\ 
+Y_{({#1}\rightarrow{#2})} & 0 \\ 
+0 & M_{({#1}\rightarrow{#2})}
+\end{Bmatrix}_{#3}}
+
+%Empty screw field template on a point \Ftor[S/R]{W}{A}{B}{O}:
+\newcommand{\Ftor}[5][Ref]{\begin{Bmatrix}
+\mathscr{#2}_{#1}
+\end{Bmatrix}=
+\begin{Bmatrix}
+{#3} \\ 
+{#4}
+\end{Bmatrix}_{#5}}
+
+%Empty explicit screw field template on a point \LFtor[S/R]{W}{X}{Y}{Z}{X}{Y}{Z}{0}:
+\newcommand{\LFtor}[9][Ref]{\begin{Bmatrix}
+\mathscr{#2}_{#1}
+\end{Bmatrix}=
+\begin{Bmatrix}
+{#3} & {#6} \\ 
+{#4} & {#7} \\ 
+{#5} & {#8}
+\end{Bmatrix}_{#9}}
+
+%################################### E-Energy and power :
+
+%Power delivered from ext to S \Pow[R]{S}{Ext} :
+\newcommand{\Pow}[3][R]{P_{(#3 \rightarrow #2/#1)}}
+
+%Power delivered from ext to S, screw expression \Ptor[R]{S}{Ext} :
+\newcommand{\Ptor}[3][R]{\begin{Bmatrix}
+\mathscr{T}_{({#3}\rightarrow{#2})}
+\end{Bmatrix} \otimes \begin{Bmatrix}
+\mathscr{V}_{({#2}/{#1})}
+\end{Bmatrix}}
+
+%Power delivered from ext to S, explicit expression \Power[R]{A}{S}{Ext} :
+\newcommand{\Power}[4][R]{\Force[#3]{#4}\cdot\Vel[#1]{#2}{#3} + \Gmoment{\Force[#3]{#4}}{#2}\cdot \Rotation[#1]{#3}}
+
+%Power delivered from ext to S, integral expression \IPow[R]{S}{f} :
+\newcommand{\IPow}[3][R]{\int_{M \in #2} \Vct{#3}(M)\cdot \Vel[#1]{M}{#2} dm}
+
+%Internal support power \LPow{S_1}{S_2} :
+\newcommand{\LPow}[2]{P_{(#1 \leftrightarrow  #2)}}
+
+%Internal support power, screw definition \PLtor{S_1}{S_2} :
+\newcommand{\PLtor}[2]{\begin{Bmatrix}
+\mathscr{T}_{({#1}\rightarrow{#2})}
+\end{Bmatrix} \otimes \begin{Bmatrix}
+\mathscr{V}_{({#2}/{#1})}
+\end{Bmatrix}}
+
+%Kinetic energy, integral expression \KE[R]{S}:
+\newcommand{\KE}[2][R]{ \frac{1}{2}\int_{M \in #2} \Vel[#1]{M}{#2}^{2}dm }
+
+%Kinetic energy, screw expression \KEtor[R]{S}:
+\newcommand{\KEtor}[2][R]{\frac{1}{2} \begin{Bmatrix}
+\mathscr{C}_{(#2 / #1)}
+\end{Bmatrix} \otimes \begin{Bmatrix}
+\mathscr{V}_{(#2 / #1)}
+\end{Bmatrix}}
+
+%Kinetic energy, translation only \KineticT[R]{A}{S}:
+\newcommand{\KineticT}[3][R]{\frac{1}{2}m_{#3}\Vel[#1]{#2}{#3}^{2}}
+
+%Kinetic energy, rotation about center only \KineticR[R]{C}{S}:
+\newcommand{\KineticR}[3][R]{\frac{1}{2}\Rotation[#1]{#3} \cdot (\Inertia[#1]{#2}{#3} \cdot \Rotation[#1]{#3})}
+
+%Kinetic energy, general expression \Kinetic[R]{A}{S}:
+\newcommand{\Kinetic}[3][R]{\KineticT[#1]{#2}{#3} + \KineticR[#1]{#2}{#3} + m_{#3} \Rotation[#1]{#3} \cdot( \Vct{#2 G} \times \Vel[#1]{#2}{#3}) }
+
+%Kinetic energy written in G \KineticG[R]{S}:
+\newcommand{\KineticG}[2][R]{\KineticT[#1]{G}{#2} + \KineticR[#1]{G}{#2}}
+
+\endinput

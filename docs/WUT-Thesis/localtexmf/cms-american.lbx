@@ -1,0 +1,1043 @@
+\ProvidesFile{cms-american.lbx}[2021/06/30 v 3.16 biblatex localization]
+
+\InheritBibliographyExtras{american}
+
+\DeclareBibliographyExtras{%
+  \savecommand\mkdaterangecomp%
+  \savecommand\mkdaterangeterse%
+  \savecommand\mkdaterangefull%
+  \savecommand\mkdaterangecompextra%
+  \savecommand\mkdaterangeterseextra%
+  \savecommand\mkdaterangefullextra%
+  \savecommand\cms@cicpunct%
+  \def\cms@cicpunct{\ifcitation{}{\addperiod\printunit{\space\bibsentence}}}%
+  \def\introductionname{Introduction}%
+  \def\sectionname{Section}%
+  \def\subsectionname{Subsection}%
+  \def\forewordname{Foreword}%
+  \def\notesname{Notes}%
+  \protected\def\mkjuridordinal#1{%
+    \begingroup
+    \@tempcnta0#1\relax\number\@tempcnta
+    \@whilenum\@tempcnta>100\do{\advance\@tempcnta-100\relax}%
+    \ifnum\@tempcnta>20
+    \@whilenum\@tempcnta>9\do{\advance\@tempcnta-10\relax}%
+    \fi
+    \ifcase\@tempcnta th\or st\or d\or d\else th\fi
+    \endgroup}%
+  \protected\def\mkbibdatelong#1#2#3{%
+    \iffieldundef{#2}
+    {}
+    {\mkbibmonth{\thefield{#2}}%
+      \iffieldundef{#3}
+      {\iffieldundef{#1}{}{\space}}
+      {\nobreakspace}}%
+    \iffieldundef{#3}
+    {}
+    {\stripzeros{\thefield{#3}}%
+      \iffieldundef{#1}{}{,\space}}%
+    \iffieldbibstring{#1}
+    {\bibstring{\thefield{#1}}}
+    {\cmsdateeraprintpre{#1}\stripzeros{\thefield{#1}}}}%
+  \protected\def\mkbibdateshort#1#2#3{%
+    \iffieldundef{#2}
+    {}
+    {\mkmonthzeros{\thefield{#2}}%
+      \iffieldundef{#3}
+      {\iffieldundef{#1}{}{/}}
+      {/}}%
+    \iffieldundef{#3}
+    {}
+    {\mkdayzeros{\thefield{#3}}%
+      \iffieldundef{#1}{}{/}}%
+    \iffieldbibstring{#1}
+    {\bibstring{\thefield{#1}}}
+    {\cmsdateeraprintpre{#1}\mkyearzeros{\thefield{#1}}}}%
+  \protected\def\mkbibseasondateshort#1#2{%
+    \mkbibseason{\thefield{#2}}%
+    \iffieldundef{#1}{}{\space}%
+    \cmsdateeraprintpre{#1}\mkyearzeros{\thefield{#1}}}%
+  \protected\def\mkbibseasondatelong#1#2{%
+    \mkbibseason{\thefield{#2}}%
+    \iffieldundef{#1}{}{\space}%
+    \cmsdateeraprintpre{#1}\mkyearzeros{\thefield{#1}}}%
+  \protected\def\cmsmkdecade#1#2{%
+    \cms@tempcnta=\thefield{#2year}%
+    \divide\cms@tempcnta100
+    \multiply\cms@tempcnta100
+    \ifnumequal{\cms@tempcnta}{\thefield{#2year}}%
+    {\csuse{mkbibdate#1}{#2year}{}{}\cmsdateeraprint{#2year}}%
+    {\ifnumequal{\thefield{#2year}}{1}%
+      {\ifboolexpr{%
+          test {\ifdefstring\blx@dateera{christian}}%
+          and
+          test {\ifnumless{\thefield{#2year}}\blx@dateeraauto}%
+        }%
+        {\bibsstring{\blx@dateera@ce}\printdelim{dateeradelim}}%
+        {}}%
+      {}%
+      \csuse{mkbibdate#1}{#2year}{}{}%
+      \setunit{}%\blx@nounit%
+      \bibsstring{decade}%
+      \cmsdateeraprint{#2endyear}\clearfield{#2endyear}%
+      \usebibmacro{cmsparensextradate}%
+      \global\boolfalse{cms:extraparens}}}%
+  \protected\def\cmsmkcentury#1{%
+    \ifnumequal{\thefield{#1year}}{1}%
+    {\ifboolexpr{%
+        test {\ifdefstring\blx@dateera{christian}}%
+        and
+        test {\ifnumless{\thefield{#1year}}\blx@dateeraauto}%
+      }%
+      {\bibsstring{\blx@dateera@ce}\printdelim{dateeradelim}}%
+      {}%
+      \csuse{mkcmscentury}{#1year}%
+      \addnbspace%
+      \bibsstring{century}%
+      \cmsdateeraprint{#1endyear}\clearfield{#1endyear}%
+      \usebibmacro{cmsparensextradate}%
+      \global\boolfalse{cms:extraparens}}%
+    {\cmsdateeraprintpre{#1year}%
+      \csuse{mkcmscentury}{#1year}%
+      \addnbspace%
+      \bibsstring{century}%
+      \cmsdateeraprint{#1endyear}\clearfield{#1endyear}%
+      \usebibmacro{cmsparensextradate}%
+      \global\boolfalse{cms:extraparens}}}%
+  \protected\def\mkcmscentury#1{%
+    \cms@tempcnta=\numexpr\thefield{#1}/100+1%
+    \mkbibordinal{\the\cms@tempcnta}}%
+  \protected\def\mkdaterangecomp{%
+    \lbx@cms@mkbibrangetrunc@long{long}}%
+  \protected\def\mkdaterangeterse{%
+    \lbx@cms@mkbibrangetrunc@short{short}}%
+  \protected\def\mkdaterangefull{%
+    \lbx@cms@mkbibrangefull@us}%
+  \protected\def\mkdaterangecompextra{%
+    \cms@mkyearrangeextra[]{long}}%
+  \protected\def\mkdaterangeterseextra{%
+    \cms@mkyearrangeextra[]{short}}%
+  \protected\def\mkdaterangefullextra{%
+    \cms@mkyearrangeextra[1]}}%
+
+\UndeclareBibliographyExtras{%
+  \restorecommand\mkdaterangecomp%
+  \restorecommand\mkdaterangeterse%
+  \restorecommand\mkdaterangefull%
+  \restorecommand\mkdaterangecompextra%
+  \restorecommand\mkdaterangeterseextra%
+  \restorecommand\mkdaterangefullextra%
+  \restorecommand\cms@cicpunct%
+}
+
+\DeclareBibliographyStrings{%
+  inherit = {english},
+  afterwordto = {{afterword to}{afterw\adddotspace to}},
+  forewordto = {{foreword to}{forew\adddotspace to}},
+  introductionto = {{introduction to}{intro\adddotspace to}},
+  partvolume = {{bk\adddot}{bk\adddot}},
+  by = {{by}{by}},
+  of = {{of}{of}},
+  on = {{on}{on}},
+  compiler = {{comp\adddot}{comp\adddot}},
+  compilers = {{comps\adddot}{comps\adddot}},
+  transcompiler = {{trans\adddotspace and comp\adddot}%
+    {trans\adddotspace and comp\adddot}},
+  transcompilers = {{trans\adddotspace and comps\adddot}%
+    {trans\adddotspace and comps\adddot}},
+  editortranscompiler = {{ed\adddot\addcomma\addspace
+      trans\adddot\addcomma\addspace and comp\adddot}%
+    {ed\adddot\addcomma\addspace
+      trans\adddot\addcomma\addspace and comp\adddot}},
+  editorcompiler = {{ed\adddotspace and comp\adddot}%
+    {ed\adddotspace and comp\adddot}},
+  editortranslator = {{ed\adddotspace and trans\adddot}%
+    {ed\adddotspace and trans\adddot}},
+  editortranscompilers = {{eds\adddot\addcomma\addspace
+      trans\adddot\addcomma\addspace and comps\adddot}%
+    {eds\adddot\addcomma\addspace
+      trans\adddot\addcomma\addspace and comps\adddot}},
+  editorcompilers = {{eds\adddotspace and comps\adddot}%
+    {eds\adddotspace and comps\adddot}},
+  editortranslators = {{eds\adddotspace and trans\adddot}%
+    {eds\adddotspace and trans\adddot}},
+  conductor = {{dir\adddot}{dir\adddot}},
+  conductors = {{dirs\adddot}{dirs\adddot}},
+  director = {{dir\adddot}{dir\adddot}},
+  directors = {{dirs\adddot}{dirs\adddot}},
+  none = {{}{}},
+  nones = {{}{}},
+  producer = {{prod\adddot}{prod\adddot}},
+  producers = {{prods\adddot}{prods\adddot}},
+  editor = {{ed\adddot}{ed\adddot}},
+  editors = {{eds\adddot}{eds\adddot}},
+  choreographer = {{chor\adddot}{chor\adddot}},
+  choreographers = {{chors\adddot}{chors\adddot}},
+  ibidem = {{ibid\adddot}{id\adddot}},% Shorter for legal
+  origpub = {{originally published as\addspace}%
+    {orig\adddot\ pub\adddot\ as\addspace}},
+  origpubin = {{first published}%
+    {first pub\adddot}},
+  origpublin = {{originally published in\addspace}%
+    {orig\adddot\ pub\adddotspace in\addspace}},
+  origpubyear = {{originally published in\addspace}%
+    {orig\adddot\ pub\adddotspace}},
+  origpubyearalt = {{first published\addspace}%
+    {first pub\adddotspace}},
+  origreleaseyear = {{originally released in\addspace}%
+    {orig\adddot\ released\addspace}},
+  origshownyear = {{originally shown in\addspace}%
+    {orig\adddot\ shown\addspace}},
+  origedition ={{edition\addcolon\addspace}%
+    {ed\adddot\addcolon\addspace}},
+  revisededition = {{rev\adddotspace ed\adddot}%
+    {rev\adddotspace ed\adddot}},
+  broadcast = {{aired}{aired}},
+  songrecorded = {{recorded}{recorded}},
+  discrecorded = {{recorded}{recorded}},
+  numbers = {{nos\adddot}{nos\adddot}},
+  nodate = {{{}n\adddot d\adddot}{{}n\adddot d\adddot}},
+  % commonera        = {{CE}{CE}},
+  % beforecommonera  = {{BCE}{BCE}},
+  % annodomini       = {{AD}{AD}},
+  % beforechrist     = {{BC}{BC}},
+%  circa            = {{ca\adddot}{ca\adddot}},
+  am = {{a\adddot m\adddot}{a\adddot m\adddot}},
+  pm = {{p\adddot m\adddot}{p\adddot m\adddot}},
+  decade = {{s}{s}},
+  century = {{century}{c\adddot}},
+  pseudonym = {{pseud\adddot}{pseud\adddot}},
+  patentfiled = {{filed}{filed}},
+  patentissued = {{issued}{issued}},
+  inlang = {{in\addspace}{in\addspace}},
+  edamerican     = {{American}{American}},
+  edbrazilian    = {{Brazilian}{Brazilian}},
+  edbulgarian    = {{Bulgarian}{Bulgarian}},
+  edcatalan      = {{Catalan}{Catalan}},
+  edcroatian     = {{Croatian}{Croatian}},
+  edczech        = {{Czech}{Czech}},
+  eddanish       = {{Danish}{Danish}},
+  eddutch        = {{Dutch}{Dutch}},
+  edenglish      = {{English}{English}},
+  edestonian     = {{Estonian}{Estonian}},
+  edfinnish      = {{Finnish}{Finnish}},
+  edfrench       = {{French}{French}},
+  edgalician     = {{Galician}{Galician}},
+  edgerman       = {{German}{German}},
+  edgreek        = {{Greek}{Greek}},
+  editalian      = {{Italian}{Italian}},
+  edjapanese     = {{Japanese}{Japanese}},
+  edlatin        = {{Latin}{Latin}},
+  ednorwegian    = {{Norwegian}{Norwegian}},
+  edportuguese   = {{Portuguese}{Portuguese}},
+  edrussian      = {{Russian}{Russian}},
+  edslovak       = {{Slovak}{Slovak}},
+  edslovene      = {{Slovene}{Slovene}},
+  edspanish      = {{Spanish}{Spanish}},
+  edswedish      = {{Swedish}{Swedish}},
+  edukrainian    = {{Ukrainian}{Ukrainian}},
+  translator = {{trans\adddot}{trans\adddot}},
+  translators = {{trans\adddot}{trans\adddot}},
+  redactor = {{red\adddot}{red\adddot}},
+  redactors = {{reds\adddot}{reds\adddot}},
+  founder          = {{found\adddot}{found\adddot}},
+  founders         = {{found\adddot}{found\adddot}},
+  continuator      = {{cont\adddot}{cont\adddot}}, % ?
+  continuators     = {{cont\adddot}{cont\adddot}}, % ?
+  collaborator     = {{collab\adddot}{collab\adddot}},  % ?
+  collaborators    = {{collab\adddot}{collab\adddot}}, % ?
+  annotator        = {{annot\adddot}{annot\adddot}},
+  annotators       = {{annot\adddot}{annot\adddot}},
+  review = {{review}{review}},
+  reviewof = {{review of}{review of}},
+  commenton = {{comment on}{comment on}},
+  reprint = {{reprint}{repr\adddot}},
+  printed = {{printed}{printed}},% 17th ed.
+  selfpublished = {{self-published}{self-pub\adddot}},
+  shorthands = {{Abbreviations}{Abbreviations}},
+  newseries = {{n\adddot s\adddot}{n\adddot s\adddot}},
+  urlseen = {{accessed}{accessed}},
+  cbynone = {{}{}},
+  cbyauthor = {{by}{by}},
+  cbyeditor = {{ed\adddot}{ed\adddot}},
+  cbytranslator     = {{trans\adddotspace\lbx@cfromlang}%
+    {trans\adddotspace\lbx@cfromlang}},
+  cbycompiler = {{comp\adddot}{comp\adddot}},
+  cbyredactor = {{red\adddot}{red\adddot}},
+  cbycommentator = {{comm\adddot}{comm\adddot}},
+  cbyannotator = {{annot\adddot}{annot\adddot}},
+  cbyfounder        = {{found\adddot}{found\adddot}},
+  cbycontinuator    = {{cont\adddot}{cont\adddot}},
+  cbycollaborator   = {{in collab\adddotspace with}%
+    {in collab\adddotspace with}},
+  cbyconductor = {{dir\adddot}{dir\adddot}},
+  cbydirector = {{dir\adddot}{dir\adddot}},
+  cbyproducer = {{prod\adddot}{prod\adddot}},
+  cbychoreographer = {{chor\adddot}{chor\adddot}},
+  cbyeditortr    = {{ed\adddotspace and
+      trans\adddotspace\lbx@cfromlang}%
+    {ed\adddotspace and trans\adddotspace\lbx@cfromlang}},
+  cbyeditorcp = {{ed\adddotspace and comp\adddot}%
+    {ed\adddotspace and comp\adddot}},
+  cbyeditorco    = {{ed\adddotspace and comm\adddot}%
+    {ed\adddotspace and comm\adddot}},
+  cbyeditoran = {{ed\adddotspace and annot\adddot}%
+    {ed\adddotspace and annot\adddot}},
+  cbyeditorin = {{ed.,\addabbrvspace with an introduction, by}%
+    {ed.,\addabbrvspace with an introd.,\addabbrvspace by}},
+  cbyeditorfo = {{ed.,\addabbrvspace with a foreword, by}%
+    {ed.,\addabbrvspace with a forew.,\addabbrvspace by}},
+  cbyeditoraf = {{ed.,\addabbrvspace with an afterword, by}%
+    {ed.,\addabbrvspace with an afterw.,\addabbrvspace by}},
+  cbyeditortrcp = {{ed.,\addabbrvspace trans\adddotspace\lbx@fromlang, and
+      comp\adddot}%
+    {ed.,\addabbrvspace trans\adddotspace\lbx@fromlang, and comp\adddot}},
+  cbyeditortrco = {{ed.,\addabbrvspace
+    trans\adddotspace\lbx@fromlang\finalandcomma\space and
+    comm\adddot}%
+  {ed.,\addabbrvspace
+    trans\adddotspace\lbx@fromlang\finalandcomma\space and comm\adddot}},
+  cbyeditortran = {{ed.,\addabbrvspace
+    trans\adddotspace\lbx@fromlang\finalandcomma\space and
+    annot\adddot}%
+  {ed.,\addabbrvspace
+    trans\adddotspace\lbx@fromlang\finalandcomma\space and annot\adddot}},
+  cbyeditortrin = {{ed\adddotspace and trans\adddotspace\lbx@fromlang, with
+      an introduction, by}%
+    {ed\adddotspace and trans\adddotspace\lbx@fromlang, with
+      an introd.,\addabbrvspace by}},
+  cbyeditortrfo = {{ed\adddotspace and trans\adddotspace\lbx@fromlang, with
+      a foreword, by}%
+    {ed\adddotspace and trans\adddotspace\lbx@fromlang, with
+      a forew.,\addabbrvspace by}},
+  cbyeditortraf = {{ed\adddotspace and trans\adddotspace \lbx@fromlang, with
+      an afterword, by}%
+    {ed\adddotspace and trans\adddotspace \lbx@fromlang, with
+      an afterw.,\addabbrvspace by}},
+  cbyeditorcpco = {{ed.,\addabbrvspace comp., and comm\adddot}%
+    {ed.,\addabbrvspace comp., and comm\adddot}},
+  cbyeditorcpan = {{ed.,\addabbrvspace comp., and annot\adddot}%
+    {ed.,\addabbrvspace comp., and annot\adddot}},
+  cbyeditorcpin = {{ed\adddotspace and comp., with an introduction
+      by}%
+    {ed\adddotspace and comp., with an introd.,\addabbrvspace by}},
+  cbyeditorcpfo = {{ed\adddotspace and comp., with a foreword, by}%
+    {ed\adddotspace and comp., with a forew.,\addabbrvspace by}},
+  cbyeditorcpaf = {{ed\adddotspace and comp., with an afterword, by}%
+    {ed\adddotspace and comp., with an afterw.,\addabbrvspace by}},
+  cbyeditorcpcoin = {{ed.,\addabbrvspace comp., and comm., with an
+      introduction, by}%
+    {ed.,\addabbrvspace comp., and comm., with an introd.,\addabbrvspace by}},
+  cbyeditorcpcofo = {{ed.,\addabbrvspace comp., and comm., with a
+      foreword, by}%
+    {ed.,\addabbrvspace comp., and comm., with a forew.,\addabbrvspace by}},
+  cbyeditorcpcoaf = {{ed.,\addabbrvspace comp., and comm., with an
+      afterword, by}%
+    {ed.,\addabbrvspace comp., and comm., with an afterw.,\addabbrvspace by}},
+  cbyeditorcpanin = {{ed.,\addabbrvspace comp., and annot., with an
+      introduction, by}%
+    {ed.,\addabbrvspace comp., and annot., with an introd.,\addabbrvspace by}},
+  cbyeditorcpanfo = {{ed.,\addabbrvspace comp., and annot., with a
+      foreword, by}%
+    {ed.,\addabbrvspace comp., and annot., with a forew.,\addabbrvspace by}},
+  cbyeditorcpanaf = {{ed.,\addabbrvspace comp., and annot., with an
+      afterword, by}%
+    {ed.,\addabbrvspace comp., and annot., with an afterw.,\addabbrvspace by}},
+  cbyeditortrcpco = {{ed.,\addabbrvspace trans\adddotspace\lbx@fromlang,
+      comp., and comm\adddot}%
+    {ed.,\addabbrvspace trans\adddotspace\lbx@fromlang, comp.,
+      and comm\adddot}},
+  cbyeditortrcpan = {{ed.,\addabbrvspace trans\adddotspace\lbx@fromlang,
+      comp., and annot\adddot}%
+    {ed.,\addabbrvspace trans\adddotspace\lbx@fromlang, comp.,
+      and annot\adddot}},
+  cbyeditortrcpin = {{ed.,\addabbrvspace trans\adddotspace\lbx@fromlang, and
+      comp., with an introduction, by}%
+    {ed.,\addabbrvspace trans\adddotspace\lbx@fromlang, and comp.,
+      with an introd.,\addabbrvspace by}},
+  cbyeditortrcpfo = {{ed.,\addabbrvspace trans\adddotspace\lbx@fromlang, and
+      comp., with a foreword, by}%
+    {ed.,\addabbrvspace trans\adddotspace\lbx@fromlang, and comp.,
+      with a forew.,\addabbrvspace by}},
+  cbyeditortrcpaf = {{ed.,\addabbrvspace trans\adddotspace\lbx@fromlang, and
+      comp., with an afterword, by}%
+    {ed.,\addabbrvspace trans\adddotspace\lbx@fromlang, and comp.,
+      with an afterw.,\addabbrvspace by}},
+  cbyeditortrcpcoin = {{ed.,\addabbrvspace trans\adddotspace\lbx@fromlang,
+      comp., and comm., with an introduction, by}%
+    {ed.,\addabbrvspace trans\adddotspace\lbx@fromlang, comp.,
+      and comm., with an introd.,\addabbrvspace by}},
+  cbyeditortrcpcofo = {{ed.,\addabbrvspace trans\adddotspace\lbx@fromlang,
+      comp., and comm., with a foreword, by}%
+    {ed.,\addabbrvspace trans\adddotspace\lbx@fromlang, comp.,
+      and comm., with a forew.,\addabbrvspace by}},
+  cbyeditortrcpcoaf = {{ed.,\addabbrvspace trans\adddotspace\lbx@fromlang,
+      comp., and comm., with an afterword, by}%
+    {ed.,\addabbrvspace trans\adddotspace\lbx@fromlang, comp.,
+      and comm., with an afterw.,\addabbrvspace by}},
+  cbyeditortrcpanin = {{ed.,\addabbrvspace trans\adddotspace\lbx@fromlang,
+      comp., and annot., with an introduction, by}%
+    {ed.,\addabbrvspace trans\adddotspace\lbx@fromlang, comp.,
+      and annot., with an introd.,\addabbrvspace by}},
+  cbyeditortrcpanfo = {{ed.,\addabbrvspace trans\adddotspace\lbx@fromlang,
+      comp., and annot., with a foreword, by}%
+    {ed.,\addabbrvspace trans\adddotspace\lbx@fromlang, comp.,
+      and annot., with a forew.,\addabbrvspace by}},
+  cbyeditortrcpanaf = {{ed.,\addabbrvspace trans\adddotspace\lbx@fromlang,
+      comp., and annot., with an afterword, by}%
+    {ed.,\addabbrvspace trans\adddotspace\lbx@fromlang, comp.,
+      and annot., with an afterw.,\addabbrvspace by}},
+  cbyeditorcoin = {{ed\adddotspace and comm., with an introduction, by}%
+    {ed\adddotspace and comm., with an introd.,\addabbrvspace by}},
+  cbyeditorcofo = {{ed\adddotspace and comm., with a foreword, by}%
+    {ed\adddotspace and comm., with a forew.,\addabbrvspace by}},
+  cbyeditorcoaf = {{ed\adddotspace and comm., with an afterword, by}%
+    {ed\adddotspace and comm., with an afterw.,\addabbrvspace by}},
+  cbyeditoranin = {{ed\adddotspace and annot., with an introduction, by}%
+    {ed\adddotspace and annot., with an introd.,\addabbrvspace by}},
+  cbyeditoranfo = {{ed\adddotspace and annot., with a foreword, by}%
+    {ed\adddotspace and annot., with a forew.,\addabbrvspace by}},
+  cbyeditoranaf = {{ed\adddotspace and annot., with an afterword, by}%
+    {ed\adddotspace and annot., with an afterw.,\addabbrvspace by}},
+  cbyeditortrcoin = {{ed.,\addabbrvspace
+    trans\adddotspace\lbx@fromlang\finalandcomma\space and comm., with
+    an introduction, by}%
+  {ed.,\addabbrvspace
+    trans\adddotspace\lbx@fromlang\finalandcomma\space and comm., with
+    an introd.,\addabbrvspace by}},
+  cbyeditortrcofo = {{ed.,\addabbrvspace
+    trans\adddotspace\lbx@fromlang\finalandcomma\space and comm., with
+    a foreword, by}%
+  {ed.,\addabbrvspace
+    trans\adddotspace\lbx@fromlang\finalandcomma\space and comm., with
+    a forew.,\addabbrvspace by}},
+  cbyeditortrcoaf = {{ed.,\addabbrvspace
+    trans\adddotspace\lbx@fromlang\finalandcomma\space and comm., with
+    an afterword, by}%
+  {ed.,\addabbrvspace
+    trans\adddotspace\lbx@fromlang\finalandcomma\space and comm., with
+    an afterw.,\addabbrvspace by}},
+  cbyeditortranin = {{ed.,\addabbrvspace
+    trans\adddotspace\lbx@fromlang\finalandcomma\space and annot., with
+    an introduction, by}%
+  {ed.,\addabbrvspace
+    trans\adddotspace\lbx@fromlang\finalandcomma\space and annot., with
+    an introd.,\addabbrvspace by}},
+  cbyeditortranfo = {{ed.,\addabbrvspace
+    trans\adddotspace\lbx@fromlang\finalandcomma\space and annot., with
+    a foreword, by}%
+  {ed.,\addabbrvspace
+    trans\adddotspace\lbx@fromlang\finalandcomma\space and annot., with
+    a forew.,\addabbrvspace by}},
+  cbyeditortranaf = {{ed.,\addabbrvspace
+    trans\adddotspace\lbx@fromlang\finalandcomma\space and annot., with
+    an afterword, by}%
+  {ed.,\addabbrvspace
+    trans\adddotspace\lbx@fromlang\finalandcomma\space and annot., with
+    an afterw.,\addabbrvspace by}},
+  cbytranslatorcp = {{trans\adddotspace\lbx@fromlang\ and comp\adddot}%
+    {trans\adddotspace\lbx@fromlang\ and comp\adddot}},
+  cbytranslatorco = {{trans\adddotspace\lbx@fromlang\ and comm\adddot}%
+    {trans\adddotspace\lbx@fromlang\ and comm\adddot}},
+  cbytranslatoran = {{trans\adddotspace\lbx@fromlang\ and annot\adddot}%
+    {trans\adddotspace\lbx@fromlang\ and annot\adddot}},
+  cbytranslatorin = {{trans\adddotspace\lbx@fromlang, with an
+      introduction, by}%
+    {trans\adddotspace\lbx@fromlang, with an introd.,\addabbrvspace by}},
+  cbytranslatorfo = {{trans\adddotspace\lbx@fromlang, with a
+      foreword, by}%
+    {trans\adddotspace\lbx@fromlang, with a forew.,\addabbrvspace by}},
+  cbytranslatoraf = {{trans\adddotspace\lbx@fromlang, with an
+      afterword, by}%
+    {trans\adddotspace\lbx@fromlang, with an afterw.,\addabbrvspace by}},
+  cbytranslatorcoin = {{trans\adddotspace\lbx@fromlang\ and comm.,
+      with an introduction, by}%
+    {trans\adddotspace\lbx@fromlang\ and comm., with an
+      introd.,\addabbrvspace by}},
+  cbytranslatorcofo = {{trans\adddotspace\lbx@fromlang\ and comm.,
+      with a foreword, by}%
+    {trans\adddotspace\lbx@fromlang\ and comm., with a
+      forew.,\addabbrvspace by}},
+  cbytranslatorcoaf = {{trans\adddotspace\lbx@fromlang\ and comm.,
+      with an afterword, by}%
+    {trans\adddotspace\lbx@fromlang\ and comm., with an
+      afterw.,\addabbrvspace by}},
+  cbytranslatoranin = {{trans\adddotspace\lbx@fromlang\ and annot.,
+      with an introduction, by}%
+    {trans\adddotspace\lbx@fromlang\ and annot., with an
+      introd.,\addabbrvspace by}},
+  cbytranslatoranfo = {{trans\adddotspace\lbx@fromlang\ and annot.,
+      with a foreword, by}%
+    {trans\adddotspace\lbx@fromlang\ and annot., with a
+      forew.,\addabbrvspace by}},
+  cbytranslatoranaf = {{trans\adddotspace\lbx@fromlang\ and annot.,
+      with an afterword, by}%
+    {trans\adddotspace\lbx@fromlang\ and annot., with an
+      afterw.,\addabbrvspace by}},
+  cbytranslatorcpco = {{trans\adddotspace\lbx@fromlang, comp., and
+      comm\adddot}%
+    {trans\adddotspace\lbx@fromlang, comp., and comm\adddot}},
+  cbytranslatorcpan = {{trans\adddotspace\lbx@fromlang, comp., and
+      annot\adddot}%
+    {trans\adddotspace\lbx@fromlang, comp., and annot\adddot}},
+  cbytranslatorcpin = {{trans\adddotspace\lbx@fromlang\ and comp.,
+      with an introduction, by}%
+    {trans\adddotspace\lbx@fromlang\ and comp., with an
+      introd.,\addabbrvspace by}},
+  cbytranslatorcpfo = {{trans\adddotspace\lbx@fromlang\ and comp.,
+      with a foreword, by}%
+    {trans\adddotspace\lbx@fromlang\ and comp., with a
+      forew.,\addabbrvspace by}},
+  cbytranslatorcpaf = {{trans\adddotspace\lbx@fromlang\ and comp.,
+      with an afterword, by}%
+    {trans\adddotspace\lbx@fromlang\ and comp., with an
+      afterw.,\addabbrvspace by}},
+  cbytranslatorcpcoin = {{trans\adddotspace\lbx@fromlang, comp., and
+      comm., with an introduction, by}%
+    {trans\adddotspace\lbx@fromlang, comp., and comm.,
+      with an introd.,\addabbrvspace by}},
+  cbytranslatorcpcofo = {{trans\adddotspace\lbx@fromlang, comp., and
+      comm., with a foreword, by}%
+    {trans\adddotspace\lbx@fromlang, comp., and comm.,
+      with a forew.,\addabbrvspace by}},
+  cbytranslatorcpcoaf = {{trans\adddotspace\lbx@fromlang, comp., and
+      comm., with an afterword, by}%
+    {trans\adddotspace\lbx@fromlang, comp., and comm.,
+      with an afterw.,\addabbrvspace by}},
+  cbytranslatorcpanin = {{trans\adddotspace\lbx@fromlang, comp., and
+      annot., with an introduction, by}%
+    {trans\adddotspace\lbx@fromlang, comp., and annot.,
+      with an introd.,\addabbrvspace by}},
+  cbytranslatorcpanfo = {{trans\adddotspace\lbx@fromlang, comp., and
+      annot., with a foreword, by}%
+    {trans\adddotspace\lbx@fromlang, comp., and annot.,
+      with a forew.,\addabbrvspace by}},
+  cbytranslatorcpanaf = {{trans\adddotspace\lbx@fromlang, comp., and
+      annot., with an afterword, by}%
+    {trans\adddotspace\lbx@fromlang, comp., and annot.,
+      with an afterw.,\addabbrvspace by}},
+  cbycompilerco = {{comp\adddotspace and comm\adddot}%
+    {comp\adddotspace and comm\adddot}},
+  cbycompileran = {{comp\adddotspace and annot\adddot}%
+    {comp\adddotspace and annot\adddot}},
+  cbycompilerin = {{comp.,\addabbrvspace with an introduction, by}%
+    {comp.,\addabbrvspace with an introd.,\addabbrvspace by}},
+  cbycompilerfo = {{comp.,\addabbrvspace with a foreword, by}%
+    {comp.,\addabbrvspace with a forew.,\addabbrvspace by}},
+  cbycompileraf = {{comp.,\addabbrvspace with an afterword, by}%
+    {comp.,\addabbrvspace with an afterw.,\addabbrvspace by}},
+  cbycompilercoin = {{comp\adddotspace and comm., with an
+      introduction, by}%
+    {comp\adddotspace and comm., with an introd.,\addabbrvspace by}},
+  cbycompilercofo = {{comp\adddotspace and comm., with a foreword, by}%
+    {comp\adddotspace and comm., with a forew.,\addabbrvspace by}},
+  cbycompilercoaf = {{comp\adddotspace and comm., with an afterword, by}%
+    {comp\adddotspace and comm., with an afterw.,\addabbrvspace by}},
+  cbycompileranin = {{comp\adddotspace and annot., with an
+      introduction, by}%
+    {comp\adddotspace and annot., with an introd.,\addabbrvspace by}},
+  cbycompileranfo = {{comp\adddotspace and annot., with a foreword, by}%
+    {comp\adddotspace and annot., with a forew.,\addabbrvspace by}},
+  cbycompileranaf = {{comp\adddotspace and annot., with an afterword, by}%
+    {comp\adddotspace and annot., with an afterw.,\addabbrvspace by}},
+  volume = {{vol\adddot}{vol\adddot}},
+  volumes = {{vols\adddot}{vols\adddot}},
+  jourvol = {{vol\adddot}{vol\adddot}},
+  jourser = {{ser\adddot}{ser\adddot}},
+  oldseries = {{o\adddot s\adddot}{o\adddot s\adddot}},
+  edition = {{ed\adddot}{ed\adddot}},
+  version = {{version}{v\adddot}},
+  page = {{p\adddot}{p\adddot}},
+  pages = {{pp\adddot}{pp\adddot}},
+  column = {{col\adddot}{col\adddot}},
+  columns = {{cols\adddot}{cols\adddot}},
+  line = {{line}{line}},
+  lines = {{lines}{lines}},
+  paragraph = {{\P}{\P}},
+  paragraphs = {{\P\P}{\P\P}},
+  section = {{\S}{\S}},
+  sections = {{\S\S}{\S\S}},
+  subsection = {{\S}{\S}},
+  subsections = {{\S\S}{\S\S}},
+  preface = {{preface}{pref\adddot}},
+  note = {{note}{n\adddot}},
+  canadasection = {{s\adddot}{s\adddot}},% For legal citations
+  canadasections = {{s\adddot}{s\adddot}},% ditto
+  supranote = {{\mkbibemph{supra}\addspace note\addnbspace}% ditto
+    {\mkbibemph{supra}\addspace n\adddotspace}},
+  hereinafter = {{hereinafter}{hereinafter}},
+  subverbo = {{s\adddot v\adddot}{s\adddot v\adddot}},
+  subverbis = {{s\adddot vv\adddot}{s\adddot vv\adddot}},
+  verse = {{v\adddot}{v\adddot}},
+  verses = {{vv\adddot}{vv\adddot}},
+  number = {{no\adddot}{no\adddot}},
+  chapter = {{chap\adddot}{chap\adddot}},%
+  part = {{part}{pt\adddot}},%  for legal citations
+  track = {{track}{track}},
+  mathesis = {{master's thesis}{master's thesis}},
+  phdthesis = {{PhD\addabbrvspace diss\adddot}{PhD\addabbrvspace diss\adddot}},
+  techreport = {{technical report}{technical report}},
+  cfromamerican     = {{from the American by}{from the American by}},
+  cfrombrazilian    = {{from the Brazilian by}{from the Brazilian
+      by}},
+  cfrombulgarian    = {{from the Bulgarian by}{from the Bulgarian by}},
+  cfromcatalan      = {{from the Catalan by}{from the Catalan by}},
+  cfromcroatian     = {{from the Croatian by}{from the Croatian by}},
+  cfromczech        = {{from the Czech by}{from the Czech by}},
+  cfromdanish       = {{from the Danish by}{from the Danish by}},
+  cfromdutch        = {{from the Dutch by}{from the Dutch by}},
+  cfromenglish      = {{from the English by}{from the English by}},
+  cfromestonian     = {{from the Estonian by}{from the Estonian by}},
+  cfromfinnish      = {{from the Finnish by}{from the Finnish by}},
+  cfromfrench       = {{from the French by}{from the French by}},
+  cfromgalician     = {{from the Galician by}{from the Galician by}},
+  cfromgerman       = {{from the German by}{from the German by}},
+  cfromgreek        = {{from the Greek by}{from the Greek by}},
+  cfromitalian      = {{from the Italian by}{from the Italian by}},
+  cfromjapanese     = {{from the Japanese by}{from the Japanese by}},
+  cfromlatin        = {{from the Latin by}{from the Latin by}},
+  cfromnorwegian    = {{from the Norwegian by}{from the Norwegian
+      by}},
+  cfrompolish       = {{from the Polish by}{from the Polish by}},
+  cfromportuguese   = {{from the Portuguese by}{from the Portuguese
+      by}},
+  cfromrussian      = {{from the Russian by}{from the Russian by}},
+  cfromslovak       = {{from the Slovak by}{from the Slovak by}},
+  cfromslovene      = {{from the Slovene by}{from the Slovene by}},
+  cfromspanish      = {{from the Spanish by}{from the Spanish by}},
+  cfromswedish      = {{from the Swedish by}{from the Swedish by}},
+  cfromukrainian    = {{from the Ukrainian by}{from the Ukrainian by}},
+  bynone = {{}{}},
+  bycompiler = {{compiled by}{comp\adddot}},
+  byconductor = {{directed by}{dir\adddot}},
+  bydirector = {{directed by}{dir\adddot}},
+  byproducer = {{produced by}{prod\adddot}},
+  bychoreographer = {{choreographed by}{chor\adddot}},
+  byeditorcp = {{edited and compiled by}{ed\adddotspace and comp\adddot}},
+  byeditortrcp = {{edited, translated \lbx@fromlang, and compiled by}%
+    {ed.,\addabbrvspace trans\adddotspace\lbx@fromlang, and comp\adddot}},
+  byeditortrcpco = {{edited, translated \lbx@fromlang, compiled, and
+      commented by}%
+    {ed.,\addabbrvspace trans\adddotspace\lbx@fromlang, comp.,
+      and comm\adddot}},
+  byeditortrcpan = {{edited, translated \lbx@fromlang, compiled, and
+      annotated by}%
+    {ed.,\addabbrvspace trans\adddotspace\lbx@fromlang, comp.,
+      and annot\adddot}},
+  byeditortrcpin = {{edited, translated \lbx@fromlang, and compiled, with
+      an introduction, by}%
+    {ed.,\addabbrvspace trans\adddotspace\lbx@fromlang, and comp\adddot,
+      with an introd.,\addabbrvspace by}},
+  byeditortrcpfo = {{edited, translated \lbx@fromlang, and compiled, with a
+      foreword, by}%
+    {ed.,\addabbrvspace trans\adddotspace\lbx@fromlang, and comp\adddot,
+      with a forew.,\addabbrvspace by}},
+  byeditortrcpaf = {{edited, translated \lbx@fromlang, and compiled, with
+      an afterword, by}%
+    {ed.,\addabbrvspace trans\adddotspace\lbx@fromlang, and comp\adddot,
+      with an afterw.,\addabbrvspace by}},
+  byeditortrcpcoin = {{edited, translated \lbx@fromlang, compiled, and
+      commented, with an introduction, by}%
+    {ed.,\addabbrvspace trans\adddotspace\lbx@fromlang, comp.,
+      and comm\adddot, with an introd.,\addabbrvspace by}},
+  byeditortrcpcofo = {{edited, translated \lbx@fromlang, compiled, and
+      commented, with a foreword, by}%
+    {ed.,\addabbrvspace trans\adddotspace\lbx@fromlang, comp.,
+      and comm\adddot, with a forew.,\addabbrvspace by}},
+  byeditortrcpcoaf = {{edited, translated \lbx@fromlang, compiled, and
+      commented, with an afterword, by}%
+    {ed.,\addabbrvspace trans\adddotspace\lbx@fromlang, comp.,
+      and comm\adddot, with an afterw.,\addabbrvspace by}},
+  byeditortrcpanin = {{edited, translated \lbx@fromlang, compiled, and
+      annotated, with an introduction, by}%
+    {ed.,\addabbrvspace trans\adddotspace\lbx@fromlang, comp.,
+      and annot\adddot, with an introd.,\addabbrvspace by}},
+  byeditortrcpanfo = {{edited, translated \lbx@fromlang, compiled, and
+      annotated, with a foreword, by}%
+    {ed.,\addabbrvspace trans\adddotspace\lbx@fromlang, comp.,
+      and annot\adddot, with a forew.,\addabbrvspace by}},
+  byeditortrcpanaf = {{edited, translated \lbx@fromlang, compiled, and
+      annotated, with an afterword, by}%
+    {ed.,\addabbrvspace trans\adddotspace\lbx@fromlang, comp.,
+      and annot\adddot, with an afterw.,\addabbrvspace by}},
+  byeditorcpco = {{edited, compiled, and commented by}%
+    {ed.,\addabbrvspace comp., and comm\adddot}},
+  byeditorcpan = {{edited, compiled, and annotated by}%
+    {ed.,\addabbrvspace comp., and annot\adddot}},
+  byeditorcpin = {{edited and compiled, with an introduction, by}%
+    {ed\adddotspace and comp., with an introd.,\addabbrvspace by}},
+  byeditorcpfo = {{edited and compiled, with a foreword, by}%
+    {ed\adddotspace and comp., with a forew.,\addabbrvspace by}},
+  byeditorcpaf = {{edited and compiled, with an afterword, by}%
+    {ed\adddotspace and comp., with an afterw.,\addabbrvspace by}},
+  byeditorcpcoin = {{edited, compiled, and commented, with an
+      introduction, by}%
+    {ed.,\addabbrvspace comp., and comm., with an introd.,\addabbrvspace by}},
+  byeditorcpcofo = {{edited, compiled, and commented, with a foreword, by}%
+    {ed.,\addabbrvspace comp., and comm., with a forew.,\addabbrvspace by}},
+  byeditorcpcoaf = {{edited, compiled, and commented, with an
+      afterword, by}%
+    {ed.,\addabbrvspace comp., and comm., with an afterw.,\addabbrvspace by}},
+  byeditorcpanin = {{edited, compiled, and annotated, with an
+      introduction, by}%
+    {ed.,\addabbrvspace comp., and annot., with an introd.,\addabbrvspace by}},
+  byeditorcpanfo = {{edited, compiled, and annotated, with a foreword, by}%
+    {ed.,\addabbrvspace comp., and annot., with a forew.,\addabbrvspace by}},
+  byeditorcpanaf = {{edited, compiled, and annotated, with an
+      afterword, by}%
+    {ed.,\addabbrvspace comp., and annot., with an afterw.,\addabbrvspace by}},
+  bytranslatorcp = {{translated \lbx@fromlang\ and compiled by}%
+    {trans\adddotspace\lbx@fromlang\ and comp\adddot}},
+  bytranslatorcpco = {{translated \lbx@fromlang, compiled, and
+      commented by}%
+    {trans\adddotspace\lbx@fromlang, comp., and comm\adddot}},
+  bytranslatorcpan = {{translated \lbx@fromlang, compiled, and
+      annotated by}%
+    {trans\adddotspace\lbx@fromlang, comp., and annot\adddot}},
+  bytranslatorcpin = {{translated \lbx@fromlang\  and compiled, with an
+      introduction, by}%
+    {trans\adddotspace\lbx@fromlang\ and comp., with an
+      introd.,\addabbrvspace by}},
+  bytranslatorcpfo = {{translated \lbx@fromlang\ and compiled, with a
+      foreword, by}%
+    {trans\adddotspace\lbx@fromlang\ and comp., with a
+      forew.,\addabbrvspace by}},
+  bytranslatorcpaf = {{translated \lbx@fromlang\ and compiled, with an
+      afterword, by}%
+    {trans\adddotspace\lbx@fromlang\ and comp., with an
+      afterw.,\addabbrvspace by}},
+  bytranslatorcpcoin = {{translated \lbx@fromlang, compiled, and commented,
+      with an introduction, by}%
+    {trans\adddotspace\lbx@fromlang, comp., and comm., with an
+      introd.,\addabbrvspace by}},
+  bytranslatorcpcofo = {{translated \lbx@fromlang, compiled, and commented,
+      with a foreword, by}%
+    {trans\adddotspace\lbx@fromlang, comp., and comm.,
+      with a forew.,\addabbrvspace by}},
+  bytranslatorcpcoaf = {{translated \lbx@fromlang, compiled, and commented,
+      with an afterword, by}%
+    {trans\adddotspace\lbx@fromlang, comp., and comm., with an
+      afterw.,\addabbrvspace by}},
+  bytranslatorcpanin = {{translated \lbx@fromlang, compiled, and annotated,
+      with an introduction, by}%
+    {trans\adddotspace\lbx@fromlang, comp., and annot., with an
+      introd.,\addabbrvspace by}},
+  bytranslatorcpanfo = {{translated \lbx@fromlang, compiled, and annotated,
+      with a foreword, by}%
+    {trans\adddotspace\lbx@fromlang, comp., and annot.,
+      with a forew.,\addabbrvspace by}},
+  bytranslatorcpanaf = {{translated \lbx@fromlang, compiled, and annotated,
+      with an afterword, by}%
+    {trans\adddotspace\lbx@fromlang, comp., and annot.,
+      with an afterw.,\addabbrvspace by}},
+  bycompilerco = {{compiled and commented by}%
+    {comp\adddotspace and comm\adddot}},
+  bycompileran = {{compiled and annotated by}%
+    {comp\adddotspace and annot\adddot}},
+  bycompilerin = {{compiled, with an introduction, by}%
+    {comp\adddot, with an introd.,\addabbrvspace by}},
+  bycompilerfo = {{compiled, with a foreword, by}%
+    {comp\adddot, with a forew.,\addabbrvspace by}},
+  bycompileraf = {{compiled, with an afterword, by}%
+    {comp\adddot, with an afterw.,\addabbrvspace by}},
+  bycompilercoin = {{compiled and commented, with an introduction, by}%
+    {comp\adddotspace and comm\adddot, with an introd.,\addabbrvspace by}},
+  bycompilercofo = {{compiled and commented, with a foreword, by}%
+    {comp\adddotspace and comm\adddot, with a forew.,\addabbrvspace by}},
+  bycompilercoaf = {{compiled and commented, with an afterword, by}%
+    {comp\adddotspace and comm\adddot, with an afterw.,\addabbrvspace by}},
+  bycompileranin = {{compiled and annotated, with an introduction, by}%
+    {comp\adddotspace and annot\adddot, with an introd.,\addabbrvspace by}},
+  bycompileranfo = {{compiled and annotated, with a foreword, by}%
+    {comp\adddotspace and annot\adddot, with a forew.,\addabbrvspace by}},
+  bycompileranaf = {{compiled and annotated, with an afterword, by}%
+    {comp\adddotspace and annot\adddot, with an afterw.,\addabbrvspace by}},
+}
+
+%%% The logic here is tricky because of the need to print AD before
+%%% the year and BC after, and also only to print them once in a date
+%%% range that has two years belonging to the same era. Other
+%%% subtleties include the relative positions of question mark and
+%%% date era, and of date era and end bracket.
+
+\protected\gdef\lbx@cms@mkbibrangetrunc@long#1#2{%
+  \begingroup
+  \blx@metadateinfo{#2}%
+  \clearfield{extradate}%
+  \ifthenelse{\iffieldundef{#2year}\AND\iffieldundef{#2month}\AND%
+    \iffieldundef{#2season}}%
+  {}%
+  {\printtext[#2date]{%
+      \if@cms@bracket%
+      {\cms@datebrackets%
+        \if@cms@circa%
+        {\bibsstring{circa}\printdelim{datecircadelim}}%
+        {}}%
+      {\global\boolfalse{cms:bracket}}%
+      \iffieldundef{#2season}%
+      {\ifdateyearsequal{#2}{#2end}%
+        {\ifthenelse{\iffieldundef{#2month}\AND\iffieldundef{#2day}}%
+          {\csuse{mkbibdate#1}{#2year}{}{}\cmsdateeraprint{#2endyear}%
+            \clearfield{#2endyear}}% Clear up inheritance problem ???
+          {\csuse{mkbibdate#1}{}{#2month}{#2day}}}%
+        {\cmsunspecified{#1}{#2}}}%
+      {\ifdateyearsequal{#2}{#2end}%
+        {\ifthenelse{\iffieldundef{#2endseason}\OR%
+            \iffieldsequal{#2season}{#2endseason}}%
+          {\csuse{mkbibseasondate#1}{#2year}{#2season}%
+            \cmsdateeraprint{#2endyear}\clearfield{#2endyear}}%
+          {\csuse{mkbibseasondate#1}{}{#2season}}}%
+        {\csuse{mkbibseasondate#1}{#2year}{#2season}%
+          \cmsdateeraprint{#2year}}}%
+      \if@cms@bracket%
+      {\if@cms@uncertain%
+        {\if@cms@enduncertain%
+          {\iffieldundef{#2endyear}%
+            {\bibdateuncertain}%
+            {}}%
+          {\bibdateuncertain}}%
+        {\if@cms@enduncertain%
+          {\iffieldundef{#2endyear}%
+            {\bibdateuncertain}%
+            {}}%
+          {}}}%
+      {}%
+      \iffieldundef{#2endyear}%
+      {\iffieldundef{#2endmonth}%
+        {\ifthenelse{\iffieldundef{#2endseason}\OR%
+            \iffieldsequal{#2season}{#2endseason}}%
+          {\ifbool{cms:bracket}%
+            {\bibclosebracket\global\boolfalse{cms:bracket}}%
+            {}}%
+          {\bibdaterangesep%
+            \csuse{mkbibseasondate#1}{}{#2endseason}}}%
+        {\bibdaterangesep%
+          \iffieldsequal{#2month}{#2endmonth}%
+          {\csuse{mkbibdate#1}{}{}{#2endday}}%
+          {\csuse{mkbibdate#1}{}{#2endmonth}{#2endday}}}}%
+      {\iffieldequalstr{#2endyear}{}%
+        {\ifbool{cms:bracket}%
+          {\bibclosebracket\global\boolfalse{cms:bracket}}%
+          {}%
+          \mbox{\bibdaterangesep}}%
+        {\ifbool{cms:bracket}%
+          {\if@cms@circa%
+            {\if@cms@endbracket%
+              {\bibdaterangesep}%
+              {\bibclosebracket\global\boolfalse{cms:bracket}%
+                \bibdaterangesep}}%
+            {\if@cms@endcirca%
+              {\bibdaterangesep\bibsstring{circa}\printdelim{datecircadelim}}%
+              {\if@cms@enduncertain%
+                {\bibdaterangesep}%
+                {\bibclosebracket\global\boolfalse{cms:bracket}%
+                  \bibdaterangesep}}}}%
+          {\if@cms@endbracket%
+            {\bibdaterangesep%
+              \cms@datebrackets%
+              \if@cms@endcirca%
+              {\if@cms@circa%
+                {}%
+                {\bibsstring{circa}\printdelim{datecircadelim}}}%
+              {}}%
+            {\bibdaterangesep}}%\bibdatedash%
+          \iffieldundef{#2endseason}%
+          {\ifdateyearsequal{#2}{#2end}%
+            {\iffieldsequal{#2month}{#2endmonth}%
+              {\csuse{mkbibdate#1}{#2year}{}{#2endday}}%
+              {\csuse{mkbibdate#1}{#2year}{#2endmonth}{#2endday}}}%
+            {\csuse{mkbibdate#1}{#2endyear}{#2endmonth}{#2endday}}}%
+          {\ifdateyearsequal{#2}{#2end}%
+            {\csuse{mkbibseasondate#1}{#2year}{#2endseason}}%
+            {\csuse{mkbibseasondate#1}{#2endyear}{#2endseason}}}%
+          \ifbool{cms:bracket}%
+          {\if@cms@bracket%
+            {\cmsdateeraprint{#2endyear}%
+              \enddateuncertainprint%
+              \bibclosebracket\global\boolfalse{cms:bracket}}%
+            {\enddateuncertainprint%
+              \bibclosebracket\global\boolfalse{cms:bracket}%
+              \cmsdateeraprint{#2endyear}}}%
+          {\enddateuncertainprint%
+            \cmsdateeraprint{#2endyear}}}}}}%
+  \endgroup}
+
+\protected\gdef\lbx@cms@mkbibrangetrunc@short#1#2{% Modify ???
+  \begingroup
+  \blx@metadateinfo{#2}%
+  \clearfield{extradate}%
+  \ifthenelse{\iffieldundef{#2year}\AND\iffieldundef{#2month}\AND%
+    \iffieldundef{#2season}}%
+  {}%
+  {\printtext[#2date]{%
+      \if@cms@bracket%
+      {\cms@datebrackets%
+        \if@cms@circa%
+        {\bibsstring{circa}\printdelim{datecircadelim}}
+        {}}%
+      {\global\boolfalse{cms:bracket}}%
+      \iffieldundef{#2season}
+      {\ifdateyearsequal{#2}{#2end}%
+        {\ifthenelse{\iffieldundef{#2month}\AND\iffieldundef{#2day}}%
+          {\csuse{mkbibdate#1}{#2year}{}{}\cmsdateeraprint{#2endyear}%
+            \clearfield{#2endyear}}% Clear up inheritance problem ???
+          {\csuse{mkbibdate#1}{}{#2month}{#2day}}}%
+        {\cmsunspecified{#1}{#2}}}%
+      {\ifdateyearsequal{#2}{#2end}%
+        {\ifthenelse{\iffieldundef{#2endseason}\OR%
+            \iffieldsequal{#2season}{#2endseason}}%
+          {\csuse{mkbibseasondate#1}{#2year}{#2season}%
+            \cmsdateeraprint{#2endyear}\clearfield{#2endyear}}%
+          {\csuse{mkbibseasondate#1}{}{#2season}}}%
+        {\csuse{mkbibseasondate#1}{#2year}{#2season}%
+          \cmsdateeraprint{#2year}}}%
+      \if@cms@bracket%
+      {\if@cms@uncertain%
+        {\if@cms@enduncertain%
+          {\iffieldundef{#2endyear}%
+            {\bibdateuncertain}%
+            {}}%
+          {\bibdateuncertain}}%
+        {\if@cms@enduncertain%
+          {\iffieldundef{#2endyear}%
+            {\bibdateuncertain}%
+            {}}%
+          {}}}%
+      {}%
+      \ifthenelse{\iffieldundef{#2endyear}\AND\iffieldundef{#2endmonth}%
+        \AND\iffieldundef{#2endseason}}%
+      {\ifbool{cms:bracket}%
+        {\bibclosebracket\global\boolfalse{cms:bracket}}%
+        {}}%
+      {\iffieldequalstr{#2endyear}{}%
+        {\ifbool{cms:bracket}%
+          {\bibclosebracket\global\boolfalse{cms:bracket}}%
+          {}%
+          \mbox{\bibdaterangesep}}%
+        {\ifbool{cms:bracket}%
+          {\if@cms@circa%
+            {\if@cms@endbracket%
+              {\bibdaterangesep}%
+              {\bibclosebracket\global\boolfalse{cms:bracket}%
+                \bibdaterangesep}}%
+            {\if@cms@endcirca%
+              {\bibdaterangesep\bibsstring{circa}\printdelim{datecircadelim}}%
+              {\if@cms@enduncertain%
+                {\bibdaterangesep}%
+                {\bibclosebracket\global\boolfalse{cms:bracket}%
+                  \bibdaterangesep}}}}%
+          {\if@cms@endbracket%
+            {\bibdaterangesep%
+              \cms@datebrackets%
+              \if@cms@endcirca%
+              {\if@cms@circa%
+                {}%
+                {\bibsstring{circa}\printdelim{datecircadelim}}}%
+              {}}%
+            {\bibdaterangesep}}%
+          \iffieldundef{#2endseason}%
+          {\ifdateyearsequal{#2}{#2end}%
+            {\csuse{mkbibdate#1}{#2year}{#2endmonth}{#2endday}}%
+            {\csuse{mkbibdate#1}{#2endyear}{#2endmonth}{#2endday}}}%
+          {\ifdateyearsequal{#2}{#2end}%
+            {\csuse{mkbibseasondate#1}{#2year}{#2endseason}}%
+            {\csuse{mkbibseasondate#1}{#2endyear}{#2endseason}}}%
+          \ifbool{cms:bracket}%
+          {\if@cms@bracket%
+            {\cmsdateeraprint{#2endyear}%
+              \enddateuncertainprint%
+              \bibclosebracket\global\boolfalse{cms:bracket}}%
+            {\enddateuncertainprint%
+              \bibclosebracket\global\boolfalse{cms:bracket}%
+              \cmsdateeraprint{#2endyear}}}%
+          {\enddateuncertainprint%
+            \cmsdateeraprint{#2endyear}}}}}}%
+  \endgroup}
+
+\protected\gdef\lbx@cms@mkbibrangefull@us#1#2{%
+  \begingroup
+  \blx@metadateinfo{#2}%
+  \clearfield{extradate}%
+  \ifthenelse{\iffieldundef{#2year}\AND\iffieldundef{#2month}\AND%
+    \iffieldundef{#2season}}%
+  {}%
+  {\printtext[#2date]{%
+      \if@cms@bracket%
+      {\cms@datebrackets%
+        \if@cms@circa%
+        {\bibsstring{circa}\printdelim{datecircadelim}}
+        {}}%
+      {\global\boolfalse{cms:bracket}}%
+      \iffieldundef{#2season}%
+      {\ifboolexpr{%
+          test {\ifdateyearsequal{#2}{#2end}}%
+          and
+          test {\iffieldundef{#2month}}%
+          and
+          test {\iffieldundef{#2day}}%
+        }%
+        {\csuse{mkbibdate#1}{#2year}{#2month}{#2day}\cmsdateeraprint{#2endyear}%
+          \clearfield{#2endyear}}% Clear up inheritance problem ???
+        {\csuse{mkbibdate#1}{#2year}{#2month}{#2day}\cmsdateeraprint{#2year}}}%
+      {\csuse{mkbibseasondate#1}{#2year}{#2season}%
+        \cmsdateeraprint{#2year}}%
+      \if@cms@bracket%
+      {\if@cms@uncertain%
+        {\if@cms@enduncertain%
+          {\iffieldundef{#2endyear}%
+            {\bibdateuncertain}%
+            {}}%
+          {\bibdateuncertain}}%
+        {\if@cms@enduncertain%
+          {\iffieldundef{#2endyear}%
+            {\bibdateuncertain}%
+            {}}%
+          {}}}%
+      {}%
+      \ifthenelse{\iffieldundef{#2endyear}\AND\iffieldundef{#2endmonth}%
+      \AND\iffieldundef{#2endseason}}%
+      {\ifbool{cms:bracket}%
+        {\bibclosebracket\global\boolfalse{cms:bracket}}%
+        {}}%
+      {\iffieldequalstr{#2endyear}{}%
+        {\ifbool{cms:bracket}%
+          {\bibclosebracket\global\boolfalse{cms:bracket}}%
+          {}%
+          \mbox{\bibdaterangesep}}%
+        {\ifbool{cms:bracket}%
+          {\if@cms@circa%
+            {\if@cms@endbracket%
+              {\bibdaterangesep}%
+              {\bibclosebracket\global\boolfalse{cms:bracket}%
+                \bibdaterangesep}}%
+            {\if@cms@endcirca%
+              {\bibdaterangesep\bibsstring{circa}\printdelim{datecircadelim}}%
+              {\if@cms@enduncertain%
+                {\bibdaterangesep}%
+                {\bibclosebracket\global\boolfalse{cms:bracket}%
+                  \bibdaterangesep}}}}%
+          {\if@cms@endbracket%
+            {\bibdaterangesep%
+              \cms@datebrackets%
+              \if@cms@endcirca%
+              {\if@cms@circa%
+                {}%
+                {\bibsstring{circa}\printdelim{datecircadelim}}}%
+              {}}%
+            {\bibdaterangesep}}%\bibdaterangesep%
+          \iffieldundef{#2endseason}%
+          {\csuse{mkbibdate#1}{#2endyear}{#2endmonth}{#2endday}}%
+          {\csuse{mkbibseasondate#1}{#2endyear}{#2endseason}}%
+          \ifbool{cms:bracket}%
+          {\if@cms@bracket%
+            {\cmsdateeraprint{#2endyear}%
+              \enddateuncertainprint%
+              \bibclosebracket\global\boolfalse{cms:bracket}}%
+            {\enddateuncertainprint%
+              \bibclosebracket\global\boolfalse{cms:bracket}%
+              \cmsdateeraprint{#2endyear}}}%
+          {\enddateuncertainprint%
+            \cmsdateeraprint{#2endyear}}}}}}%
+  \endgroup}
+
+\endinput

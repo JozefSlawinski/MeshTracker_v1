@@ -1,0 +1,32 @@
+% american-mla.lbx v2.0 2021/06/07
+\ProvidesFile{american-mla.lbx}[2021/06/07 v2.0 biblatex style localization]
+\InheritBibliographyExtras{american}
+
+\DeclareBibliographyExtras{%
+  \protected\def\mkbibdatelong#1#2#3{%
+    \iffieldundef{#3}
+      {}
+      {\mkdayzeros{\thefield{#3}}%
+       \iffieldundef{#2}{}{\nobreakspace}}%
+    \iffieldundef{#2}
+      {}
+      {\mkbibmonth{\thefield{#2}}%
+       \iffieldundef{#1}{}{\space}}%
+    \thefield{#1}}%
+  \protected\def\mkbibdateshort#1#2#3{%
+    \iffieldundef{#3}
+      {}
+      {\mkdayzeros{\thefield{#3}}%
+       \iffieldundef{#2}{}{/}}%
+    \iffieldundef{#2}
+      {}
+      {\mkmonthzeros{\thefield{#2}}%
+       \iffieldundef{#1}{}{/}}%
+    \mkyearzeros{\thefield{#1}}}%
+}
+
+\DeclareBibliographyStrings{% 
+  inherit          = {english},
+}%
+
+\endinput

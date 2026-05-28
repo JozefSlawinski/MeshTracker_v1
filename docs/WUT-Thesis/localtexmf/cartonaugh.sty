@@ -1,0 +1,205 @@
+%%
+%% This is file `cartonaugh.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% cartonaugh.dtx  (with options: `package')
+%% 
+%% IMPORTANT NOTICE:
+%% 
+%% For the copyright see the source file.
+%% 
+%% Any modified versions of this file must be renamed
+%% with new filenames distinct from cartonaugh.sty.
+%% 
+%% For distribution of the original source see the terms
+%% for copying and modification in the file cartonaugh.dtx.
+%% 
+%% This generated file may be distributed as long as the
+%% original source files, as listed above, are part of the
+%% same distribution. (The sources need not necessarily be
+%% in the same archive or directory.)
+%%
+%% Copyright (C) 2021 Jamal Bouajjaj | 2015, 2016, 2017 Mattias Jacobsson and contributors
+%% This work, cartonaugh, is a fork of Mattias Jacobsson's [karnaugh-map](https://github.com/2pi/karnaugh-map) package with major changes. As the copyright on the base package is under [CC BY-SA](https://creativecommons.org/licenses/by-sa/3.0/), so is this fork.
+%%
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{cartonaugh}[2021/07/15 v1.0 Draw Karnaugh Maps]
+
+%%
+%% Dependencies
+%%
+
+%% Check if ran under LuaLaTeX. If not, exit
+\RequirePackage{iftex}
+\RequireLuaTeX
+
+%% parsing arguments
+\RequirePackage{xparse}
+
+%% working with strings
+\RequirePackage{xstring}
+
+%% drawing
+\RequirePackage{tikz}
+\usetikzlibrary{calc,matrix}
+
+%%
+%% Helpers
+%%
+\directlua{require("cartonaugh")}
+
+%% command raises an error if executed outside the cartonaugh environment
+\newcommand{\@cartonaugh@func@bailoutsideenvironment@}[0]{%
+  \ifnum\@cartonaugh@var@isactive@=0
+    \PackageError{cartonaugh}{%
+      Command can not be used outside cartonaugh environment%
+    }{%
+      Do not use this command outside the cartonaugh environment.%
+    }
+  \fi
+}
+
+\newcommand{\cartonaughSetColorAtIndex}[2]{\directlua{CARTONAUGH_COLORS[\the\numexpr(#1)\relax] = "\luaescapestring{#2}"}}
+
+%% store whether a kmap has been created
+\newcommand{\@cartonaugh@var@isactive@}{0}
+\NewDocumentEnvironment{cartonaugh}{s O{4} O{4} O{1} O{$X_1X_0$} O{$X_3X_2$} O{$X_5X_4$} O{0}} {%
+  \begingroup
+    % store map size {[START]
+      \renewcommand{\@cartonaugh@var@isactive@}{1}%
+    % [END]}
+    % determinate if markings should be color or black and white
+    %
+    % [END]}
+    % test if a matrix template is found or not(aka "\@cartonaugh@local@matrixtemplate@" equals to '0')
+    \begin{tikzpicture}
+        \directlua{init_cartonaught_env(
+                   \the\numexpr(#2)\relax,
+                   \the\numexpr(#3)\relax,
+                   \the\numexpr(#4)\relax,
+                   \the\numexpr(#1)\relax,
+                   "\luaescapestring{\detokenize{#5}}",
+                   "\luaescapestring{\detokenize{#6}}",
+                   "\luaescapestring{\detokenize{#7}}",
+                   \the\numexpr(#8)\relax
+                   )}
+}{
+    \end{tikzpicture}
+  \endgroup
+}
+\DeclareDocumentCommand{\autoterms}{O{-}} {%
+  \@cartonaugh@func@bailoutsideenvironment@{}
+  %
+  \directlua{
+      autoterms("\luaescapestring{\detokenize{#1}}", '-')
+  }
+}
+\DeclareDocumentCommand{\indeterminants}{m} {%
+  % bail if outside environment cartonaugh
+  \@cartonaugh@func@bailoutsideenvironment@{}
+  %
+  \directlua{
+      write_to_cell("\luaescapestring{\detokenize{#1}}", '-')
+  }
+}
+\DeclareDocumentCommand{\manualterms}{m} {%
+  % bail if outside environment cartonaugh
+  \@cartonaugh@func@bailoutsideenvironment@{}
+  %
+  \directlua{
+      manualterms("\luaescapestring{\detokenize{#1}}")
+  }
+}
+\DeclareDocumentCommand{\maxterms}{m} {%
+  % bail if outside environment cartonaugh
+  \@cartonaugh@func@bailoutsideenvironment@{}
+  %
+  \directlua{
+      write_to_cell("\luaescapestring{\detokenize{#1}}", '0')
+  }
+}
+\DeclareDocumentCommand{\minterms}{m} {%
+  % bail if outside environment cartonaugh
+  \@cartonaugh@func@bailoutsideenvironment@{}
+  %
+  \directlua{
+      write_to_cell("\luaescapestring{\detokenize{#1}}", '1')
+  }
+}
+\DeclareDocumentCommand{\terms}{m m} {%
+  % bail if outside environment cartonaugh
+  \@cartonaugh@func@bailoutsideenvironment@{}
+  %
+  \directlua{
+    write_to_cell("\luaescapestring{\detokenize{#1}}",
+    "\luaescapestring{\detokenize{#2}}")
+  }
+}
+\DeclareDocumentCommand{\implicant}{m m O{0}} {%
+  % bail if outside environment cartonaugh
+  \@cartonaugh@func@bailoutsideenvironment@{}
+  %
+  \directlua{
+    manual_draw_implicant(
+      "\luaescapestring{\detokenize{#1}}",
+      "\luaescapestring{\detokenize{#2}}",
+      "\luaescapestring{\detokenize{#3}}"
+      )
+  }
+}
+\DeclareDocumentCommand{\implicantedge}{m m m m O{0}} {%
+  % bail if outside environment cartonaugh
+  \@cartonaugh@func@bailoutsideenvironment@{}
+  %
+  \directlua{
+    manual_draw_edge_implicant(
+      "\luaescapestring{\detokenize{#1}}",
+      "\luaescapestring{\detokenize{#2}}",
+      "\luaescapestring{\detokenize{#3}}",
+      "\luaescapestring{\detokenize{#4}}",
+      "\luaescapestring{\detokenize{#5}}"
+      )
+  }
+}
+\DeclareDocumentCommand{\implicantcorner}{O{0}} {
+  % bail if outside environment cartonaugh
+  \@cartonaugh@func@bailoutsideenvironment@{}
+  %
+  \directlua{
+    manual_draw_corner_implicant(
+      "\luaescapestring{\detokenize{#1}}"
+      )
+  }
+}
+\DeclareDocumentCommand{\implicantspread}{m m} {
+  % bail if outside environment cartonaugh
+  \@cartonaugh@func@bailoutsideenvironment@{}
+  %
+  \directlua{
+    change_implicant_inner_spread(\luaescapestring{\detokenize{#1}})
+    change_implicant_outer_spread(\luaescapestring{\detokenize{#2}})
+  }
+}
+\DeclareDocumentCommand{\resetimplicantspread}{} {
+  % bail if outside environment cartonaugh
+  \@cartonaugh@func@bailoutsideenvironment@{}
+  %
+  \directlua{
+    change_implicant_inner_spread(0.35)
+    change_implicant_outer_spread(0.55)
+  }
+}
+\DeclareDocumentCommand{\changecolor}{m} {
+  % bail if outside environment cartonaugh
+  \@cartonaugh@func@bailoutsideenvironment@{}
+  %
+  \directlua{
+    customColor("\luaescapestring{\detokenize{#1}}")
+  }
+}
+\endinput
+%%
+%% End of file `cartonaugh.sty'.

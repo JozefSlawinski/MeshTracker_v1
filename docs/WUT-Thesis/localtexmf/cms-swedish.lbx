@@ -1,0 +1,568 @@
+\ProvidesFile{cms-swedish.lbx}[2021/06/30 v 3.16 biblatex localization]
+
+% STATUS OF THIS FILE
+% - Translated by a native speaker (Stefan Bj\"{o}rk).
+% - Date handling modified by dfussner.
+% - Harmonized with swedish.lbx + other fixes by dfussner (2021-04-19).
+
+\InheritBibliographyExtras{swedish}
+
+\DeclareBibliographyExtras{%
+  \savecommand\cms@datelong%
+  \savecommand\mkdaterangecomp%
+  \savecommand\mkdaterangeterse%
+  \savecommand\mkdaterangefull%
+  \savecommand\mkdaterangecompextra%
+  \savecommand\mkdaterangeterseextra%
+  \savecommand\mkdaterangefullextra%
+  \def\introductionname{Inledning}%
+  \def\sectionname{Paragraf}%
+  \def\subsectionname{Paragraf}%
+  \def\forewordname{F\"orord}%
+  \def\notesname{Noter}%
+  \protected\def\mkjuridordinal{\mkbibordinal}%
+  \protected\def\cmsmkdecade#1#2{%
+    \cms@tempcnta=\thefield{#2year}%
+    \divide\cms@tempcnta100
+    \multiply\cms@tempcnta100
+    \ifnumequal{\cms@tempcnta}{\thefield{#2year}}% Disambiguation of -talet
+    {\csuse{mkbibdate#1}{#2year}{}{}\cmsdateeraprint{#2year}}%
+    {\ifnumequal{\thefield{#2year}}{1}%
+      {\printtext{00}}%
+      {\csuse{mkbibdate#1}{#2year}{}{}}%
+      \setunit{}%\blx@nounit%
+      \bibsstring{decade}%
+      \cmsdateeraprint{#2endyear}\clearfield{#2endyear}%
+      \usebibmacro{cmsparensextradate}%
+      \global\boolfalse{cms:extraparens}}}%
+  \protected\def\cmsmkcentury#1{%
+    \ifnumequal{\thefield{#1year}}{1}%
+    {\printtext{000}}%
+    {\csuse{mkbibdatelong}{#1year}{}{}}%
+    \setunit{}%\blx@nounit%
+    \bibsstring{century}%
+    \cmsdateeraprint{#1endyear}\clearfield{#1endyear}%
+    \usebibmacro{cmsparensextradate}%
+    \global\boolfalse{cms:extraparens}}%
+  \protected\def\mkdaterangecomp{%
+    \cms@mkbibrangetrunc{long}}%
+  \protected\def\mkdaterangeterse{%
+    \cms@mkbibrangetrunc{short}}%
+  \protected\def\mkdaterangefull{%
+    \cms@mkbibrangefull}%
+  \protected\def\mkdaterangecompextra{%
+    \cms@mkyearrangeextra[]{long}}%
+  \protected\def\mkdaterangeterseextra{%
+    \cms@mkyearrangeextra[]{short}}%
+  \protected\def\mkdaterangefullextra{%
+    \cms@mkyearrangeextra[1]}%
+  \def\cms@datelong#1{\csname print#1date\endcsname}}%
+
+\UndeclareBibliographyExtras{%
+  \restorecommand\cms@datelong%
+  \restorecommand\mkdaterangecomp%
+  \restorecommand\mkdaterangefull%
+  \restorecommand\mkdaterangeterse%
+  \restorecommand\mkdaterangecompextra%
+  \restorecommand\mkdaterangeterseextra%
+  \restorecommand\mkdaterangefullextra%
+}%
+
+\DeclareBibliographyStrings{%
+  inherit = {swedish},
+  afterwordto = {{efterord till}{efterord till}},
+  forewordto = {{f\"{o}rord till}{f\"{o}rord till}},
+  introductionto = {{inledning till}{inl\adddotspace till}},
+  partvolume = {{del}{del}},
+  by = {{av}{av}},
+  of = {{av}{av}},
+  on = {{p{\aa}}{p{\aa}}},
+  compiler = {{sammanst\adddot}{sammanst\adddot}},
+  compilers = {{sammanst\adddot}{sammanst\adddot}},
+  transcompiler = {{\"{o}vers\adddotspace och sammanst\adddot}%
+    {\"{o}vers\adddotspace och sammanst\adddot}},
+  transcompilers = {{\"{o}vers\adddotspace och sammanst\adddot}%
+    {\"{o}vers\adddotspace och sammanst\adddot}},
+  editortranscompiler = {{utg\adddot\addcomma\addspace
+      \"{o}vers\adddot\addcomma\addspace och sammanst\adddot}%
+    {utg\adddot\addcomma\addspace
+      \"{o}vers\adddot\addcomma\addspace och sammanst\adddot}},
+  editorcompiler = {{utg\adddotspace och sammanst\adddot}%
+    {utg\adddotspace och sammanst\adddot}},
+  editortranslator = {{utg\adddotspace och \"{o}vers\adddot}%
+    {utg\adddotspace och \"{o}vers\adddot}},
+  editortranscompilers = {{utg\adddot\addcomma\addspace
+      \"{o}vers\adddot\addcomma\addspace och sammanst\adddot}%
+    {utg\adddot\addcomma\addspace
+      \"{o}vers\adddot\addcomma\addspace och sammanst\adddot}},
+  editorcompilers = {{utg\adddotspace och sammanst\adddot}%
+    {utg\adddotspace och sammanst\adddot}},
+  editortranslators = {{utg\adddotspace och \"{o}vers\adddot}%
+    {utg\adddotspace och \"{o}vers\adddot}},
+  conductor = {{dir\adddot}{dir\adddot}},
+  conductors = {{dir\adddot}{dir\adddot}},
+  director = {{regi}{regi}},
+  directors = {{regi}{regi}},
+  none = {{}{}},
+  nones = {{}{}},
+  producer = {{prod\adddot}{prod\adddot}},
+  producers = {{prod\adddot}{prod\adddot}},
+  editor = {{utg\adddot}{utg\adddot}},
+  editors = {{utg\adddot}{utg\adddot}},
+  choreographer = {{koreogr\adddot}{\koreogr\adddot}},
+  choreographers = {{koreogr\adddot}{koreogr\adddot}},
+  ibidem = {{ibid\adddot}{ibid\adddot}},
+  origpub = {{ursprungligen publicerad som}%
+    {urspr\adddot\ pub\adddot\ som}},
+  origpublin = {{ursprungligen publicerad i\addspace}%
+    {urspr\adddot\ pub\adddotspace i\addspace}},
+  origpubyear = {{ursprungligen publicerad i\addspace}%
+    {urspr\adddot\ utg\adddotspace}},
+  origpubyearalt = {{f{\o}rst publicerad\addspace}%
+    {f{\o}rst pub\adddotspace}},
+  origreleaseyear = {{ursprungligen publicerad i\addspace}%
+    {urspr\adddot\ pub\adddotspace}},
+  origshownyear = {{ursprungligen visad i\addspace}%
+    {urspr\adddot\ visad\addspace}},
+  origedition ={{utg{\aa}va\addcolon\addspace}%
+    {utg\adddot\addcolon\addspace}},
+  revisededition = {{reviderad utg{\aa}va\addspace}%
+    {rev\adddotspace utg\adddot}},
+  broadcast = {{kringkastet}{kringkastet}},
+  songrecorded = {{spilt inn}{spilt inn}},
+  discrecorded = {{spilt inn}{spilt inn}},
+  numbers = {{nr\adddot}{nr\adddot}},
+  nodate = {{udatert}{udatert}},
+  decade = {{-talet}{-talet}},
+  century = {{-talet}{-talet}},
+  pseudonym = {{pseud\adddot}{pseud\adddot}},
+  patentfiled = {{s{\o}kt}{s{\o}kt}},
+  patentissued = {{meddelt}{meddelt}},
+  inlang = {{p{\aa}\addspace}{p{\aa}\addspace}},
+  edamerican     = {{amerikanska}{amerikanska}},
+  edbrazilian    = {{brasilianska}{brasilianska}},
+%  edbulgarian    = {{}{}},% FIXME: missing
+  edcatalan      = {{katalanska}{katalanska}},
+  edcroatian     = {{kroatiska}{kroatiska}},
+  edczech        = {{tjeckiska}{tjeckiska}},
+  eddanish       = {{danska}{danska}},
+  eddutch        = {{nederl\"andska}{nederl\"andska}},
+  edenglish      = {{engelska}{engelska}},
+%  edestonian     = {{}{}},% FIXME: missing
+  edfinnish      = {{finska}{finska}},
+  edfrench       = {{franska}{franska}},
+  edgalician     = {{galiciska}{galiciska}},
+  edgerman       = {{tyska}{tyska}},
+  edgreek        = {{grekiska}{grekiska}},
+  editalian      = {{italienska}{italienska}},
+% edjapanese      = {{}{}},% FIXME: missing
+  edlatin        = {{latin}{latin}},
+  ednorwegian    = {{norska}{norska}},
+  edpolish       = {{polska}{polska}},
+  edportuguese   = {{portugisiska}{portugisiska}},
+  edrussian      = {{ryska}{ryska}},
+% edslovak      = {{}{}},% FIXME: missing
+% edslovene      = {{}{}},% FIXME: missing
+  edspanish      = {{spanska}{spanska}},
+  edswedish      = {{svenska}{svenska}},
+% edukrainian    = {{}{}},% FIXME: missing 
+  translator       = {{\"{o}vers\adddot}{\"{o}vers\adddot}},
+  translators      = {{\"{o}vers\adddot}{\"{o}vers\adddot}},
+  redactor         = {{bearb\adddot}{bearb\adddot}},
+  redactors        = {{bearb\adddot}{bearb\adddot}},
+  founder          = {{grunnl\adddot}{grunnl\adddot}},
+  founders         = {{grunnl\adddot}{grunnl\adddot}},
+  continuator      = {{videref\adddot}{videref\adddot}},
+  continuators     = {{videref\adddot}{videref\adddot}},
+  collaborator     = {{samarb\adddot}{samarb\adddot}},
+  collaborators    = {{samarb\adddot}{samarb\adddot}},
+  annotator        = {{f\"orkl\adddot}{f\"orkl\adddot}},
+  annotators       = {{f\"orkl\adddot}{f\"orkl\adddot}},
+  review = {{omtale}{omtale}},
+  reviewof = {{omtale av}{omtale av}},
+  commenton = {{kommentar p{\aa}}{kommentar p{\aa}}},
+  printed = {{tryckt}{tryckt}},
+  selfpublished = {{sj\"alv publicerad}{sj\"alv publ\adddot}},
+  cbynone = {{}{}},
+  cbyauthor = {{av}{av}},
+  cbyeditor = {{utg\adddot}{utg\adddotspace av}},
+  cbytranslator     = {{\"{o}vers\adddotspace\lbx@cfromlang}%
+    {\"{o}vers\adddotspace\lbx@sfromlang\ av}},
+  cbycompiler = {{sammanst\adddot}{sammanst\adddotspace av}},
+  cbyredactor = {{bearb\adddot}{bearb\adddotspace av}},
+  cbycommentator = {{komm\adddot}{kommenterad av}},
+  cbyannotator = {{f\"orkl\adddot}{f\"orklarad av}},
+  cbyfounder        = {{grunnl\adddot}{grunnl\adddotspace av}},
+  cbycontinuator    = {{videref\adddot}{videref\adddotspace av}},
+  cbycollaborator   = {{i samarb\adddotspace med}%
+    {i samarb\adddotspace med}},
+  cbyconductor = {{dir\adddot}{dir\adddotspace av}},
+  cbydirector = {{regi}{regi av}},
+  cbyproducer = {{prod\adddot}{prod\adddotspace av}},
+  cbychoreographer = {{koreogr\adddotspace av}{koreogr\adddotspace av}},
+  cbyeditortr    = {{utg\adddotspace och
+      \"{o}vers\adddotspace\lbx@cfromlang}%
+    {utg\adddotspace och \"{o}vers\adddotspace\lbx@sfromlang\ av}},
+  cbyeditorcp = {{utg\adddotspace och sammanst\adddot}%
+    {utg\adddotspace och sammanst\adddotspace av}},
+  cbyeditorco    = {{utg\adddotspace och komm\adddot}%
+    {utg\adddotspace och kommenterad av}},
+  cbyeditoran = {{utg\adddotspace och f\"orkl\adddot}%
+    {utg\adddotspace och f\"orklarad av}},
+  cbyeditorin = {{utg.,\addabbrvspace med inl.,\addabbrvspace av}%
+    {utg\adddotspace och med inl\adddotspace av}},
+  cbyeditorfo = {{utg.,\addabbrvspace med f\"{o}rord, av}%
+    {utg\adddotspace och med f\"{o}rord av}},
+  cbyeditoraf = {{utg.,\addabbrvspace med efterord, av}%
+    {utg\adddotspace och med efterord av}},
+  cbyeditortrcp = {{utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang\ och
+      sammanst\adddot}%
+    {utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang\ och sammanst\adddotspace av}},
+  cbyeditortrco = {{utg.,\addabbrvspace
+    \"{o}vers\adddotspace\lbx@fromlang\space och
+    komm\adddot}%
+  {utg.,\addabbrvspace
+    \"{o}vers\adddotspace\lbx@fromlang\space och kommenterad av}},
+  cbyeditortran = {{utg.,\addabbrvspace
+    \"{o}vers\adddotspace\lbx@fromlang\space och
+    f\"orkl\adddot}%
+  {utg.,\addabbrvspace
+    \"{o}vers\adddotspace\lbx@fromlang\space och f\"orklarad av}},
+  cbyeditortrin = {{utg\adddotspace och \"{o}vers\adddot\ \lbx@sfromlang, med inl., av}%
+    {utg.,\addabbrvspace \"{o}vers\adddot\ \lbx@sfromlang\ och med inl\adddotspace av}},
+  cbyeditortrfo = {{utg\adddotspace och \"{o}vers\adddot\ \lbx@sfromlang, med f\"{o}rord, av}%
+    {utg.,\addabbrvspace \"{o}vers\adddot\ \lbx@sfromlang\ och med f\"{o}rord av}},
+  cbyeditortraf = {{utg\adddotspace och \"{o}vers\adddot\ \lbx@sfromlang, med efterord, av}%
+    {utg.,\addabbrvspace \"{o}vers\adddot\ \lbx@sfromlang\ och med efterord av}},
+  cbyeditorcpco = {{utg.,\addabbrvspace sammanst\adddotspace och komm\adddot}%
+    {utg.,\addabbrvspace sammanst\adddotspace och kommenterad av}},
+  cbyeditorcpan = {{utg.,\addabbrvspace sammanst\adddotspace och f\"orkl\adddot}%
+    {utg.,\addabbrvspace sammanst\adddotspace och f\"orklarad av}},
+  cbyeditorcpin = {{utg\adddotspace och sammanst., med inl., av}%
+    {utg.,\addabbrvspace sammanst\adddotspace och med inl\adddotspace av}},
+  cbyeditorcpfo = {{utg\adddotspace och sammanst., med f\"{o}rord, av}%
+    {utg.,\addabbrvspace sammanst\adddotspace och med f\"{o}rord av}},
+  cbyeditorcpaf = {{utg\adddotspace och sammanst., med efterord, av}%
+    {utg.,\addabbrvspace sammanst\adddotspace och med efterord av}},
+  cbyeditorcpcoin = {{utg.,\addabbrvspace sammanst\adddotspace och komm., med inl., av}%
+    {utg.,\addabbrvspace sammanst., kommenterad och med inl\adddotspace av}},
+  cbyeditorcpcofo = {{utg.,\addabbrvspace sammanst., komm\adddotspace och med f\"{o}rord, av}%
+    {utg.,\addabbrvspace sammanst., kommenterad och med f\"{o}rord av}},
+  cbyeditorcpcoaf = {{utg.,\addabbrvspace sammanst\adddotspace och komm., med efterord, av}%
+    {utg.,\addabbrvspace sammanst., kommenterad och med efterord av}},
+  cbyeditorcpanin = {{utg.,\addabbrvspace sammanst., f\"orkl\adddotspace och med inl., av}%
+    {utg.,\addabbrvspace sammanst., f\"orklarad och med inl\adddotspace av}},
+  cbyeditorcpanfo = {{utg.,\addabbrvspace sammanst\adddotspace och f\"orkl., med f\"{o}rord, av}%
+    {utg.,\addabbrvspace sammanst., f\"orklarad och med f\"{o}rord av}},
+  cbyeditorcpanaf = {{utg.,\addabbrvspace sammanst., f\"orkl\adddotspace och med efterord, av}%
+    {utg.,\addabbrvspace sammanst., f\"orklarad och med efterord av}},
+  cbyeditortrcpco = {{utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang,
+      sammanst\adddotspace och komm\adddot}%
+    {utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang, sammanst\adddotspace och kommenterad av}},
+  cbyeditortrcpan = {{utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang,
+      sammanst\adddotspace och f\"orkl\adddot}%
+    {utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang, sammanst\adddotspace och f\"orklarad av}},
+  cbyeditortrcpin = {{utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang\ och sammanst., med inl., av}%
+    {utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang, sammanst\adddotspace och med inl\adddotspace av}},
+  cbyeditortrcpfo = {{utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang\ och sammanst., med f\"{o}rord, av}%
+    {utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang, sammanst\adddotspace och med f\"{o}rord av}},
+  cbyeditortrcpaf = {{utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang\ och sammanst., med efterord, av}%
+    {utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang, sammanst\adddotspace och med efterord av}},
+  cbyeditortrcpcoin = {{utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang,
+      sammanst\adddotspace och komm., med inl., av}%
+    {utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang, sammanst., kommenterad och med inl\adddotspace av}},
+  cbyeditortrcpcofo = {{utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang,
+      sammanst\adddotspace och komm., med f\"{o}rord, av}%
+    {utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang, sammanst., kommenterad och med f\"{o}rord av}},
+  cbyeditortrcpcoaf = {{utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang,
+      sammanst\adddotspace och komm., med efterord, av}%
+    {utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang, sammanst., kommenterad och med efterord av}},
+  cbyeditortrcpanin = {{utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang,
+      sammanst\adddotspace och f\"orkl., med inl., av}%
+    {utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang, sammanst., f\"orklarad och med inl\adddotspace av}},
+  cbyeditortrcpanfo = {{utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang,
+      sammanst\adddotspace och f\"orkl., med f\"{o}rord, av}%
+    {utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang, sammanst., f\"orklarad och med f\"{o}rord av}},
+  cbyeditortrcpanaf = {{utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang,
+      sammanst\adddotspace och f\"orkl., med efterord, av}%
+    {utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang, sammanst., f\"orklarad och med efterord av}},
+  cbyeditorcoin = {{utg\adddotspace och komm., med inl., av}%
+    {utg.,\addabbrvspace kommenterad och med inl\adddotspace av}},
+  cbyeditorcofo = {{utg\adddotspace och komm., med f\"{o}rord, av}%
+    {utg.,\addabbrvspace kommenterad och med f\"{o}rord av}},
+  cbyeditorcoaf = {{utg\adddotspace och komm., med efterord, av}%
+    {utg.,\addabbrvspace kommenterad och med efterord av}},
+  cbyeditoranin = {{utg\adddotspace och f\"orkl., med inl., av}%
+    {utg.,\addabbrvspace f\"orklarad och med inl\adddotspace av}},
+  cbyeditoranfo = {{utg\adddotspace och f\"orkl., med f\"{o}rord, av}%
+    {utg.,\addabbrvspace f\"orklarad och med f\"{o}rord av}},
+  cbyeditoranaf = {{utg\adddotspace och f\"orkl., med efterord, av}%
+    {utg.,\addabbrvspace f\"orklarad och med efterord av}},
+  cbyeditortrcoin = {{utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang\space och komm., med inl., av}%
+  {utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang, kommenterad och med inl\adddotspace av}},
+  cbyeditortrcofo = {{utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang\space och komm., med f\"{o}rord, av}%
+  {utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang, kommenterad och med f\"{o}rord av}},
+  cbyeditortrcoaf = {{utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang\space och komm., med efterord, av}%
+  {utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang, kommenterad och med efterord av}},
+  cbyeditortranin = {{utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang\space och f\"orkl., med inl., av}%
+  {utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang, f\"orklarad och med inl\adddotspace av}},
+  cbyeditortranfo = {{utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang\space och f\"orkl., med f\"{o}rord, av}%
+  {utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang, f\"orklarad och med f\"{o}rord av}},
+  cbyeditortranaf = {{utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang\space och f\"orkl., med efterord, av}%
+  {utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang, f\"orklarad och med efterord av}},
+  cbytranslatorcp = {{\"{o}vers\adddotspace\lbx@fromlang\ och sammanst\adddot}%
+    {\"{o}vers\adddotspace\lbx@fromlang\ och sammanst\adddotspace av}},
+  cbytranslatorco = {{\"{o}vers\adddotspace\lbx@fromlang\ och komm\adddot}%
+    {\"{o}vers\adddotspace\lbx@fromlang\ och kommenterad av}},
+  cbytranslatoran = {{\"{o}vers\adddotspace\lbx@fromlang\ och f\"orkl\adddot}%
+    {\"{o}vers\adddotspace\lbx@fromlang\ och f\"orklarad av}},
+  cbytranslatorin = {{\"{o}vers\adddotspace\lbx@fromlang, med inl., av}%
+    {\"{o}vers\adddotspace\lbx@fromlang\ och med inl\adddotspace av}},
+  cbytranslatorfo = {{\"{o}vers\adddotspace\lbx@fromlang, med f\"{o}rord, av}%
+    {\"{o}vers\adddotspace\lbx@fromlang\ och med f\"{o}rord av}},
+  cbytranslatoraf = {{\"{o}vers\adddotspace\lbx@fromlang, med efterord, av}%
+    {\"{o}vers\adddotspace\lbx@fromlang\ och med efterord av}},
+  cbytranslatorcoin = {{\"{o}vers\adddotspace\lbx@fromlang\ och komm.,
+      med inl., av}%
+    {\"{o}vers\adddotspace\lbx@fromlang, kommenterad och med inl\adddotspace av}},
+  cbytranslatorcofo = {{\"{o}vers\adddotspace\lbx@fromlang\ och komm.,
+      med f\"{o}rord, av}%
+    {\"{o}vers\adddotspace\lbx@fromlang, kommenterad och med f\"{o}rord av}},
+  cbytranslatorcoaf = {{\"{o}vers\adddotspace\lbx@fromlang\ och komm.,
+      med efterord, av}%
+    {\"{o}vers\adddotspace\lbx@fromlang, kommenterad och med efterord av}},
+  cbytranslatoranin = {{\"{o}vers\adddotspace\lbx@fromlang\ och f\"orkl.,
+      med inl., av}%
+    {\"{o}vers\adddotspace\lbx@fromlang, f\"orklarad och med inl\adddotspace av}},
+  cbytranslatoranfo = {{\"{o}vers\adddotspace\lbx@fromlang\ och f\"orkl.,
+      med f\"{o}rord, av}%
+    {\"{o}vers\adddotspace\lbx@fromlang, f\"orklarad och med f\"{o}rord av}},
+  cbytranslatoranaf = {{\"{o}vers\adddotspace\lbx@fromlang\ och f\"orkl.,
+      med efterord, av}%
+    {\"{o}vers\adddotspace\lbx@fromlang, f\"orklarad och med efterord av}},
+  cbytranslatorcpco = {{\"{o}vers\adddotspace\lbx@fromlang, sammanst\adddotspace och komm\adddot}%
+    {\"{o}vers\adddotspace\lbx@fromlang, sammanst\adddotspace och kommenterad av}},
+  cbytranslatorcpan = {{\"{o}vers\adddotspace\lbx@fromlang, sammanst\adddotspace och f\"orkl\adddot}%
+    {\"{o}vers\adddotspace\lbx@fromlang, sammanst\adddotspace och f\"orklarad av}},
+  cbytranslatorcpin = {{\"{o}vers\adddotspace\lbx@fromlang\ och sammanst.,
+      med inl., av}%
+    {\"{o}vers\adddotspace\lbx@fromlang, sammanst\adddotspace och med inl\adddotspace av}},
+  cbytranslatorcpfo = {{\"{o}vers\adddotspace\lbx@fromlang\ och sammanst.,
+      med f\"{o}rord, av}%
+    {\"{o}vers\adddotspace\lbx@fromlang, sammanst\adddotspace och med f\"{o}rord av}},
+  cbytranslatorcpaf = {{\"{o}vers\adddotspace\lbx@fromlang\ och sammanst.,
+      med efterord, av}%
+    {\"{o}vers\adddotspace\lbx@fromlang, sammanst\adddotspace och med efterord av}},
+  cbytranslatorcpcoin = {{\"{o}vers\adddotspace\lbx@fromlang, sammanst\adddotspace och komm., med inl., av}%
+    {\"{o}vers\adddotspace\lbx@fromlang, sammanst., kommenterad och
+      med inl\adddotspace av}},
+  cbytranslatorcpcofo = {{\"{o}vers\adddotspace\lbx@fromlang, sammanst\adddotspace och komm., med f\"{o}rord, av}%
+    {\"{o}vers\adddotspace\lbx@fromlang, sammanst., kommenterad och
+      med f\"{o}rord av}},
+  cbytranslatorcpcoaf = {{\"{o}vers\adddotspace\lbx@fromlang, sammanst\adddotspace och komm., med efterord, av}%
+    {\"{o}vers\adddotspace\lbx@fromlang, sammanst., kommenterad och
+      med efterord av}},
+  cbytranslatorcpanin = {{\"{o}vers\adddotspace\lbx@fromlang, sammanst\adddotspace och f\"orkl., med inl., av}%
+    {\"{o}vers\adddotspace\lbx@fromlang, sammanst., f\"orklarad och
+      med inl\adddotspace av}},
+  cbytranslatorcpanfo = {{\"{o}vers\adddotspace\lbx@fromlang, sammanst\adddotspace och f\"orkl., med f\"{o}rord, av}%
+    {\"{o}vers\adddotspace\lbx@fromlang, sammanst., f\"orklarad och
+      med f\"{o}rord av}},
+  cbytranslatorcpanaf = {{\"{o}vers\adddotspace\lbx@fromlang, sammanst\adddotspace och f\"orkl., med efterord, av}%
+    {\"{o}vers\adddotspace\lbx@fromlang, sammanst., f\"orklarad och
+      med efterord av}},
+  cbycompilerco = {{sammanst\adddotspace och komm\adddot}%
+    {sammanst\adddotspace och kommenterad av}},
+  cbycompileran = {{sammanst\adddotspace och f\"orkl\adddot}%
+    {sammanst\adddotspace och f\"orklarad av}},
+  cbycompilerin = {{sammanst.,\addabbrvspace med inl., av}%
+    {sammanst\adddotspace och med inl\adddotspace av}},
+  cbycompilerfo = {{sammanst.,\addabbrvspace med f\"{o}rord, av}%
+    {sammanst\adddotspace och med f\"{o}rord av}},
+  cbycompileraf = {{sammanst.,\addabbrvspace med efterord, av}%
+    {sammanst\adddotspace och med efterord av}},
+  cbycompilercoin = {{sammanst\adddotspace och komm., med inl., av}%
+    {sammanst.,\addabbrvspace kommenterad och med inl\adddotspace av}},
+  cbycompilercofo = {{sammanst\adddotspace och komm., med f\"{o}rord, av}%
+    {sammanst.,\addabbrvspace kommenterad och med f\"{o}rord av}},
+  cbycompilercoaf = {{sammanst\adddotspace och komm., med efterord, av}%
+    {sammanst.,\addabbrvspace kommenterad och med efterord av}},
+  cbycompileranin = {{sammanst\adddotspace och f\"orkl., med inl., av}%
+    {sammanst.,\addabbrvspace f\"orklarad och med inl\adddotspace av}},
+  cbycompileranfo = {{sammanst\adddotspace och f\"orkl., med f\"{o}rord, av}%
+    {sammanst.,\addabbrvspace f\"orklarad och med f\"{o}rord av}},
+  cbycompileranaf = {{sammanst\adddotspace och f\"orkl., med efterord, av}%
+    {sammanst.,\addabbrvspace f\"orklarad och med efterord av}},
+  volume = {{bd\adddot}{bd\adddot}},
+  volumes = {{bd\adddot}{bd\adddot}},
+  jourvol = {{{\aa}rg\adddot}{{\aa}rg\adddot}},
+  jourser = {{ser\adddot}{ser\adddot}},
+  oldseries = {{gl\adddotspace ser\adddot}{gl\adddotspace ser\adddot}},
+  edition = {{utg\adddot}{utg\adddot}},
+  page = {{s\adddot}{s\adddot}},
+  pages = {{s\adddot}{s\adddot}},
+  column = {{sp\adddot}{sp\adddot}},
+  columns = {{sp\adddot}{sp\adddot}},
+  line = {{r\adddot}{r\adddot}},
+  lines = {{r\adddot}{r\adddot}},
+  paragraph = {{\S}{\S}},
+  paragraphs = {{\S}{\S}},
+  section = {{\S}{\S}},
+  sections = {{\S}{\S}},
+  subsection = {{\S}{\S}},
+  subsections = {{\S}{\S}},
+  preface = {{f\"orord}{f\"orord}},
+  note = {{not}{not}},
+  canadasection = {{s\adddot}{s\adddot}},% For legal citations
+  canadasections = {{s\adddot}{s\adddot}},% ditto
+  supranote = {{\mkbibemph{supra}\addspace not\addnbspace}% ditto
+    {\mkbibemph{supra}\addspace not\addnbspace}},
+  hereinafter = {{h\"adanefter}{h\"adanefter}},
+  subverbo = {{s\adddot v\adddot}{s\adddot v\adddot}},
+  subverbis = {{s\adddot vv\adddot}{s\adddot vv\adddot}},
+  verse = {{v\adddot}{v\adddot}},
+  verses = {{v\adddot}{v\adddot}},
+  number = {{nr\adddot}{nr\adddot}},
+  chapter = {{kap\adddot}{kap\adddot}},
+  track = {{sp{\aa}ret}{sp{\aa}ret}},
+  circa = {{cirka}{ca}},
+  spring = {{v{\aa}r}{v{\aa}r}},
+  summer = {{sommar}{sommar}},
+  autumn = {{h\"ost}{h\"ost}},
+  winter = {{vinter}{vinter}},
+  cfromamerican     = {{fr{\aa}n engelska av}{fr{\aa}n engelska av}},
+  cfrombrazilian    = {{fr{\aa}n portugisiska av}{fr{\aa}n
+      portugisiska av}},
+% cfrombulgarian    = {{}{}},% FIXME: missing
+  cfromcatalan      = {{fr{\aa}n katalanska av}{fr{\aa}n katalanska av}},
+  cfromcroatian     = {{fr{\aa}n kroatiska av}{fr{\aa}n kroatiska av}},
+  cfromczech        = {{fr{\aa}n tjeckiska av}{fr{\aa}n tjeckiska av}},
+  cfromdanish       = {{fr{\aa}n danska av}{fr{\aa}n danska av}},
+  cfromdutch        = {{fr{\aa}n nederl\"andska av}{fr{\aa}n
+      nederl\"andska av}},
+  cfromenglish      = {{fr{\aa}n engelska av}{fr{\aa}n engelska av}},
+% cfromestonian     = {{}{}},% FIXME: missing
+  cfromfinnish      = {{fr{\aa}n finska av}{fr{\aa}n finska av}},
+  cfromfrench       = {{fr{\aa}n franska av}{fr{\aa}n franska av}},
+  cfromgalician     = {{fr{\aa}n galiciska av}{fr{\aa}n galiciska av}},
+  cfromgerman       = {{fr{\aa}n tyska av}{fr{\aa}n tyska av}},
+  cfromgreek        = {{fr{\aa}n grekiska av}{fr{\aa}n grekiska av}},
+  cfromitalian      = {{fr{\aa}n italienska av}{fr{\aa}n italienska
+      av}},
+% cfromjapanese     = {{}{}},% FIXME: missing
+  cfromlatin        = {{fr{\aa}n latin av}{fr{\aa}n latin av}},
+  cfromnorwegian    = {{fr{\aa}n norska av}{fr{\aa}n norska av}},
+  cfrompolish       = {{fr{\aa}n polska av}{fr{\aa}n polska av}},
+  cfromportuguese   = {{fr{\aa}n portugisiska av}{fr{\aa}n portugisiska av}},
+  cfromrussian      = {{fr{\aa}n ryska av}{fr{\aa}n ryska av}},
+% cfromslovak     = {{}{}},% FIXME: missing
+% cfromslovene     = {{}{}},% FIXME: missing
+  cfromspanish      = {{fr{\aa}n spanska av}{fr{\aa}n spanska av}},
+  cfromswedish      = {{fr{\aa}n svenska av}{fr{\aa}n svenska av}},
+% cfromukrainian     = {{}{}},% FIXME: missing
+  bynone = {{}{}},
+  byconductor = {{dirigerad av}{dir\adddotspace av}},
+  bydirector = {{regisserad av}{regi av}},
+  byproducer = {{producerad av}{prod\adddotspace av}},
+  bychoreographer = {{koreograferad av}{koreogr\adddotspace av}},
+  byeditorcp = {{utgiven och sammanst\"{a}lld av}{utg\adddotspace och sammanst\adddotspace av}},
+  byeditortrcp = {{utgiven, \"{o}versatt \lbx@fromlang\ och sammanst\"{a}lld av}%
+    {utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang\ och sammanst\adddotspace av}},
+  byeditortrcpco = {{utgiven, \"{o}versatt \lbx@fromlang, sammanst\"{a}lld och kommenterad av}%
+    {utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang, sammanst\adddotspace och kommenterad av}},
+  byeditortrcpan = {{utgiven, \"{o}versatt \lbx@fromlang, sammanst\"{a}lld och f\"{o}rklarad av}%
+    {utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang, sammanst\adddotspace och f\"orklarad av}},
+  byeditortrcpin = {{utgiven, \"{o}versatt \lbx@fromlang, sammanst\"{a}lld och f\"orsedd med inledning av}%
+    {utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang, sammanst\adddotspace och med inl\adddotspace av}},
+  byeditortrcpfo = {{utgiven, \"{o}versatt \lbx@fromlang, sammanst\"{a}lld och f\"orsedd med f\"{o}rord av}%
+    {utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang, sammanst\adddotspace och med f\"{o}rord av}},
+  byeditortrcpaf = {{utgiven, \"{o}versatt \lbx@fromlang, sammanst\"{a}lld och f\"orsedd med efterord av}%
+    {utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang, sammanst\adddotspace och med efterord av}},
+  byeditortrcpcoin = {{utgiven, \"{o}versatt \lbx@fromlang, sammanst\"{a}lld, kommenterad och f\"orsedd med inledning av}%
+    {utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang, sammanst., kommenterad och med inl\adddotspace av}},
+  byeditortrcpcofo = {{utgiven, \"{o}versatt \lbx@fromlang, sammanst\"{a}lld, kommenterad och f\"orsedd med f\"{o}rord av}%
+    {utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang, sammanst., kommenterad och med f\"{o}rord av}},
+  byeditortrcpcoaf = {{utgiven, \"{o}versatt \lbx@fromlang, sammanst\"{a}lld, kommenterad och f\"orsedd med efterord av}%
+    {utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang, sammanst., kommenterad och med efterord av}},
+  byeditortrcpanin = {{utgiven, \"{o}versatt \lbx@fromlang, sammanst\"{a}lld, f\"{o}rklarad och f\"orsedd med inledning av}%
+    {utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang, sammanst., f\"orklarad och med inl\adddotspace av}},
+  byeditortrcpanfo = {{utgiven, \"{o}versatt \lbx@fromlang, sammanst\"{a}lld, f\"{o}rklarad och f\"orsedd med f\"{o}rord av}%
+    {utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang, sammanst., f\"orklarad och med f\"{o}rord av}},
+  byeditortrcpanaf = {{utgiven, \"{o}versatt \lbx@fromlang, sammanst\"{a}lld, f\"{o}rklarad och f\"orsedd med efterord av}%
+    {utg.,\addabbrvspace \"{o}vers\adddotspace\lbx@fromlang, sammanst., f\"orklarad och med efterord av}},
+  byeditorcpco = {{utgiven, sammanst\"{a}lld och kommenterad av}%
+    {utg.,\addabbrvspace sammanst\adddotspace och kommenterad av}},
+  byeditorcpan = {{utgiven, sammanst\"{a}lld och f\"{o}rklarad av}%
+    {utg.,\addabbrvspace sammanst\adddotspace och f\"orklarad av}},
+  byeditorcpin = {{utgiven, sammanst\"{a}lld och f\"orsedd med inledning av}%
+    {utg.,\addabbrvspace sammanst\adddotspace och med inl\adddotspace av}},
+  byeditorcpfo = {{utgiven, sammanst\"{a}lld och f\"orsedd med f\"{o}rord av}%
+    {utg.,\addabbrvspace sammanst\adddotspace och med f\"{o}rord av}},
+  byeditorcpaf = {{utgiven, sammanst\"{a}lld och f\"orsedd med efterord av}%
+    {utg.,\addabbrvspace sammanst\adddotspace och med efterord av}},
+  byeditorcpcoin = {{utgiven, sammanst\"{a}lld, kommenterad och f\"orsedd med inledning av}%
+    {utg.,\addabbrvspace sammanst., kommenterad och med inl\adddotspace av}},
+  byeditorcpcofo = {{utgiven, sammanst\"{a}lld, kommenterad och f\"orsedd med f\"{o}rord,
+      av}%
+    {utg.,\addabbrvspace sammanst., kommenterad och med f\"{o}rord av}},
+  byeditorcpcoaf = {{utgiven, sammanst\"{a}lld, kommenterad och f\"orsedd med efterord av}%
+    {utg.,\addabbrvspace sammanst., kommenterad och med efterord av}},
+  byeditorcpanin = {{utgiven, sammanst\"{a}lld, f\"{o}rklarad och f\"orsedd med inledning av}%
+    {utg.,\addabbrvspace sammanst., f\"orklarad och med inl\adddotspace av}},
+  byeditorcpanfo = {{utgiven, sammanst\"{a}lld, f\"{o}rklarad och f\"orsedd med f\"{o}rord,
+      av}%
+    {utg.,\addabbrvspace sammanst., f\"orklarad och med f\"{o}rord av}},
+  byeditorcpanaf = {{utgiven, sammanst\"{a}lld, f\"{o}rklarad och f\"orsedd med efterord av}%
+    {utg.,\addabbrvspace sammanst., f\"orklarad och med efterord av}},
+  bytranslatorcp = {{\"{o}versatt \lbx@fromlang\ och sammanst\"{a}lld av}%
+    {\"{o}vers\adddotspace\lbx@fromlang\ och sammanst\adddotspace av}},
+  bytranslatorcpco = {{\"{o}versatt \lbx@fromlang, sammanst\"{a}lld och kommenterad av}%
+    {\"{o}vers\adddotspace\lbx@fromlang, sammanst\adddotspace och kommenterad av}},
+  bytranslatorcpan = {{\"{o}versatt \lbx@fromlang, sammanst\"{a}lld och f\"{o}rklarad av}%
+    {\"{o}vers\adddotspace\lbx@fromlang, sammanst\adddotspace och f\"orklarad av}},
+  bytranslatorcpin = {{\"{o}versatt \lbx@fromlang, sammanst\"{a}lld och f\"orsedd med inledning av}%
+    {\"{o}vers\adddotspace\lbx@fromlang, sammanst\adddotspace och med inl\adddotspace av}},
+  bytranslatorcpfo = {{\"{o}versatt \lbx@fromlang, sammanst\"{a}lld och f\"orsedd med f\"{o}rord av}%
+    {\"{o}vers\adddotspace\lbx@fromlang, sammanst\adddotspace och med f\"{o}rord av}},
+  bytranslatorcpaf = {{\"{o}versatt \lbx@fromlang, sammanst\"{a}lld och f\"orsedd med efterord av}%
+    {\"{o}vers\adddotspace\lbx@fromlang, sammanst\adddotspace och med efterord av}},
+  bytranslatorcpcoin = {{\"{o}versatt \lbx@fromlang, sammanst\"{a}lld, kommenterad och f\"orsedd med inledning av}%
+    {\"{o}vers\adddotspace\lbx@fromlang, sammanst., kommenterad och med inl\adddotspace av}},
+  bytranslatorcpcofo = {{\"{o}versatt \lbx@fromlang, sammanst\"{a}lld, kommenterad och f\"orsedd med f\"{o}rord av}%
+    {\"{o}vers\adddotspace\lbx@fromlang, sammanst., kommenterad och
+      med f\"{o}rord av}},
+  bytranslatorcpcoaf = {{\"{o}versatt \lbx@fromlang, sammanst\"{a}lld, kommenterad och f\"orsedd med efterord av}%
+    {\"{o}vers\adddotspace\lbx@fromlang, sammanst., kommenterad och med efterord av}},
+  bytranslatorcpanin = {{\"{o}versatt \lbx@fromlang, sammanst\"{a}lld, f\"{o}rklarad och f\"orsedd med inledning av}%
+    {\"{o}vers\adddotspace\lbx@fromlang, sammanst., f\"orklarad och med inl\adddotspace av}},
+  bytranslatorcpanfo = {{\"{o}versatt \lbx@fromlang, sammanst\"{a}lld, f\"{o}rklarad och f\"orsedd med f\"{o}rord av}%
+    {\"{o}vers\adddotspace\lbx@fromlang, sammanst., f\"orklarad och
+      med f\"{o}rord av}},
+  bytranslatorcpanaf = {{\"{o}versatt \lbx@fromlang, sammanst\"{a}lld, f\"{o}rklarad och f\"orsedd med efterord av}%
+    {\"{o}vers\adddotspace\lbx@fromlang, sammanst., f\"orklarad och
+      med efterord av}},
+  bycompilerco = {{sammanst\"{a}lld och kommenterad av}%
+    {sammanst\adddotspace och kommenterad av}},
+  bycompileran = {{sammanst\"{a}lld och f\"{o}rklarad av}%
+    {sammanst\adddotspace och f\"orklarad av}},
+  bycompilerin = {{sammanst\"{a}lld och f\"orsedd med inledning av}%
+    {sammanst\adddotspace och med inl\adddotspace av}},
+  bycompilerfo = {{sammanst\"{a}lld och f\"orsedd med f\"{o}rord av}%
+    {sammanst\adddotspace och med f\"{o}rord av}},
+  bycompileraf = {{sammanst\"{a}lld och f\"orsedd med efterord av}%
+    {sammanst\adddotspace och med efterord av}},
+  bycompilercoin = {{sammanst\"{a}lld, kommenterad och f\"orsedd med inledning av}%
+    {sammanst.,\addabbrvspace kommenterad och med inl\adddotspace av}},
+  bycompilercofo = {{sammanst\"{a}lld, kommenterad och f\"orsedd med f\"{o}rord av}%
+    {sammanst.,\addabbrvspace kommenterad och med f\"{o}rord av}},
+  bycompilercoaf = {{sammanst\"{a}lld, kommenterad och f\"orsedd med efterord av}%
+    {sammanst.,\addabbrvspace kommenterad och med efterord av}},
+  bycompileranin = {{sammanst\"{a}lld, f\"{o}rklarad och f\"orsedd med inledning av}%
+    {sammanst.,\addabbrvspace f\"orklarad och med inl\adddotspace av}},
+  bycompileranfo = {{sammanst\"{a}lld, f\"{o}rklarad och f\"orsedd med f\"{o}rord av}%
+    {sammanst.,\addabbrvspace f\"orklarad och med f\"{o}rord av}},
+  bycompileranaf = {{sammanst\"{a}lld, f\"{o}rklarad och f\"orsedd med efterord av}%
+    {sammanst.,\addabbrvspace f\"orklarad och med efterord av}},
+}
+
+\endinput

@@ -1,0 +1,547 @@
+%%
+%% This is file `chairxmath.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% chairxmath.dtx  (with options: `chairxmath')
+%% chairxmathFonts.dtx  (with options: `chairxmathFonts')
+%% chairxmathDelimiters.dtx  (with options: `chairxmathDelimiters')
+%% chairxmathDecoration.dtx  (with options: `chairxmathDecoration')
+%% chairxmathGeneral.dtx  (with options: `chairxmathGeneral')
+%% chairxmathAlgebra.dtx  (with options: `chairxmathAlgebra')
+%% chairxmathAnalysis.dtx  (with options: `chairxmathAnalysis')
+%% chairxmathCategory.dtx  (with options: `chairxmathCategory')
+%% chairxmathDiffgeo.dtx  (with options: `chairxmathDiffgeo')
+%% chairxmathLinalg.dtx  (with options: `chairxmathLinalg')
+%% chairxmathStatistics.dtx  (with options: `chairxmathStatistics')
+%% chairxmathTopology.dtx  (with options: `chairxmathTopology')
+%% This is a generated file.
+%% 
+%% Copyright (C) 2018 by ChairX
+%% 
+%% This file may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either
+%% version 1.3 of this license or (at your option) any later
+%% version.  The latest version of this license is in:
+%% 
+%% http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of
+%% 
+%% LaTeX version 2005/12/01 or later.
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{chairxmath}
+[2021/07/29 v1.0.0 First major release]
+
+\RequirePackage{amsmath}
+\RequirePackage{amssymb}
+\RequirePackage{mathtools}
+\DeclareSymbolFont{stmry}{U}{stmry}{m}{n}
+\SetSymbolFont{stmry}{bold}{U}{stmry}{b}{n}
+\RequirePackage{xkeyval}
+\RequirePackage{tensor}
+\RequirePackage{suffix}
+\newif\if@loadmath \@loadmathtrue
+\if@loadmath
+\DeclareMathAlphabet{\ch@airxmathbbm}{U}{bbm}{m}{n}
+\SetMathAlphabet\ch@airxmathbbm{bold}{U}{bbm}{bx}{n}
+\renewcommand{\mathbb}[1]{\ch@airxmathbbm{#1}}
+\DeclareMathAlphabet{\mathscr}{U}{rsfso}{m}{n}
+\DeclareSymbolFont{EulerScript}{U}{eus}{m}{n}
+\SetSymbolFont{EulerScript}{bold}{U}{eus}{b}{n}
+\DeclareSymbolFontAlphabet\mathcal{EulerScript}
+\define@key[chairx]{fonts}{algebrafont}{
+    \providecommand{\ch@irxalgebrafont}[1]{ }
+    \renewcommand{\ch@irxalgebrafont}{#1}
+}
+\define@key[chairx]{fonts}{basisfont}{
+\providecommand{\ch@irxbasisfont}[1]{ }
+\renewcommand{\ch@irxbasisfont}{#1}
+}
+\define@key[chairx]{fonts}{categoryfont}{
+    \providecommand{\ch@irxcategoryfont}[1]{ }
+    \renewcommand{\ch@irxcategoryfont}{#1}
+}
+\define@key[chairx]{fonts}{categorynamefont}{
+    \providecommand{\ch@irxcategorynamefont}[1]{ }
+    \renewcommand{\ch@irxcategorynamefont}{#1}
+}
+\define@key[chairx]{fonts}{fieldfont}{
+\providecommand{\ch@irxfieldfont}[1]{ }
+\renewcommand{\ch@irxfieldfont}{#1}
+}
+\define@key[chairx]{fonts}{filterfont}{
+\providecommand{\ch@irxfilterfont}[1]{ }
+\renewcommand{\ch@irxfilterfont}{#1}
+}
+\define@key[chairx]{fonts}{functorfont}{
+\providecommand{\ch@irxfunctorfont}[1]{ }
+\renewcommand{\ch@irxfunctorfont}{#1}
+}
+\define@key[chairx]{fonts}{gerstenhaberfont}{
+\providecommand{\ch@irxgerstenhaberfont}[1]{ }
+\renewcommand{\ch@irxgerstenhaberfont}{#1}
+}
+\define@key[chairx]{fonts}{groupfont}{
+\providecommand{\ch@irxgroupfont}[1]{ }
+\renewcommand{\ch@irxgroupfont}{#1}
+}
+\define@key[chairx]{fonts}{groupoidfont}{
+\providecommand{\ch@irxgroupoidfont}[1]{ }
+\renewcommand{\ch@irxgroupoidfont}{#1}
+}
+\define@key[chairx]{fonts}{hilbertfont}{
+\providecommand{\ch@irxhilbertfont}[1]{ }
+\renewcommand{\ch@irxhilbertfont}{#1}
+}
+\define@key[chairx]{fonts}{liealgfont}{
+\providecommand{\ch@irxliealgfont}[1]{ }
+\renewcommand{\ch@irxliealgfont}{#1}
+}
+\define@key[chairx]{fonts}{modulefont}{
+\providecommand{\ch@irxmodulefont}[1]{ }
+\renewcommand{\ch@irxmodulefont}{#1}
+}
+\define@key[chairx]{fonts}{prehilbfont}{
+\providecommand{\ch@irxprehilbfont}[1]{ }
+\renewcommand{\ch@irxprehilbfont}{#1}
+}
+\define@key[chairx]{fonts}{operatorfont}{
+    \providecommand{\ch@irxoperatorfont}[1]{ }
+    \renewcommand{\ch@irxoperatorfont}{#1}
+}
+\define@key[chairx]{fonts}{ringfont}{
+\providecommand{\ch@irxringfont}[1]{ }
+\renewcommand{\ch@irxringfont}{#1}
+}
+\define@key[chairx]{fonts}{scriptfont}{
+    \providecommand{\ch@irxscriptfont}[1]{ }
+    \renewcommand{\ch@irxscriptfont}{#1}
+}
+\define@key[chairx]{fonts}{sheaffont}{
+\providecommand{\ch@irxsheaffont}[1]{ }
+\renewcommand{\ch@irxsheaffont}{#1}
+}
+\define@key[chairx]{fonts}{spacefont}{
+    \providecommand{\ch@irxspacefont}[1]{ }
+    \renewcommand{\ch@irxspacefont}{#1}
+}
+\define@key[chairx]{fonts}{topologyfont}{
+\providecommand{\ch@irxtopologyfont}[1]{ }
+\renewcommand{\ch@irxtopologyfont}{#1}
+}
+\newcommand{\chairxfonts}[1]{
+  \setkeys[chairx]{fonts}{#1}
+}
+\chairxfonts{
+    algebrafont = \mathscr,
+    basisfont = \mathit,
+    categoryfont = \mathfrak,
+    categorynamefont = \mathsf,
+    fieldfont = \mathbb,
+    filterfont = \mathfrak,
+    functorfont = \mathsf,
+    groupfont = \mathrm,
+    groupoidfont = \mathfrak,
+    gerstenhaberfont = \mathfrak,
+    hilbertfont = \mathfrak,
+    liealgfont = \mathfrak,
+    modulefont = \mathscr,
+    prehilbfont = \mathcal,
+    operatorfont = \mathrm,
+    ringfont = \mathsf,
+    scriptfont = \mathrm,
+    sheaffont = \mathscr,
+    spacefont = \mathscr,
+    topologyfont = \mathscr
+}
+\newcommand{\ch@irxfont}[1]{\fontfamily{#1}\fontencoding{U}\fontseries{m}\fontshape{n}\selectfont}
+\newcommand{\ch@irxsymbol}[2]{{\ch@irxfont{#1}\char#2}}
+\newcommand\ch@irxmathsymbol[3][\mathord]{%
+  #1{\ch@irxm@thsymbol{#2}{#3}}}
+\def\ch@irxm@thsymbol#1#2{\mathchoice
+  {\@ch@irxm@thsymbol{#1}{#2}\tf@size}
+  {\@ch@irxm@thsymbol{#1}{#2}\tf@size}
+  {\@ch@irxm@thsymbol{#1}{#2}\sf@size}
+  {\@ch@irxm@thsymbol{#1}{#2}\ssf@size}}
+\def\@ch@irxm@thsymbol#1#2#3{\mbox{\fontsize{#3}{#3}\ch@irxsymbol{#1}{#2}}}
+\fi
+\if@loadmath
+\newcommand{\vast}{\bBigg@{4}}
+\newcommand{\Vast}{\bBigg@{5}}
+\newcommand{\vastl}{\mathopen\vast}
+\newcommand{\vastm}{\mathrel\vast}
+\newcommand{\vastr}{\mathclose\vast}
+\newcommand{\Vastl}{\mathopen\Vast}
+\newcommand{\Vastm}{\mathrel\Vast}
+\newcommand{\Vastr}{\mathclose\Vast}
+\fi
+\if@loadmath
+\let\originaltensor\tensor
+\DeclareRobustCommand\decorate{\originaltensor}
+\newcommand{\deco}[5]{\decorate*[^{#1}_{#2}]{#3}{^{#4}_{#5}}}
+\newcommand{\script}[1]{\ch@irxscriptfont{#1}}
+\fi
+\if@loadmath
+\newcommand{\I}{\mathrm{i}}
+\newcommand{\E}{\mathrm{e}}
+\newcommand{\D}{\mathop{}\!\mathrm{d}}
+\newcommand{\cc}[1]{\overline{{#1}}}
+\newcommand{\sign}{\operatorname{\ch@irxoperatorfont{sign}}}
+\newcommand{\RE}{\operatorname{\ch@irxoperatorfont{Re}}}
+\newcommand{\IM}{\operatorname{\ch@irxoperatorfont{Im}}}
+\newcommand{\Unit}{\mathbb{1}}
+\newcommand{\const}{\operatorname{\mathit{const}}}
+\newcommand{\canonical}{\ch@irxscriptfont{can}}
+\newcommand{\pt}{\ch@irxoperatorfont{pt}}
+\newcommand{\at}[2][\big]{#1\vert_{#2}}
+\newcommand{\Map}{\ch@irxoperatorfont{Map}}
+\newcommand{\Bij}{\ch@irxoperatorfont{Bij}}
+\newcommand{\argument}{\,\cdot\,}
+\newcommand{\domain}{\operatorname{\ch@irxoperatorfont{dom}}}
+\newcommand{\range}{\operatorname{\ch@irxoperatorfont{range}}}
+\newcommand{\id}{\operatorname{\ch@irxoperatorfont{id}}}
+\newcommand{\pr}{\operatorname{\ch@irxoperatorfont{pr}}}
+\newcommand{\inv}{\operatorname{\ch@irxoperatorfont{inv}}}
+\newcommand{\ev}{\operatorname{\ch@irxoperatorfont{ev}}}
+\newcommand{\image}{\operatorname{\ch@irxoperatorfont{im}}}
+\newcommand{\graph}{\operatorname{\ch@irxoperatorfont{graph}}}
+\newcommand{\coimage}{\operatorname{\ch@irxoperatorfont{coim}}}
+\newcommand{\coker}{\operatorname{\ch@irxoperatorfont{coker}}}
+\newcommand{\operator}[1]{\operatorname{\ch@irxoperatorfont{#1}}}
+\newcommand{\later}{\mathrel{\succcurlyeq}}
+\newcommand{\earlier}{\mathrel{\preccurlyeq}}
+\DeclareRobustCommand\big@p[2][1]{%
+\mathop{\vphantom{\sum}\mathpalette\bigop@{{#1}{#2}}}\slimits@
+}
+\newcommand{\bigop@}[2]{\bigop@@#1#2}
+\newcommand{\bigop@@}[3]{%
+\vcenter{
+\sbox\z@{$#1\sum$}
+\hbox{\resizebox{\ifx#1\displaystyle#2\fi\dimexpr\ht\z@+\dp\z@}{!}{$\m@th#3$}}
+}
+}
+\newcommand{\bigplus}{\DOTSB\big@p{+}}
+\newcommand{\bigtimes}{\DOTSB\big@p{\times}}
+\newcommand{\biprod}{\DOTSB\big@p{\mathrel{\prod\hspace{-0.4cm}\coprod}}}
+\newcommand{\smiley}{\ch@irxmathsymbol[\mathord]{wasy}{44}}
+\newcommand{\frownie}{\ch@irxmathsymbol[\mathord]{wasy}{47}}
+\newcommand{\heart}{\heartsuit}
+\fi
+\if@loadmath
+\newcommand{\field}[1]{\ch@irxfieldfont{#1}}
+\newcommand{\ring}[1]{\ch@irxringfont{#1}}
+\newcommand{\group}[1]{\ch@irxgroupfont{#1}}
+\newcommand{\algebra}[1]{\ch@irxalgebrafont{#1}}
+\newcommand{\module}[1]{\ch@irxmodulefont{#1}}
+\newcommand{\liealg}[1]{\ch@irxliealgfont{#1}}
+\newcommand{\MC}{{\scriptscriptstyle\ch@irxscriptfont{MC}}}
+\newcommand{\gerstenhaber}[1] {\ch@irxgerstenhaberfont{#1}}
+\newcommand{\Pol}{\ch@irxoperatorfont{Pol}}
+\newcommand{\lmult}{\operatorname{\ch@irxoperatorfont{\ell}}}
+\newcommand{\rmult}{\operatorname{\ch@irxoperatorfont{r}}}
+\newcommand{\Lmult}{\operatorname{\ch@irxoperatorfont{L}}}
+\newcommand{\Rmult}{\operatorname{\ch@irxoperatorfont{R}}}
+\newcommand{\Center}{\mathscr{Z}}
+\newcommand{\ad}{\operatorname{\ch@irxoperatorfont{ad}}}
+\newcommand{\Ad}{\operatorname{\ch@irxoperatorfont{Ad}}}
+\newcommand{\Conj}{\operatorname{\ch@irxoperatorfont{Conj}}}
+\newcommand{\acts}{\mathbin{\triangleright}}
+\newcommand{\racts}{\mathbin{\triangleleft}}
+\newcommand{\Char}{\ch@irxoperatorfont{char}}
+\newcommand{\modulo}{\operatorname{\ch@irxoperatorfont{mod}}}
+\newcommand{\Clifford}{\operatorname{\ch@irxoperatorfont{Cl}}}
+\newcommand{\cClifford}{\operatorname{\mathbb{C}\ch@irxoperatorfont{l}}}
+\newcommand{\Der}{\operatorname{\ch@irxoperatorfont{Der}}}
+\WithSuffix\newcommand\Der*{\decorate[^*]{\textrm{-}\Der}{}}
+\newcommand{\InnDer}{\operatorname{\ch@irxoperatorfont{InnDer}}}
+\WithSuffix\newcommand\InnDer*{\decorate[^*]{\textrm{-}\InnDer}{}}
+\newcommand{\OutDer}{\operatorname{\ch@irxoperatorfont{OutDer}}}
+\WithSuffix\newcommand\OutDer*{\decorate[^*]{\textrm{-}\OutDer}{}}
+\newcommand{\InnAut}{\operatorname{\ch@irxoperatorfont{InnAut}}}
+\WithSuffix\newcommand\InnAut*{\decorate[^*]{\textrm{-}\InnAut}{}}
+\newcommand{\OutAut}{\operatorname{\ch@irxoperatorfont{OutAut}}}
+\WithSuffix\newcommand\OutAut*{\decorate[^*]{\textrm{-}\OutAut}{}}
+\newcommand{\formal}[1]{\ch@irxllbbracket #1\ch@irxrrbbracket}
+\newcommand{\laurent}[1]{(\!(#1)\!)}
+\newcommand{\sweedler}[1]{{\scriptscriptstyle(#1)}}
+\newcommand{\algebras}{\categoryname{alg}}
+\WithSuffix\newcommand\algebras*{\decorate[^*]{\textrm{-}\algebras}{}}
+\newcommand{\Algebras}{\categoryname{Alg}}
+\WithSuffix\newcommand\Algebras*{\decorate[^*]{\textrm{-}\Algebras}{}}
+\newcommand{\reps}{\categoryname{rep}}
+\WithSuffix\newcommand\reps*{\decorate[^*]{\textrm{-}\reps}{}}
+\newcommand{\Reps}{\categoryname{Rep}}
+\WithSuffix\newcommand\Reps*{\decorate[^*]{\textrm{-}\Reps}{}}
+\newcommand{\PoissonAlg}{\categoryname{PoissonAlg}}
+\WithSuffix\newcommand\PoissonAlg*{\decorate[^*]{\textrm{-}\PoissonAlg}{}}
+\newcommand{\modules}{\categoryname{mod}}
+\WithSuffix\newcommand\modules*{\decorate[^*]{\textrm{-}\modules}{}}
+\newcommand{\Leftmodules}[1]{{#1}\textsf{-}\categoryname{mod}}
+\newcommand{\Rightmodules}[2][]{\categoryname{mod}_{#1}\textsf{-}{#2}}
+\newcommand{\Modules}{\categoryname{Mod}}
+\WithSuffix\newcommand\Modules*{\decorate[^*]{\textrm{-}\Modules}{}}
+\newcommand{\LeftModules}[1]{{#1}\textsf{-}\categoryname{Mod}}
+\newcommand{\RightModules}[2][]{\categoryname{Mod}_{#1}\textsf{-}{#2}}
+\newcommand{\Bimodules}{\categoryname{Bimod}}
+\WithSuffix\newcommand\Bimodules*{\decorate[^*]{\textrm{-}\Bimodules}{}}
+\newcommand{\Rings}{\categoryname{Ring}}
+\newcommand{\Groups}{\categoryname{Group}}
+\newcommand{\Ab}{\categoryname{Ab}}
+\newcommand{\Lattices}{\categoryname{Lattice}}
+\newcommand{\Sets}{\categoryname{Set}}
+\newcommand{\Vect}{\categoryname{Vect}}
+\newcommand{\LieAlgs}{\categoryname{LieAlg}}
+\newcommand{\Posets}{\categoryname{Poset}}
+\newcommand{\Directed}{\categoryname{Directed}}
+\newcommand{\GSets}[1][{G}]{{#1}\textrm{-}\Sets}
+\newcommand{\Groupoids}{\categoryname{Groupoid}}
+\fi
+\if@loadmath
+\newcommand{\vol}{\ch@irxoperatorfont{vol}}
+\newcommand{\complete}[1]{\widehat{#1}}
+\newcommand{\Ball}{\ch@irxoperatorfont{B}}
+\DeclarePairedDelimiter{\abs}{\lvert}{\rvert}
+\DeclarePairedDelimiter{\norm}{\lVert}{\rVert}
+\newcommand{\@supnormstar}[1]{\norm*{#1}_\infty}
+\newcommand{\@supnormnostar}[2][]{\norm[#1]{#2}_\infty}
+\newcommand{\supnorm}{\@ifstar\@supnormstar\@supnormnostar}
+\newcommand{\expands}[1][2.5]{\mathrel{\scalebox{#1}[1.1]{$\sim$}}}
+\newcommand{\std}{{\scriptscriptstyle{\ch@irxscriptfont{std}}}}
+\newcommand{\Weyl}{{\scriptscriptstyle{\ch@irxscriptfont{Weyl}}}}
+\newcommand{\Op}{\operatorname{Op}}
+\newcommand{\Opstd}{\operatorname{Op}_\std}
+\newcommand{\OpWeyl}{\operatorname{Op}_\Weyl}
+\newcommand{\spacename}[1]{\ch@irxspacefont{#1}}
+\newcommand{\Bounded}{\ch@irxspacefont{B}}
+\newcommand{\Continuous}{\ch@irxspacefont{C}}
+\newcommand{\Contbound}{\Continuous_{\mathrm{b}}}
+\newcommand{\Fun}[1][k]{\ch@irxspacefont{C}^{#1}}
+\newcommand{\Cinfty}{\Fun[\infty]}
+\newcommand{\Comega}{\Fun[\omega]}
+\newcommand{\Holomorphic}{\ch@irxspacefont{O}}
+\newcommand{\AntiHolomorphic}{\cc{\Holomorphic}}
+\newcommand{\Schwartz}{\ch@irxspacefont{S}}
+\newcommand{\Riemann}{\ch@irxspacefont{R}}
+\newcommand{\singsupp}{\operatorname{sing\,supp}}
+\newcommand{\seminorm}[1]{\mathrm{#1}}
+\newcommand{\ord}{\operatorname{ord}}
+\newcommand{\conv}{\operatorname{conv}}
+\newcommand{\extreme}{\operatorname{extreme}}
+\newcommand{\hilbert}[1]{\ch@irxhilbertfont{#1}}
+\newcommand{\prehilb}[1]{\ch@irxprehilbfont{#1}}
+\newcommand{\Adjointable}[1][{}]{\mathfrak{B}_{\scriptscriptstyle{#1}}}
+\newcommand{\Finite}[1][{}]{\mathfrak{F}_{\scriptscriptstyle{#1}}}
+\newcommand{\Compact}[1][{}]{\mathfrak{K}_{\scriptscriptstyle{#1}}}
+\newcommand{\opdomain}{\ch@irxhilbertfont{D}}
+\newcommand{\spec}{\operatorname{\ch@irxoperatorfont{spec}}}
+\newcommand{\closure}[1]{\overline{#1}}
+\newcommand{\res}{\operatorname{\ch@irxoperatorfont{res}}}
+\newcommand{\Res}{\operatorname{\ch@irxoperatorfont{Res}}}
+\newcommand{\specrad}{\operatorname{\varrho}}
+\newcommand{\slim}{\operatorname*{\ch@irxoperatorfont{s-lim}}}
+\newcommand{\wlim}{\operatorname*{\ch@irxoperatorfont{w-lim}}}
+\DeclarePairedDelimiter{\ketbr@}{\vert}{\vert}
+\DeclarePairedDelimiter{\ket}{\vert}{\rangle}
+\DeclarePairedDelimiter{\bra}{\langle}{\vert}
+\newcommand{\braket}[3][]{\SP[#1]{#2 \,#1\vert\, #3}}
+\newcommand{\ketbra}[3][]{\ketbr@[#1]{#2 #1\rangle #1\langle #3}}
+\newcommand{\Spec}{\operatorname{\ch@irxoperatorfont{Spec}}}
+\newcommand{\Rad}{\operatorname{\ch@irxoperatorfont{Rad}}}
+\newcommand{\ind}{\operatorname{\ch@irxoperatorfont{ind}}}
+\newcommand{\Measurable}{\ch@irxspacefont{M}}
+\newcommand{\Meas}{\ch@irxoperatorfont{Meas}}
+\newcommand{\BoundMeas}{\ch@irxspacefont{BM}}
+\newcommand{\Lp}[1][{p}]{\mathrm{L}^{#1}}
+\newcommand{\Lone}{\Lp[1]}
+\newcommand{\Ltwo}{\Lp[2]}
+\newcommand{\Linfty}{\Lp[\infty]}
+\newcommand{\Intp}[1][{p}]{\ch@irxspacefont{L}^{#1}}
+\newcommand{\Intone}{\Intp[1]}
+\newcommand{\Inttwo}{\Intp[2]}
+\newcommand{\Intinfty}{\Intp[\infty]}
+\newcommand{\essrange}{\operatorname{\ch@irxoperatorfont{ess\,range}}}
+\newcommand*{\esssup}{\operatorname*{\ch@irxoperatorfont{ess}\,\ch@irxoperatorfont{\sup}}}
+\newcommand{\@esssupnormstar}[1]{\norm*{#1}_{\esssup}}
+\newcommand{\@esssupnormnostar}[2][]{\norm[#1]{#2}_{\esssup}}
+\newcommand{\esssupnorm}{\@ifstar\@esssupnormstar\@esssupnormnostar}
+\newcommand{\ac}{\ch@irxscriptfont{ac}}
+\newcommand{\sing}{\ch@irxscriptfont{sing}}
+\newcommand{\indlim}{\operatorname*{{ind\,lim}}}
+\renewcommand{\projlim}{\operatorname*{{proj\,lim}}}
+\fi
+\if@loadmath
+\newcommand{\category}[1]{\ch@irxcategoryfont{#1}}
+\newcommand{\categoryname}[1]{\ch@irxcategorynamefont{#1}}
+\newcommand{\functor}[1]{\ch@irxfunctorfont{#1}}
+\newcommand{\groupoid}[1]{\ch@irxgroupoidfont{#1}}
+\newcommand{\source}{\ch@irxoperatorfont{source}}
+\newcommand{\target}{\ch@irxoperatorfont{target}}
+\newcommand{\unit}{\ch@irxoperatorfont{unit}}
+\newcommand{\opp}{\ch@irxscriptfont{opp}}
+\newcommand{\asso}{\ch@irxoperatorfont{asso}}
+\newcommand{\Hom}{\operatorname{\ch@irxoperatorfont{Hom}}}
+\newcommand{\End}{\operatorname{\ch@irxoperatorfont{End}}}
+\newcommand{\Aut}{\operatorname{\ch@irxoperatorfont{Aut}}}
+\WithSuffix\newcommand\Aut*{\decorate[^*]{\textrm{-}\Aut}{}}
+\newcommand{\Iso}{\operatorname{\ch@irxoperatorfont{Iso}}}
+\WithSuffix\newcommand\Iso*{\decorate[^*]{\textrm{-}\Iso}{}}
+\newcommand{\Obj}{\operatorname{\ch@irxoperatorfont{Obj}}}
+\newcommand{\Morph}{\operatorname{\ch@irxoperatorfont{Morph}}}
+\newcommand{\colim}{\operatorname*{{colim}}}
+\fi
+\if@loadmath
+\newcommand{\Lie}{\mathscr{L}}
+\DeclarePairedDelimiter{\ch@irxbracket}{[}{]}
+\DeclareMathDelimiter\ch@irxllbbracket{\mathopen}{stmry}{"4A}{stmry}{"71}
+\DeclareMathDelimiter\ch@irxrrbbracket{\mathclose}{stmry}{"4B}{stmry}{"79}
+\DeclarePairedDelimiter{\ch@irxbbracket}{\ch@irxllbbracket}{\ch@irxrrbbracket}
+\newcommand{\@schoutenstar}[1]{\ch@irxbbracket*{#1}_{\scriptscriptstyle\ch@irxscriptfont{S}}}
+\newcommand{\@schoutennostar}[2][]{\ch@irxbbracket[#1]{#2}_{\scriptscriptstyle\ch@irxscriptfont{S}}}
+\newcommand{\Schouten}{\@ifstar\@schoutenstar\@schoutennostar}
+\newcommand{\Forms}{\Omega}
+\newcommand{\ZdR}{\ch@irxoperatorfont{Z}_{\scriptscriptstyle\mathrm{dR}}}
+\newcommand{\BdR}{\ch@irxoperatorfont{B}_{\scriptscriptstyle\ch@irxscriptfont{dR}}}
+\newcommand{\HdR}{\ch@irxoperatorfont{H}_{\scriptscriptstyle\ch@irxscriptfont{dR}}}
+\newcommand{\Diffeo}{\operatorname{\ch@irxoperatorfont{Diffeo}}}
+\newcommand{\Diffop}{\operatorname{\ch@irxoperatorfont{DiffOp}}}
+\newcommand{\loc}{\ch@irxscriptfont{loc}}
+\newcommand{\germ}{\operatorname{\ch@irxoperatorfont{germ}}}
+\newcommand{\prol}{\ch@irxoperatorfont{prol}}
+\newcommand{\@nrbracketstar}[1]{\ch@irxbracket*{#1}_{\scriptscriptstyle\ch@irxscriptfont{NR}}}
+\newcommand{\@nrbracketnostar}[2][]{\ch@irxbracket[#1]{#2}_{\scriptscriptstyle\ch@irxscriptfont{NR}}}
+\newcommand{\NRbracket}{\@ifstar\@nrbracketstar\@nrbracketnostar}
+\newcommand{\@fnbracketstar}[1]{\ch@irxbracket*{#1}_{\scriptscriptstyle\ch@irxscriptfont{FN}}}
+\newcommand{\@fnbracketnostar}[2][]{\ch@irxbracket[#1]{#2}_{\scriptscriptstyle\ch@irxscriptfont{FN}}}
+\newcommand{\FNbracket}{\@ifstar\@fnbracketstar\@fnbracketnostar}
+\newcommand{\Manifolds}{\categoryname{\categoryname{Manifold}}}
+\newcommand{\lefttriv}{\ch@irxoperatorfont{left}}
+\newcommand{\righttriv}{\ch@irxoperatorfont{right}}
+\newcommand{\Gau}{\operatorname{\ch@irxoperatorfont{Gau}}}
+\newcommand{\Conn}{\operatorname{\ch@irxoperatorfont{Conn}}}
+\newcommand{\ratio}{\ch@irxoperatorfont{r}}
+\newcommand{\Parallel}{\operatorname{\ch@irxoperatorfont{P}}}
+\newcommand{\CE}{{\scriptscriptstyle{\ch@irxscriptfont{CE}}}}
+\newcommand{\HCE}{\ch@irxoperatorfont{H}_\CE}
+\newcommand{\fund}{\ch@irxoperatorfont{fund}}
+\newcommand{\Universal}{\operatorname{\ch@irxoperatorfont{U}}}
+\newcommand{\BCH}{\ch@irxscriptfont{\scriptscriptstyle{BCH}}}
+\newcommand{\LieGroups}{\categoryname{\categoryname{LieGroup}}}
+\newcommand{\Principal}{\categoryname{\categoryname{Principal}}}
+\newcommand{\GPrincipal}[1][G]{#1\categoryname{\textrm{-}\categoryname{Principal}}}
+\newcommand{\Fiber}{\categoryname{Fiber}}
+\newcommand{\FFiber}[1][F]{#1\categoryname{\textrm{-}\categoryname{Fiber}}}
+\newcommand{\Pin}{\group{Pin}}
+\newcommand{\Spin}{\group{Spin}}
+
+\newcommand{\nablaLC}{\nabla^{\scriptscriptstyle\ch@irxscriptfont{LC}}}
+\newcommand{\Laplace}{\Delta}
+\DeclareMathSymbol\dAlembert{\mathord}{AMSa}{"03}
+\newcommand{\feynman}[1]{\ooalign{$#1$\cr\hidewidth$\raise0.19ex\hbox{/}$\hidewidth\cr}}
+
+\newcommand{\Dirac}{\feynman{D}}
+\newcommand{\rotation}{\operatorname{\ch@irxoperatorfont{rot}}}
+\newcommand{\curl}{\operatorname{\ch@irxoperatorfont{curl}}}
+\newcommand{\divergence}{\operatorname{\ch@irxoperatorfont{div}}}
+\newcommand{\gradient}{\operatorname{\ch@irxoperatorfont{grad}}}
+\newcommand{\Tor}{\operatorname{\ch@irxoperatorfont{Tor}}}
+\newcommand{\Ric}{\operatorname{\ch@irxoperatorfont{Ric}}}
+\newcommand{\scal}{\operatorname{\ch@irxoperatorfont{scal}}}
+\newcommand{\Riem}{\operatorname{\ch@irxoperatorfont{Riem}}}
+\newcommand{\Hessian}{\ch@irxoperatorfont{Hessian}}
+\newcommand{\hodge}{\operatorname{\star}}
+\newcommand{\Nijenhuis}{\operatorname{\ch@irxoperatorfont{Nij}}}
+\newcommand{\del}{\mathop{}\!\partial}
+\newcommand{\delbar}{\mathop{}\!\cc{\partial}}
+\newcommand{\FS}{{\scriptscriptstyle{\ch@irxscriptfont{FS}}}}
+\newcommand{\Lift}{{\scriptscriptstyle{\ch@irxscriptfont{Lift}}}}
+\newcommand{\ver}{\ch@irxscriptfont{ver}}
+\newcommand{\hor}{\ch@irxscriptfont{hor}}
+\newcommand{\Ver}{\operatorname{\ch@irxoperatorfont{Ver}}}
+\newcommand{\Hor}{\operatorname{\ch@irxoperatorfont{Hor}}}
+\newcommand{\Sec}[1][k]{\Gamma^{#1}}
+\newcommand{\Secinfty}{\Sec[\infty]}
+\newcommand{\HolSec}{\Sec[]_{\ch@irxscriptfont{hol}}}
+\newcommand{\SymD}{\mathop{}\!\ch@irxoperatorfont{D}}
+\newcommand{\Densities}[1][n]{\abs{\Lambda^{#1}}}
+\newcommand{\MeasurableSections}{\ch@irxspacefont{M}\Sec[]}
+\newcommand{\IntpSections}[1][p]{\Intp[#1]\Sec[]}
+\newcommand{\IntegrableSections}{\IntpSections[1]}
+\newcommand{\Translation}{\ch@irxoperatorfont{T}}
+\newcommand{\frames}[1]{\ch@irxoperatorfont{#1}}
+\newcommand{\Frames}{\operatorname{\ch@irxoperatorfont{Frames}}}
+\newcommand{\FDiff}{\ch@irxoperatorfont{F}}
+\newcommand{\Sympl}{\operatorname{\ch@irxgroupfont{Sympl}}}
+\newcommand{\Jacobiator}[1][\pi]{\operatorname{\ch@irxoperatorfont{Jac}}_{#1}}
+\newcommand{\red}{\ch@irxscriptfont{red}}
+\newcommand{\Hess}{\ch@irxoperatorfont{Hess}}
+\newcommand{\KKS}{{\scriptscriptstyle\ch@irxscriptfont{KKS}}}
+\newcommand{\@courantstar}[1]{\ch@irxbbracket*{#1}_{\scriptscriptstyle\ch@irxscriptfont{C}}}
+\newcommand{\@courantnostar}[2][]{\ch@irxbbracket[#1]{#2}_{\scriptscriptstyle\ch@irxscriptfont{C}}}
+\newcommand{\Courant}{\@ifstar\@courantstar\@courantnostar}
+\newcommand{\@dorfmanstar}[1]{\ch@irxbbracket*{#1}_{\scriptscriptstyle\ch@irxscriptfont{D}}}
+\newcommand{\@dorfmannostar}[2][]{\ch@irxbbracket[#1]{#2}_{\scriptscriptstyle\ch@irxscriptfont{D}}}
+\newcommand{\Dorfman}{\@ifstar\@dorfmanstar\@dorfmannostar}
+\newcommand{\Dir}{\operatorname{\ch@irxoperatorfont{Dir}}}
+\newcommand{\Forward}{\mathcal{F}}
+\newcommand{\Backward}{\mathcal{B}}
+\newcommand{\Tangent}{\mathbb{T}}
+\newcommand{\MWreduction}{\big/\!\!\big/}
+\newcommand{\Mon}{\ch@irxoperatorfont{Mon}}
+\newcommand{\Hol}{\ch@irxoperatorfont{Hol}}
+\fi
+\if@loadmath
+\newcommand{\tr}{\operatorname{\ch@irxoperatorfont{tr}}}
+\newcommand{\rank}{\operatorname{\ch@irxoperatorfont{rank}}}
+\newcommand{\codim}{\operatorname{\ch@irxoperatorfont{codim}}}
+\newcommand{\diag}{\operatorname{\ch@irxoperatorfont{diag}}}
+\newcommand{\Trans}{{\ch@irxscriptfont{\scriptscriptstyle{T}}}}
+\newcommand{\Mat}{\ch@irxoperatorfont{M}}
+\newcommand{\SymMat}{\ch@irxoperatorfont{SymMat}}
+\newcommand{\ann}{\ch@irxscriptfont{ann}}
+\newcommand{\Span}[1][]{\operatorname{\ch@irxoperatorfont{span}_{#1}}}
+\newcommand{\basis}[1]{\ch@irxbasisfont{#1}}
+\renewcommand{\tensor}[1][{}]{\mathbin{\otimes_{\scriptscriptstyle{#1}}}}
+\newcommand{\Tensor}{\ch@irxoperatorfont{T}}
+\newcommand{\Anti}{\Lambda}
+\newcommand{\Sym}{\ch@irxoperatorfont{S}}
+\newcommand{\Symmetrizer}{\operatorname{\ch@irxoperatorfont{Sym}}}
+\newcommand{\AntiSymmetrizer}{\operatorname{\ch@irxoperatorfont{Alt}}}
+\newcommand{\ins}{\operatorname{\ch@irxoperatorfont{i}}}
+\newcommand{\jns}{\operatorname{\ch@irxoperatorfont{j}}}
+\newcommand{\insa}{\ins_{\ch@irxscriptfont{a}}}
+\newcommand{\inss}{\ins_{\ch@irxscriptfont{s}}}
+\newcommand{\degs}{\ch@irxoperatorfont{deg}_{\ch@irxscriptfont{s}}}
+\newcommand{\dega}{\ch@irxoperatorfont{deg}_{\ch@irxscriptfont{a}}}
+\DeclarePairedDelimiter{\SP} {\langle}{\rangle}
+\newcommand{\littlepara}{{\scriptscriptstyle\parallel}}
+\newcommand{\IP}[6][{}]{\decorate*[^{#2}_{#3}]{\SP[#1]{#4}}{^{#5}_{#6}}}
+\fi
+\if@loadmath
+\newcommand{\EX}{\operatorname{\ch@irxoperatorfont{E}}}
+\newcommand{\Var}{\operatorname{\ch@irxoperatorfont{Var}}}
+\newcommand{\Cov}{\operatorname{\ch@irxoperatorfont{Cov}}}
+\newcommand{\Cor}{\operatorname{\ch@irxoperatorfont{Cor}}}
+\fi
+\if@loadmath
+\newcommand{\cl}{\ch@irxscriptfont{cl}}
+\newcommand{\scl}{\ch@irxscriptfont{scl}}
+\newcommand{\interior}{\circ}
+\newcommand{\boundary}{\partial}
+\newcommand{\supp}{\operatorname{\ch@irxoperatorfont{supp}}}
+\newcommand{\dist}{\operatorname{\ch@irxoperatorfont{dist}}}
+\newcommand{\topology}[1]{\ch@irxtopologyfont{#1}}
+\newcommand{\filter}[1]{\ch@irxfilterfont{#1}}
+\newcommand{\sheaf}[1]{\ch@irxsheaffont{#1}}
+\newcommand{\Sections}{\operatorname{\ch@irxoperatorfont{Sections}}}
+\newcommand{\HOM}{\operatorname{\ch@irxsheaffont{H}\!\mathit{om}}}
+\DeclarePairedDelimiter{\etale}{\lvert}{\rvert}
+\newcommand{\topological}{\categoryname{top}}
+\newcommand{\Topological}{\categoryname{Top}}
+\newcommand{\Sheaves}{\categoryname{Sheaves}}
+\newcommand{\PreSheaves}{\categoryname{PreSheaves}}
+\newcommand{\Etale}{\categoryname{Etale}}
+\fi
+\endinput
+%%
+%% End of file `chairxmath.sty'.

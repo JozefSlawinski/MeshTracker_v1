@@ -1,0 +1,1715 @@
+% ==============================================================
+% pfdicons.sty
+% Copyright 2021 Aaron Drews
+%
+% This work may be distributed and/or modified under the
+% conditions of the LaTeX Project Public License, either version 1.3
+% of this license or (at your option) any later version.
+% The latest version of this license is in
+%   http://www.latex-project.org/lppl.txt
+% and version 1.3c or later is part of all distributions of LaTeX
+% version 2005/12/01 or later.
+%
+% This work has the LPPL maintenance status “maintained”.
+% 
+% The Current Maintainer of this work is Aaron Drews.
+%
+% This work consists of the files pig.dtx and pig.ins
+% and the derived file pig.sty.
+
+
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{pfdicons}[2021/07/26 PFD Icons package, v1.0a]
+% v1.0: Initial release
+% v1.0a: Documentation updates (typos, copy/paste behavior, etc)
+
+\RequirePackage{tikz}
+\RequirePackage{ifthen}
+
+\usetikzlibrary{positioning}
+\usetikzlibrary{spath3}
+\usetikzlibrary{arrows.meta}
+\usetikzlibrary{shapes}
+\usetikzlibrary{intersections}
+
+
+% ========= CUSTOM KEYS ==========
+\pgfkeys{/tikz/unit int/.initial = empty}
+\pgfkeys{/tikz/unit ext/.initial = none}
+
+
+% ========= CUSTOM SHAPES ==========
+\makeatletter
+
+% ==============================================================
+% tube reactor
+% ==============================================================
+\pgfdeclareshape{tube reactor}{
+	% A horizontal rectangle with curved endcaps
+	% Shape approved by kiwi
+	
+	% Saved anchors
+	\savedanchor{\bottomleft}{\pgfpoint{-4mm}{-3mm}}
+	\savedanchor{\topright}{\pgfpoint{4mm}{3mm}}
+	\savedanchor{\farleft}{\pgfpoint{-6mm}{0mm}}
+	
+	% Normal anchors
+	\anchor{center}{\pgfpointorigin}
+	\anchor{north}{\topright \pgf@x=0mm}
+	\anchor{south}{\bottomleft \pgf@x=0mm}
+	\anchor{east}{\farleft \pgf@x=-\pgf@x}
+	\anchor{west}{\farleft}
+	\anchor{south west}{\bottomleft}
+	\anchor{north east}{\topright}
+	\anchor{north west}{\topright \pgf@x=-\pgf@x}
+	\anchor{south east}{\topright \pgf@y=-\pgf@y}
+	\anchor{north north east}{\pgfpoint{3mm}{3mm}}
+	\anchor{north north west}{\pgfpoint{-3mm}{3mm}}
+	\anchor{south south east}{\pgfpoint{3mm}{-3mm}}
+	\anchor{south south west}{\pgfpoint{-3mm}{-3mm}}
+	\anchor{east north east}{\pgfpointadd{\pgfpoint{4mm}{0mm}}{\pgfpointpolar{45}{2mm and 3mm}}}
+	\anchor{east south east}{\pgfpointadd{\pgfpoint{4mm}{0mm}}{\pgfpointpolar{-45}{2mm and 3mm}}}
+	\anchor{west north west}{\pgfpointadd{\pgfpoint{-4mm}{0mm}}{\pgfpointpolar{135}{2mm and 3mm}}}
+	\anchor{west south west}{\pgfpointadd{\pgfpoint{-4mm}{0mm}}{\pgfpointpolar{225}{2mm and 3mm}}}
+	
+	% Special anchors (only useful for certain key=value pairs)
+	\anchor{west shell}{\pgfpoint{-3mm}{4mm}}
+	\anchor{east shell}{\pgfpoint{3mm}{4mm}}
+	\anchor{north shell}{\pgfpoint{-3mm}{4mm}}
+	\anchor{south shell}{\pgfpoint{3mm}{-4mm}}
+	
+	% Draw it
+	\backgroundpath{		
+		% Main rectangle
+		\pgfpathmoveto{\topright}
+		\pgfpatharc{90}{-90}{2mm and 3mm}
+		\pgfpathlineto{\bottomleft}
+		\pgfpatharc{270}{90}{2mm and 3mm}		
+		\pgfpathclose
+		\pgfsetroundjoin
+		\pgfsetroundcap
+	}
+	\foregroundpath{	
+		% Fills based on unit int variable	
+		
+		% unit int=packed (yields "X" symbol)
+		\ifthenelse{\equal{packed}{\pgfkeysvalueof{/tikz/unit int}}}
+		{\pgfpathmoveto{\topright}		
+			\pgfpathlineto{\bottomleft}
+			\pgfpathlineto{\bottomleft \pgf@y=-\pgf@y}
+			\pgfpathlineto{\topright \pgf@y=-\pgf@y}
+			\pgfpathclose
+		}{}
+		
+		% unit int=fixed (yields diagonal lines)
+		\ifthenelse{\equal{fixed}{\pgfkeysvalueof{/tikz/unit int}}}
+		{	\pgfpathmoveto{\topright}
+			\pgfpathlineto{\topright \pgf@y=-\pgf@y}
+			\pgfpathmoveto{\bottomleft}
+			\pgfpathlineto{\bottomleft \pgf@y=-\pgf@y}
+			
+			\foreach \xOne/\yOne/\xTwo/\yTwo in
+			{	-4mm/1mm/-2mm/3mm, 
+				-4mm/-1mm/0mm/3mm,
+				-4mm/-3mm/2mm/3mm,
+				-2mm/-3mm/4mm/3mm,
+				0mm/-3mm/4mm/1mm,
+				2mm/-3mm/4mm/-1mm
+			}
+			{\pgfpathmoveto{\pgfpoint{\xOne}{\yOne}}
+				\pgfpathlineto{\pgfpoint{\xTwo}{\yTwo}}}
+		}{}
+		
+		% unit int=tubular (yields horizontal lines)
+		\ifthenelse{\equal{tubular}{\pgfkeysvalueof{/tikz/unit int}}}
+		{	\pgfpathmoveto{\topright}
+			\pgfpathlineto{\topright \pgf@y=-\pgf@y}
+			\pgfpathmoveto{\bottomleft}
+			\pgfpathlineto{\bottomleft \pgf@y=-\pgf@y}
+			
+			\foreach \y in
+			{2mm, 1mm, 0mm, -1mm, -2mm} % also west/left
+			{\pgfpathmoveto{\pgfpoint{-4mm}{\y}}
+				\pgfpathlineto{\pgfpoint{4mm}{\y}}}		
+		}{}
+		
+		% unit ext=cis shell (yields utility stems, both on north side)
+		\ifthenelse{\equal{cis shell}{\pgfkeysvalueof{/tikz/unit ext}}}
+		{	\pgfpathrectanglecorners{\pgfpoint{-3.5mm}{3mm}}{\pgfpoint{-2.5mm}{4mm}}
+			\pgfpathrectanglecorners{\pgfpoint{2.5mm}{4mm}}{\pgfpoint{3.5mm}{3mm}}	
+			\pgfpathmoveto{\pgfpoint{-3.8mm}{4mm}}
+			\pgfpathlineto{\pgfpoint{-2.2mm}{4mm}}
+			\pgfpathmoveto{\pgfpoint{2.2mm}{4mm}}
+			\pgfpathlineto{\pgfpoint{3.8mm}{4mm}}
+		}{}
+	
+		% unit ext=trans shell (yields utility stems, one on north and one on south)
+		\ifthenelse{\equal{trans shell}{\pgfkeysvalueof{/tikz/unit ext}}}
+		{	\pgfpathrectanglecorners{\pgfpoint{-3.5mm}{3mm}}{\pgfpoint{-2.5mm}{4mm}}
+			\pgfpathrectanglecorners{\pgfpoint{2.5mm}{-4mm}}{\pgfpoint{3.5mm}{-3mm}}	
+			\pgfpathmoveto{\pgfpoint{-3.8mm}{4mm}}
+			\pgfpathlineto{\pgfpoint{-2.2mm}{4mm}}
+			\pgfpathmoveto{\pgfpoint{2.2mm}{-4mm}}
+			\pgfpathlineto{\pgfpoint{3.8mm}{-4mm}}
+		}{}
+	}
+}
+
+
+% ==============================================================
+% tank reactor
+% ==============================================================
+\pgfdeclareshape{tank reactor}{
+	% A squat tank with a mixer and jacket
+	
+	% Saved anchors
+	\savedanchor{\bottomleft}{\pgfpoint{-4mm}{-5mm}}
+	\savedanchor{\topright}{\pgfpoint{4mm}{2mm}}
+	\savedanchor{\bottom}{\pgfpoint{0mm}{-7mm}}
+	\savedanchor{\top}{\pgfpoint{0mm}{4mm}}
+	
+%	\ifthenelse{\equal{lower jacket}{\pgfkeysvalueof{/tikz/unit ext}}\OR
+%				\equal{none}{\pgfkeysvalueof{/tikz/unit ext}} }
+%	{% default (none) or unit ext=lower jacket
+%	\savedanchor{\westjacket}{\pgfpoint{-5mm}{-4mm}}
+%	}
+%	{% unit ext=side jacket (or anything else)
+%	\savedanchor{\westjacket}{\pgfpoint{-5mm}{-1.5mm}}
+%	}
+
+	\savedanchor{\westjacket}{
+		\pgf@x=-5mm
+		\ifthenelse{\equal{lower jacket}{\pgfkeysvalueof{/tikz/unit ext}}\OR
+			\equal{none}{\pgfkeysvalueof{/tikz/unit ext}} }
+		{\pgf@y=-4mm} % lower jacket or default
+		{\pgf@y=-1.5mm} % side jacket or anything else
+	} 
+	
+	% Normal anchors
+	\anchor{center}{\pgfpointorigin}
+	\anchor{north}{\top}
+	\anchor{south}{\bottom}
+	\anchor{east}{\topright \pgf@y=0mm}
+	\anchor{west}{\bottomleft \pgf@y=0mm}
+	\anchor{south west}{\bottomleft}
+	\anchor{north east}{\topright}
+	\anchor{north west}{\topright \pgf@x=-\pgf@x}
+	\anchor{south east}{\bottomleft \pgf@x=-\pgf@x}
+	\anchor{north north east}{\pgfpointadd{\pgfpoint{0mm}{2mm}}{\pgfpointpolar{45}{4mm and 2mm}}}
+	\anchor{north north west}{\pgfpointadd{\pgfpoint{0mm}{2mm}}{\pgfpointpolar{135}{4mm and 2mm}}}
+	\anchor{west south west}{\pgfpoint{-4mm}{-3mm}}
+	\anchor{south south west}{\pgfpointadd{\pgfpoint{0mm}{-5mm}}{\pgfpointpolar{225}{4mm and 2mm}}}
+	\anchor{south south east}{\pgfpointadd{\pgfpoint{0mm}{-5mm}}{\pgfpointpolar{315}{4mm and 2mm}}}
+	\anchor{east south east}{\pgfpoint{4mm}{-3mm}}
+	
+	% Special anchors
+	% east/west jacket points move but north/south do not (they're essentially undefined for lower jacket but the definitions are retained to avoid errors)
+	\anchor{west jacket}{\westjacket}
+	\anchor{east jacket}{\westjacket \pgf@x=-\pgf@x}
+	\anchor{north west jacket}{\pgfpoint{-5mm}{1mm}}
+	\anchor{south west jacket}{\pgfpoint{-5mm}{-4mm}}
+	\anchor{north east jacket}{\pgfpoint{5mm}{1mm}}
+	\anchor{south east jacket}{\pgfpoint{5mm}{-4mm}}
+	\anchor{north motor}{\pgfpoint{0mm}{6.8mm}}
+	\anchor{west motor}{\pgfpoint{-1mm}{6.15mm}}
+	\anchor{east motor}{\pgfpoint{1mm}{6.15mm}}
+	
+	% Draw it
+	\backgroundpath{		
+		% Main rectangle
+		\pgfpathmoveto{\topright}
+		\pgfpatharc{0}{180}{4mm and 2mm}
+		\pgfpathlineto{\bottomleft}
+		\pgfpatharc{180}{360}{4mm and 2mm}		
+		\pgfpathclose
+		\pgfsetroundjoin
+		\pgfsetroundcap
+		
+	}
+	\foregroundpath{	
+		% Fills based on unit int variable	
+		
+		% unit int=stirred (yields stirrer with motor)
+		\ifthenelse{\equal{stirred}{\pgfkeysvalueof{/tikz/unit int}}}
+		{	% Motor:
+			\pgfpathmoveto{\pgfpoint{-1mm}{5.5mm}}
+			\pgfpathlineto{\pgfpoint{-1mm}{6.8mm}}
+			\pgfpathlineto{\pgfpoint{1mm}{6.8mm}}
+			\pgfpathlineto{\pgfpoint{1mm}{5.5mm}}
+			\pgfpathlineto{\pgfpoint{0.6mm}{5mm}}
+			\pgfpathlineto{\pgfpoint{-0.6mm}{5mm}}
+			\pgfpathclose
+			\pgfpathmoveto{\pgfpoint{-1mm}{5.5mm}}
+			\pgfpathlineto{\pgfpoint{1mm}{5.5mm}}
+			
+			% Shaft and mixer: squared
+			\pgfpathmoveto{\pgfpoint{0mm}{5mm}}
+			\pgfpathlineto{\pgfpoint{0mm}{-4mm}}
+			\pgfpathmoveto{\pgfpoint{-1.5mm}{-4mm}}
+			\pgfpathlineto{\pgfpoint{1.5mm}{-4mm}}
+			\pgfpathrectanglecorners{\pgfpoint{-1.5mm}{-4.8mm}}{\pgfpoint{-2mm}{-3.2mm}}
+			\pgfpathrectanglecorners{\pgfpoint{1.5mm}{-4.8mm}}{\pgfpoint{2mm}{-3.2mm}}
+		
+			% Shaft and mixer: rounded (removed because I thought squared looked better)
+%			\pgfpathmoveto{\pgfpoint{0mm}{5mm}}
+%			\pgfpathlineto{\pgfpoint{0mm}{-4mm}}
+%			\pgfpathlineto{\pgfpoint{1.5mm}{-3.25mm}}
+%			\pgfpatharc{90}{-90}{0.75mm}
+%			\pgfpathlineto{\pgfpoint{-1.5mm}{-3.25mm}}
+%			\pgfpatharc{90}{270}{0.75mm}		
+%			\pgfpathlineto{\pgfpoint{0mm}{-4mm}}
+		}{}
+		
+			
+		% unit int=liquid (liquid indicator from west to east)
+		\ifthenelse{\equal{liquid}{\pgfkeysvalueof{/tikz/unit int}}}
+		{	% Use arcs because they scale more easily (see note in VESSEL shape)
+			\pgfpathmoveto{\pgfpoint{-4mm}{0mm}}
+			\foreach \x in {-2.4mm,-0.8mm,...,4mm}{ 
+				\pgfpatharcto{1.6mm}{5mm}{0}{0}{1}{\pgfpoint{\x}{0mm}}
+			}
+		}{}
+	
+	
+		% unit int=stirred liquid (yields stirrer with motor and liquid level)
+		\ifthenelse{\equal{stirred liquid}{\pgfkeysvalueof{/tikz/unit int}}}
+		{	% Motor:
+			\pgfpathmoveto{\pgfpoint{-1mm}{5.5mm}}
+			\pgfpathlineto{\pgfpoint{-1mm}{6.8mm}}
+			\pgfpathlineto{\pgfpoint{1mm}{6.8mm}}
+			\pgfpathlineto{\pgfpoint{1mm}{5.5mm}}
+			\pgfpathlineto{\pgfpoint{0.6mm}{5mm}}
+			\pgfpathlineto{\pgfpoint{-0.6mm}{5mm}}
+			\pgfpathclose
+			\pgfpathmoveto{\pgfpoint{-1mm}{5.5mm}}
+			\pgfpathlineto{\pgfpoint{1mm}{5.5mm}}
+			
+			% Shaft and mixer:
+			\pgfpathmoveto{\pgfpoint{0mm}{5mm}}
+			\pgfpathlineto{\pgfpoint{0mm}{-4mm}}
+			\pgfpathmoveto{\pgfpoint{-1.5mm}{-4mm}}
+			\pgfpathlineto{\pgfpoint{1.5mm}{-4mm}}
+			\pgfpathrectanglecorners{\pgfpoint{-1.5mm}{-4.8mm}}{\pgfpoint{-2mm}{-3.2mm}}
+			\pgfpathrectanglecorners{\pgfpoint{1.5mm}{-4.8mm}}{\pgfpoint{2mm}{-3.2mm}}
+			
+			% Use arcs because they scale more easily (see note in VESSEL shape)
+			\pgfpathmoveto{\pgfpoint{-4mm}{0mm}}
+			\foreach \x in {-2.4mm,-0.8mm,...,4mm}{ 
+				\pgfpatharcto{1.6mm}{5mm}{0}{0}{1}{\pgfpoint{\x}{0mm}}
+			}
+		}{}
+	
+	
+		% unit ext=lower jacket (yields jacket on lower portion)
+		\ifthenelse{\equal{lower jacket}{\pgfkeysvalueof{/tikz/unit ext}}}
+		{	\pgfpathmoveto{\pgfpoint{-4mm}{-2mm}}
+			\pgfpathlineto{\pgfpoint{-5mm}{-2.5mm}}
+			\pgfpathlineto{\pgfpoint{-5mm}{-5mm}}
+			\pgfpatharc{180}{360}{5mm and 3mm}
+			\pgfpathlineto{\pgfpoint{5mm}{-2.5mm}}
+			\pgfpathlineto{\pgfpoint{4mm}{-2mm}}
+			
+			\pgfpathlineto{\bottomleft \pgf@x=-\pgf@x}
+			\pgfpatharc{0}{-180}{4mm and 2mm}
+			\pgfpathclose
+		}{}
+	
+		% unit ext=side jacket (yields jacket sides)
+		\ifthenelse{\equal{side jacket}{\pgfkeysvalueof{/tikz/unit ext}}}
+		{	\pgfpathmoveto{\pgfpoint{-4mm}{-5mm}}
+			\pgfpathlineto{\pgfpoint{-5mm}{-4.5mm}}
+			\pgfpathlineto{\pgfpoint{-5mm}{1.5mm}}
+			\pgfpathlineto{\pgfpoint{-4mm}{2mm}}
+			\pgfpathclose
+			
+			\pgfpathmoveto{\pgfpoint{4mm}{-5mm}}
+			\pgfpathlineto{\pgfpoint{5mm}{-4.5mm}}
+			\pgfpathlineto{\pgfpoint{5mm}{1.5mm}}
+			\pgfpathlineto{\pgfpoint{4mm}{2mm}}
+			\pgfpathclose
+		}{}
+		
+	}
+}
+
+
+% ==============================================================
+% Column
+% ==============================================================
+\pgfkeys{/tikz/top tray/.initial = none}
+\pgfkeys{/tikz/feed tray/.initial = none}
+\pgfkeys{/tikz/bottom tray/.initial = none}
+\pgfdeclareshape{column}{
+	% A vertical rectangle with curved endcaps
+	
+	% Saved anchors
+	\savedanchor{\bottomleft}{\pgfpoint{-3mm}{-12mm}}
+	\savedanchor{\topright}{\pgfpoint{3mm}{12mm}}
+	\savedanchor{\farnorth}{\pgfpoint{0mm}{14mm}}
+	
+	% The distillate and bottoms anchors move based on whether the column has simple heat exchangers or not. They're stored as saved anchors so that they don't move when subsequent columns are placed.
+	\savedanchor{\distillate}{
+		\pgf@y=12mm
+		\ifthenelse{\equal{simple hx}{\pgfkeysvalueof{/tikz/unit ext}}}
+		{\pgf@x=6mm} % simple hx
+		{\pgf@x=3mm} % anything else (same as north east)
+	} 
+	\savedanchor{\bottoms}{
+		\ifthenelse{\equal{simple hx}{\pgfkeysvalueof{/tikz/unit ext}}}
+		{\pgf@x=6mm % simple hx
+			\pgf@y=-18mm} 
+		{\pgf@x=3mm % anything else (same as south east)
+			\pgf@y=-12mm} 
+	} 
+	
+	% Normal anchors
+	\anchor{center}{\pgfpointorigin}
+	\anchor{north}{\farnorth}
+	\anchor{south}{\farnorth \pgf@y=-\pgf@y}
+	\anchor{east}{\topright \pgf@y=0mm}
+	\anchor{west}{\bottomleft \pgf@y=0mm}
+	\anchor{south west}{\bottomleft}
+	\anchor{north east}{\topright}
+	\anchor{north west}{\topright \pgf@x=-\pgf@x}
+	\anchor{south east}{\topright \pgf@y=-\pgf@y}
+	\anchor{west north west}{\pgfpoint{-3mm}{7mm}}
+	\anchor{east north east}{\pgfpoint{3mm}{7mm}}
+	\anchor{west south west}{\pgfpoint{-3mm}{-7mm}}
+	\anchor{east south east}{\pgfpoint{3mm}{-7mm}}
+	\anchor{south south east}{\pgfpointadd{\pgfpoint{0mm}{-12mm}}{\pgfpointpolar{315}{3mm and 2mm}}}
+	\anchor{south south west}{\pgfpointadd{\pgfpoint{0mm}{-12mm}}{\pgfpointpolar{225}{3mm and 2mm}}}
+	\anchor{north north east}{\pgfpointadd{\pgfpoint{0mm}{12mm}}{\pgfpointpolar{45}{3mm and 2mm}}}
+	\anchor{north north west}{\pgfpointadd{\pgfpoint{0mm}{12mm}}{\pgfpointpolar{135}{3mm and 2mm}}}
+	
+	
+	% Special anchors
+	\anchor{distillate}{\distillate} % distillate product
+	\anchor{bottoms}{\bottoms} % bottoms product
+	\anchor{feed tray}{\pgfpoint{0mm}{0mm}} % feed tray label anchor
+	\anchor{top tray}{\pgfpoint{0mm}{10mm}} % top tray label anchor
+	\anchor{bottom tray}{\pgfpoint{0mm}{-10mm}} % bottom tray label anchor
+	
+	% Draw it
+	\backgroundpath{		
+		% Main rectangle
+		\pgfpathmoveto{\bottomleft \pgf@x=-\pgf@x}
+		\pgfpatharc{0}{-180}{3mm and 2mm}
+		\pgfpathlineto{\bottomleft \pgf@y=-\pgf@y}
+		\pgfpatharc{180}{0}{3mm and 2mm}		
+		\pgfpathclose
+		\pgfsetroundjoin
+		\pgfsetroundcap
+		
+	}
+	\foregroundpath{
+		% Fills based on unit int variable
+		
+		% unit int=tray OR dashed tray (yields horizontal, dashed lines)
+		% I didn't like how \pgfsetdash changed when drawings were scaled so I drew the lines manually to always have two openings
+		\ifthenelse{\equal{tray}{\pgfkeysvalueof{/tikz/unit int}}\OR
+			\equal{dashed tray}{\pgfkeysvalueof{/tikz/unit int}}}
+		{	%\pgfsetdash{{1.333mm}{1mm}}{0mm}
+			\foreach \y in {10mm,8mm,...,-12mm} % also west/left
+			{\pgfpathmoveto{\pgfpoint{-3mm}{\y}}
+				\pgfpathlineto{\pgfpoint{-1.6mm}{\y}}
+				\pgfpathmoveto{\pgfpoint{-0.6mm}{\y}}
+				\pgfpathlineto{\pgfpoint{0.6mm}{\y}}
+				\pgfpathmoveto{\pgfpoint{1.6mm}{\y}}
+				\pgfpathlineto{\pgfpoint{3mm}{\y}}}			
+			\pgfsetroundjoin
+		}{}
+		
+		% unit int=weir tray (yields trays which alternate sides with small 
+		%weirs)
+		\ifthenelse{\equal{weir tray}{\pgfkeysvalueof{/tikz/unit int}}}
+		{\foreach \y in {8mm,4mm,...,-12mm}
+			{\pgfpathmoveto{\pgfpoint{-3mm}{\y}}
+				\pgfpathlineto{\pgfpoint{1.5mm}{\y}}
+				\pgfpathlineto{\pgfpointadd{\pgfpoint{1.5mm}{\y}}{\pgfpoint{0mm}{0.6mm}}}
+			}
+			\foreach \y in {10mm,6mm,...,-12mm} 
+			{\pgfpathmoveto{\pgfpoint{3mm}{\y}}
+				\pgfpathlineto{\pgfpoint{-1.5mm}{\y}}
+				\pgfpathlineto{\pgfpointadd{\pgfpoint{-1.5mm}{\y}}{\pgfpoint{0mm}{0.6mm}}}
+			}				
+			\pgfsetroundjoin
+		}{}
+		
+		
+		% unit int=numbered tray (yields horizontal, dashed lines at bottom, 
+		%middle, top only)
+		\ifthenelse{\equal{numbered tray}{\pgfkeysvalueof{/tikz/unit int}}}
+		{	\foreach \y in {10mm,0mm,-10mm} % also west/left
+			{\pgfpathmoveto{\pgfpoint{-3mm}{\y}}
+				\pgfpathlineto{\pgfpoint{-1.6mm}{\y}}
+				\pgfpathmoveto{\pgfpoint{-0.6mm}{\y}}
+				\pgfpathlineto{\pgfpoint{0.6mm}{\y}}
+				\pgfpathmoveto{\pgfpoint{1.6mm}{\y}}
+				\pgfpathlineto{\pgfpoint{3mm}{\y}}}						
+			\pgfsetroundjoin
+
+		}{}		
+		% Add text if unit int=numbered tray and numbers given
+		\ifthenelse{ % top tray
+			\equal{numbered tray}{\pgfkeysvalueof{/tikz/unit int}}\AND
+			\NOT\equal{none}{\pgfkeysvalueof{/tikz/top tray}}
+		}{\pgftext[bottom, at={\pgfpoint{0mm}{10mm}}, y=1pt] {\footnotesize \pgfkeysvalueof{/tikz/top tray}}}
+		{}
+		\ifthenelse{ % feed tray
+			\equal{numbered tray}{\pgfkeysvalueof{/tikz/unit int}}\AND
+			\NOT\equal{none}{\pgfkeysvalueof{/tikz/feed tray}}
+		}{\pgftext[bottom, y=1pt] {\footnotesize \pgfkeysvalueof{/tikz/feed tray}}}
+		{}
+		\ifthenelse{ % bottom tray
+			\equal{numbered tray}{\pgfkeysvalueof{/tikz/unit int}}\AND
+			\NOT\equal{none}{\pgfkeysvalueof{/tikz/bottom tray}}
+		}{\pgftext[bottom, at={\pgfpoint{0mm}{-10mm}}, y=1pt] {\footnotesize \pgfkeysvalueof{/tikz/bottom tray}}}
+		{}
+		
+		
+		% unit int=packed (yields X)
+		\ifthenelse{\equal{packed}{\pgfkeysvalueof{/tikz/unit int}}}
+		{	\pgfpathmoveto{\pgfpoint{-3mm}{-10mm}}
+			\pgfpathlineto{\pgfpoint{3mm}{10mm}}
+			\pgfpathlineto{\pgfpoint{-3mm}{10mm}}
+			\pgfpathlineto{\pgfpoint{3mm}{-10mm}}
+			\pgfpathclose
+			\pgfsetroundjoin
+		}{}
+	
+	
+		% unit int= double packed (yields two X segments)
+		\ifthenelse{\equal{double packed}{\pgfkeysvalueof{/tikz/unit int}}}
+		{	\pgfpathmoveto{\pgfpoint{-3mm}{10mm}}
+			\pgfpathlineto{\pgfpoint{3mm}{10mm}}
+			\pgfpathlineto{\pgfpoint{-3mm}{1mm}}
+			\pgfpathlineto{\pgfpoint{3mm}{1mm}}
+			\pgfpathclose
+			
+			\pgfpathmoveto{\pgfpoint{-3mm}{-1mm}}
+			\pgfpathlineto{\pgfpoint{3mm}{-1mm}}
+			\pgfpathlineto{\pgfpoint{-3mm}{-10mm}}
+			\pgfpathlineto{\pgfpoint{3mm}{-10mm}}
+			\pgfpathclose
+			\pgfsetroundjoin
+		}{}				
+	
+		% Exterior add-ons based on unit ext variable
+		% unit ext=simple hx (gives simple circles for condenser, reboiler)
+		% To prevent the interiors from being filled the "pen" has to be moved after *each* straight line segment, which is why there are seeming duplicates of \pgfpathmoveto for this key. 
+		\ifthenelse{\equal{simple hx}{\pgfkeysvalueof{/tikz/unit ext}}}
+		{	\pgfpathmoveto{\farnorth}
+			\pgfpathlineto{\pgfpoint{0mm}{18mm}}
+			\pgfpathmoveto{\pgfpoint{0mm}{18mm}} % pen up
+			\pgfpathlineto{\pgfpoint{6mm}{18mm}}
+			\pgfpathmoveto{\pgfpoint{6mm}{18mm}} % pen up
+			\pgfpathlineto{\pgfpoint{6mm}{16mm}}
+			\pgfpathmoveto{\pgfpoint{6mm}{14mm}} % pen up
+			\pgfpathlineto{\pgfpoint{6mm}{12mm}}
+			\pgfpathmoveto{\pgfpoint{6mm}{12mm}} % pen up
+			\pgfpathlineto{\pgfpoint{3mm}{12mm}}
+			\pgfpathmoveto{\pgfpoint{3mm}{12mm}} % pen up
+			\pgfpathcircle{\pgfpoint{6mm}{15mm}}{1mm}
+			
+			\pgfpathmoveto{\farnorth \pgf@y=-\pgf@y}
+			\pgfpathlineto{\pgfpoint{0mm}{-18mm}}
+			\pgfpathmoveto{\pgfpoint{0mm}{-18mm}} % pen up
+			\pgfpathlineto{\pgfpoint{6mm}{-18mm}}
+			\pgfpathmoveto{\pgfpoint{6mm}{-18mm}} % pen up
+			\pgfpathlineto{\pgfpoint{6mm}{-16mm}}
+			\pgfpathmoveto{\pgfpoint{6mm}{-14mm}}
+			\pgfpathlineto{\pgfpoint{6mm}{-12mm}}
+			\pgfpathmoveto{\pgfpoint{6mm}{-12mm}} % pen up
+			\pgfpathlineto{\pgfpoint{3mm}{-12mm}}
+			\pgfpathmoveto{\pgfpoint{3mm}{-12mm}} % pen up
+			\pgfpathcircle{\pgfpoint{6mm}{-15mm}}{1mm}
+			\pgfsetroundjoin
+		}{}	
+	}
+}
+
+% ==============================================================
+% Basic Heat Exchanger
+% ==============================================================
+\pgfdeclareshape{basic hx}{
+	% Circular hx with straight or U-tube pipes, stems optional
+	% Saved anchors
+	\savedanchor{\center}{\pgfpointorigin}
+	\savedanchor{\north}{\pgfpoint{0mm}{3mm}}
+	\savedanchor{\east}{\pgfpoint{3mm}{0mm}}
+	\savedanchor{\northeast}{\pgfpointpolar{45}{3mm}}
+	
+	% Normal anchors
+	\anchor{center}{\center}
+	\anchor{east}{\east}
+	\anchor{north east}{\northeast}
+	\anchor{north}{\north}
+	\anchor{north west}{\northeast \pgf@x=-\pgf@x}
+	\anchor{west}{\east \pgf@x=-\pgf@x}
+	\anchor{south west}{\northeast \pgf@x=-\pgf@x \pgf@y=-\pgf@y}
+	\anchor{south}{\north \pgf@y=-\pgf@y}
+	\anchor{south east}{\northeast \pgf@y=-\pgf@y}
+	
+	% Special anchors (only useful for certain key=value pairs)
+	\anchor{north util}{\pgfpoint{0mm}{5mm}}
+	\anchor{south util}{\pgfpoint{0mm}{-5mm}}
+	\anchor{east util}{\pgfpointadd
+		{\northeast \pgf@y=-\pgf@y}
+		{\pgfpoint{0mm}{-2mm}}
+	}
+	\anchor{west util}{
+		\pgfpointadd
+		{\northeast \pgf@y=-\pgf@y \pgf@x=-\pgf@x}
+		{\pgfpoint{0mm}{-2mm}}
+	}
+	
+	% Draw it
+	\backgroundpath{		
+		% Main circle = 3mm
+		\pgfpathcircle{\pgfpointorigin}{3mm}
+		\pgfsetroundjoin
+		\pgfsetroundcap
+	}
+	\foregroundpath{	
+		% Fills based on unit int variable
+		% Straight-thru	
+		\ifthenelse{\equal{straight}{\pgfkeysvalueof{/tikz/unit int}}\OR
+			\equal{empty}{\pgfkeysvalueof{/tikz/unit int}}}
+		{	\pgfpathmoveto{\pgfpoint{0mm}{-3mm}}
+			\pgfpathlineto{\pgfpoint{-2mm}{-1mm}}
+			\pgfpathlineto{\pgfpoint{2mm}{1mm}}
+			\pgfpathlineto{\pgfpoint{0mm}{3mm}} 			
+		}{}
+		
+		% U-tube
+		\ifthenelse{\equal{U tube}{\pgfkeysvalueof{/tikz/unit int}}}
+		{	\pgfpathmoveto{\northeast \pgf@x=-\pgf@x \pgf@y=-\pgf@y} 
+			\pgfpathlineto{\northeast \pgf@x=-\pgf@x \pgf@y=1mm}
+			\pgfpathlineto{\pgfpoint{0mm}{-1mm}}
+			\pgfpathlineto{\northeast \pgf@y=1mm}
+			\pgfpathlineto{\northeast \pgf@y=-\pgf@y} 			
+		}{}
+		
+		% Stems based on both unit int and unit ext
+		% Straight util
+		\ifthenelse{{\equal{straight}{\pgfkeysvalueof{/tikz/unit int}}}\OR
+			{\equal{empty}{\pgfkeysvalueof{/tikz/unit int}}}
+			\AND
+			\equal{util}{\pgfkeysvalueof{/tikz/unit ext}}}
+		{	\pgfpathmoveto{\pgfpoint{0mm}{-5mm}}
+			\pgfpathlineto{\pgfpoint{0mm}{-3mm}}
+			\pgfpathmoveto{\pgfpoint{0mm}{3mm}}
+			\pgfpathlineto{\pgfpoint{0mm}{5mm}}			
+		}{}
+		
+		% U-tube util
+		\ifthenelse{\equal{U tube}{\pgfkeysvalueof{/tikz/unit int}}\AND
+			\equal{util}{\pgfkeysvalueof{/tikz/unit ext}}}
+		{	\pgfpathmoveto{\northeast \pgf@x=-\pgf@x \pgf@y=-\pgf@y}
+			\pgfpathlineto{\pgfpointadd
+				{\northeast \pgf@x=-\pgf@x \pgf@y=-\pgf@y}
+				{\pgfpoint{0mm}{-2mm}}
+			}
+			\pgfpathmoveto{\northeast \pgf@y=-\pgf@y} % 2.236 = sqrt(5) 
+			\pgfpathlineto{\pgfpointadd
+				{\northeast \pgf@y=-\pgf@y}
+				{\pgfpoint{0mm}{-2mm}}
+			}			
+		}{}
+	}
+}
+
+
+% ==============================================================
+% Fired heat exchanger
+% ==============================================================
+\pgfdeclareshape{fired hx}{
+	% Box with chimney, flame, and through tube
+	% Three unit int keys--single, double, or triple--for process tubes
+	
+	% Saved anchors
+	\savedanchor{\chimneynorth}{\pgfpoint{1mm}{11mm}}
+	\savedanchor{\chimneysouth}{\pgfpoint{1mm}{7mm}}
+	\savedanchor{\northeast}{\pgfpoint{5mm}{4mm}}
+	\savedanchor{\southwest}{\pgfpoint{-5mm}{-6mm}}
+	
+	% Normal anchors
+	\anchor{center}{\pgfpointorigin}
+	\anchor{east}{\northeast \pgf@y=0mm}
+	\anchor{north east}{\northeast}
+	\anchor{north}{\chimneynorth \pgf@x=0mm}
+	\anchor{north west}{\northeast \pgf@x=-\pgf@x}
+	\anchor{west}{\southwest \pgf@y=0mm}
+	\anchor{south west}{\southwest}
+	\anchor{south}{\southwest \pgf@x=0mm}
+	\anchor{south east}{\southwest \pgf@x=-\pgf@x}
+	
+	% Half-cardinals which align with double/triple tubes:
+	\anchor{north north east}{\pgfpoint{1mm}{9mm}}
+	\anchor{north north west}{\pgfpoint{-1mm}{9mm}}
+	\anchor{east north east}{\pgfpoint{5mm}{3mm}}
+	\anchor{west north west}{\pgfpoint{-5mm}{3mm}}
+	\anchor{east south east}{\pgfpoint{5mm}{-1mm}}
+	\anchor{west south west}{\pgfpoint{-5mm}{-1mm}}
+	
+	% Remaining half-cardinals distributed across base
+	\anchor{south south east}{\pgfpoint{3mm}{-6mm}}
+	\anchor{south south west}{\pgfpoint{-3mm}{-6mm}}
+	
+	% Draw it			
+	\backgroundpath{		
+		% Main outline
+		\pgfpathmoveto{\chimneynorth}
+		\pgfpathlineto{\chimneysouth}
+		\pgfpathlineto{\northeast}
+		\pgfpathlineto{\southwest \pgf@x=-\pgf@x}
+		\pgfpathlineto{\southwest}
+		\pgfpathlineto{\northeast \pgf@x=-\pgf@x}
+		\pgfpathlineto{\chimneysouth \pgf@x=-\pgf@x}
+		\pgfpathlineto{\chimneynorth \pgf@x=-\pgf@x}
+		
+		\pgfsetroundjoin
+		\pgfsetroundcap
+	}
+	\foregroundpath{	
+		% Thru-tubes and burner based on unit int keys
+		% Single or empty (default)
+		\ifthenelse{{\equal{single}{\pgfkeysvalueof{/tikz/unit int}}}\OR
+			{\equal{empty}{\pgfkeysvalueof{/tikz/unit int}}}
+		}{
+			\pgfpathmoveto{\southwest \pgf@y=0mm}
+			\pgfpathlineto{\pgfpoint{-2mm}{0mm}}
+			\pgfpathlineto{\pgfpoint{-1mm}{2mm}}
+			\pgfpathlineto{\pgfpoint{1mm}{-2mm}}
+			\pgfpathlineto{\pgfpoint{2mm}{0mm}}
+			\pgfpathlineto{\northeast \pgf@y=0mm}
+			
+			% Burner
+			\pgfpathmoveto{\southwest \pgf@x=0mm}
+			\pgfpathlineto{\pgfpoint{0mm}{-4mm}}
+			\pgfpathcircle{\pgfpoint{0mm}{-3.5mm}}{0.5mm}
+		}{}
+		
+		% Double (two process tubes)
+		\ifthenelse{\equal{double}{\pgfkeysvalueof{/tikz/unit int}}
+		}{
+			% Lower line
+			\pgfpathmoveto{\pgfpoint{-5mm}{-1mm}}
+			\pgfpathlineto{\pgfpoint{-2mm}{-1mm}}
+			\pgfpathlineto{\pgfpoint{-1mm}{1mm}}
+			\pgfpathlineto{\pgfpoint{1mm}{-3mm}}
+			\pgfpathlineto{\pgfpoint{2mm}{-1mm}}
+			\pgfpathlineto{\pgfpoint{5mm}{-1mm}}
+			% Upper line
+			\pgfpathmoveto{\pgfpoint{-5mm}{3mm}}
+			\pgfpathlineto{\pgfpoint{-2mm}{3mm}}
+			\pgfpathlineto{\pgfpoint{-1mm}{5mm}}
+			\pgfpathlineto{\pgfpoint{1mm}{1mm}}
+			\pgfpathlineto{\pgfpoint{2mm}{3mm}}
+			\pgfpathlineto{\pgfpoint{5mm}{3mm}}
+			
+			% Burner
+			\pgfpathmoveto{\southwest \pgf@x=0mm}
+			\pgfpathlineto{\pgfpoint{0mm}{-5mm}}
+			\pgfpathcircle{\pgfpoint{0mm}{-4.5mm}}{0.5mm}
+		}{}
+	
+		% Triple (three process tubes)
+		\ifthenelse{\equal{triple}{\pgfkeysvalueof{/tikz/unit int}}
+		}{
+			% Lower line
+			\pgfpathmoveto{\pgfpoint{-5mm}{-1mm}}
+			\pgfpathlineto{\pgfpoint{-2mm}{-1mm}}
+			\pgfpathlineto{\pgfpoint{-1mm}{1mm}}
+			\pgfpathlineto{\pgfpoint{1mm}{-3mm}}
+			\pgfpathlineto{\pgfpoint{2mm}{-1mm}}
+			\pgfpathlineto{\pgfpoint{5mm}{-1mm}}
+			% Middle line
+			\pgfpathmoveto{\pgfpoint{-5mm}{3mm}}
+			\pgfpathlineto{\pgfpoint{-2mm}{3mm}}
+			\pgfpathlineto{\pgfpoint{-1mm}{5mm}}
+			\pgfpathlineto{\pgfpoint{1mm}{1mm}}
+			\pgfpathlineto{\pgfpoint{2mm}{3mm}}
+			\pgfpathlineto{\pgfpoint{5mm}{3mm}}
+			% Upper line
+			\pgfpathmoveto{\pgfpoint{-1mm}{9mm}}
+			\pgfpathlineto{\pgfpoint{-0.5mm}{10mm}}
+			\pgfpathlineto{\pgfpoint{0.5mm}{8mm}}
+			\pgfpathlineto{\pgfpoint{1mm}{9mm}}
+			
+			% Burner
+			\pgfpathmoveto{\southwest \pgf@x=0mm}
+			\pgfpathlineto{\pgfpoint{0mm}{-5mm}}
+			\pgfpathcircle{\pgfpoint{0mm}{-4.5mm}}{0.5mm}
+		}{}
+	}
+}
+
+% ==============================================================
+% Shell and tube heat exchanger
+% ==============================================================
+\pgfdeclareshape{shell and tube hx}{
+	% Box with horizontal lines for tubes
+	
+	% Saved anchors
+	\savedanchor{\northeast}{\pgfpoint{6mm}{3mm}}
+	\savedanchor{\southwest}{\pgfpoint{-6mm}{-3mm}}
+	\savedanchor{\shellnortheast}{\pgfpoint{3mm}{3mm}}
+	
+	% Normal anchors
+	\anchor{center}{\pgfpointorigin}
+	\anchor{north}{\northeast \pgf@x=0mm}
+	\anchor{south}{\northeast \pgf@x=0mm \pgf@y=-\pgf@y}
+	\anchor{east}{\northeast \pgf@y=0mm}
+	\anchor{west}{\southwest \pgf@y=0mm}
+	\anchor{north east}{\pgfpoint{5mm}{3mm}}
+	\anchor{south east}{\pgfpoint{5mm}{-3mm}}
+	\anchor{north west}{\pgfpoint{-5mm}{3mm}}
+	\anchor{south west}{\pgfpoint{-5mm}{-3mm}}
+	
+	\anchor{north north east}{\shellnortheast}
+	\anchor{north north west}{\shellnortheast \pgf@x=-\pgf@x}
+	\anchor{south south east}{\shellnortheast \pgf@y=-\pgf@y}
+	\anchor{south south west}{\shellnortheast \pgf@x=-\pgf@x \pgf@y=-\pgf@y}
+	\anchor{east north east}{\pgfpoint{6mm}{2mm}}
+	\anchor{east south east}{\pgfpoint{6mm}{-2mm}}
+	\anchor{west north west}{\pgfpoint{-6mm}{2mm}}
+	\anchor{west south west}{\pgfpoint{-6mm}{-2mm}}
+	
+	% Special anchors	
+	\anchor{west shell}{\pgfpoint{-3mm}{4mm}}
+	\anchor{east shell}{\pgfpoint{3mm}{4mm}}
+	\anchor{north shell}{\pgfpoint{-3mm}{4mm}}
+	\anchor{south shell}{\pgfpoint{3mm}{-4mm}}
+	
+	% Draw it
+	\backgroundpath{		
+		% Main outline
+		\pgfpathmoveto{\northeast}
+		\pgfpathlineto{\northeast \pgf@x=-\pgf@x}
+		\pgfpathlineto{\southwest}
+		\pgfpathlineto{\northeast \pgf@y=-\pgf@y}
+		\pgfpathclose
+		
+		% Vertical lines for tube sheets
+		\pgfpathmoveto{\pgfpoint{-4mm}{3mm}}
+		\pgfpathlineto{\pgfpoint{-4mm}{-3mm}}
+		\pgfpathmoveto{\pgfpoint{4mm}{3mm}}
+		\pgfpathlineto{\pgfpoint{4mm}{-3mm}}
+		
+		% Horizontal lines for pipes
+		\foreach \y in {3mm,2mm,...,-3mm} 
+		{\pgfpathmoveto{\pgfpoint{-4mm}{\y}}
+			\pgfpathlineto{\pgfpoint{4mm}{\y}}}
+		
+		\pgfsetroundjoin
+		\pgfsetroundcap
+		
+	}
+	\foregroundpath{
+	% Two pass: adds a horizontal line on shell side
+	\ifthenelse{\equal{two pass}{\pgfkeysvalueof{/tikz/unit int}}
+	}{
+		\pgfpathmoveto{\pgfpoint{-6mm}{0mm}}
+		\pgfpathlineto{\pgfpoint{-4mm}{0mm}}
+	}{}
+
+	% Four pass: adds three horizontal line on shell sides
+	\ifthenelse{\equal{four pass}{\pgfkeysvalueof{/tikz/unit int}}
+	}{	% east-side line
+		\pgfpathmoveto{\pgfpoint{4mm}{0mm}}
+		\pgfpathlineto{\pgfpoint{6mm}{0mm}}
+		% west-side line, top
+		\pgfpathmoveto{\pgfpoint{-6mm}{1.5mm}}
+		\pgfpathlineto{\pgfpoint{-4mm}{1.5mm}}
+		% west-side line, bottom
+		\pgfpathmoveto{\pgfpoint{-6mm}{-1.5mm}}
+		\pgfpathlineto{\pgfpoint{-4mm}{-1.5mm}}
+	}{}
+
+	% unit ext=cis shell (yields utility stems, both on north side)
+	\ifthenelse{\equal{cis shell}{\pgfkeysvalueof{/tikz/unit ext}}}
+	{	\pgfpathrectanglecorners{\pgfpoint{-3.5mm}{3mm}}{\pgfpoint{-2.5mm}{4mm}}
+		\pgfpathrectanglecorners{\pgfpoint{2.5mm}{4mm}}{\pgfpoint{3.5mm}{3mm}}	
+		\pgfpathmoveto{\pgfpoint{-3.8mm}{4mm}}
+		\pgfpathlineto{\pgfpoint{-2.2mm}{4mm}}
+		\pgfpathmoveto{\pgfpoint{2.2mm}{4mm}}
+		\pgfpathlineto{\pgfpoint{3.8mm}{4mm}}
+	}{}
+	
+	% unit ext=trans shell (yields utility stems, one on north and one on south)
+	\ifthenelse{\equal{trans shell}{\pgfkeysvalueof{/tikz/unit ext}}}
+	{	\pgfpathrectanglecorners{\pgfpoint{-3.5mm}{3mm}}{\pgfpoint{-2.5mm}{4mm}}
+		\pgfpathrectanglecorners{\pgfpoint{2.5mm}{-4mm}}{\pgfpoint{3.5mm}{-3mm}}	
+		\pgfpathmoveto{\pgfpoint{-3.8mm}{4mm}}
+		\pgfpathlineto{\pgfpoint{-2.2mm}{4mm}}
+		\pgfpathmoveto{\pgfpoint{2.2mm}{-4mm}}
+		\pgfpathlineto{\pgfpoint{3.8mm}{-4mm}}
+	}{}
+	}
+}
+
+% ==============================================================
+% Plate heat exchanger
+% ==============================================================
+\pgfdeclareshape{plate hx}{
+	% Box with vertical lines for plates
+	
+	% Saved anchors
+	\savedanchor{\northeast}{\pgfpoint{4mm}{3mm}}
+	\savedanchor{\southwest}{\pgfpoint{-4mm}{-3mm}}
+	\savedanchor{\northeastanchor}{\pgfpoint{4mm}{3mm}}
+	
+	% Normal anchors
+	\anchor{center}{\pgfpointorigin}
+	\anchor{north}{\northeast \pgf@x=0mm}
+	\anchor{south}{\southwest \pgf@x=0mm}
+	\anchor{east}{\northeast \pgf@y=0mm}
+	\anchor{west}{\southwest \pgf@y=0mm}
+	\anchor{north east}{\northeastanchor}
+	\anchor{north west}{\northeastanchor \pgf@x=-\pgf@x}
+	\anchor{south east}{\northeastanchor \pgf@y=-\pgf@y}
+	\anchor{south west}{\northeastanchor \pgf@x=-\pgf@x \pgf@y=-\pgf@y}
+	
+	\anchor{north north east}{\pgfpoint{3mm}{3mm}}
+	\anchor{north north west}{\pgfpoint{-3mm}{3mm}}
+	\anchor{south south east}{\pgfpoint{3mm}{-3mm}}
+	\anchor{south south west}{\pgfpoint{-3mm}{-3mm}}
+	\anchor{east north east}{\pgfpoint{4mm}{2mm}}
+	\anchor{east south east}{\pgfpoint{4mm}{-2mm}}
+	\anchor{west north west}{\pgfpoint{-4mm}{2mm}}
+	\anchor{west south west}{\pgfpoint{-4mm}{-2mm}}
+	
+	% Draw it
+	\backgroundpath{		
+		% Main outline
+		\pgfpathmoveto{\northeast}
+		\pgfpathlineto{\northeast \pgf@x=-\pgf@x}
+		\pgfpathlineto{\southwest}
+		\pgfpathlineto{\northeast \pgf@y=-\pgf@y}
+		\pgfpathclose
+		
+		% Vertical lines for tube sheets
+		\foreach \x in {3mm,2mm,...,-4mm} 
+		{\pgfpathmoveto{\pgfpoint{\x}{-3mm}}
+			\pgfpathlineto{\pgfpoint{\x}{3mm}}}
+		
+		\pgfsetroundjoin
+		\pgfsetroundcap
+	}
+}
+
+% ==============================================================
+% Vessel
+% ==============================================================
+\pgfdeclareshape{vessel}{
+	% A small cylinder for storage, flash, phase separation, etc
+	
+	% Saved anchors
+	\savedanchor{\bottomleft}{\pgfpoint{-3mm}{-5mm}}
+	\savedanchor{\topright}{\pgfpoint{3mm}{5mm}}
+	\savedanchor{\top}{\pgfpoint{0mm}{7mm}}
+	
+	% Normal anchors
+	\anchor{center}{\pgfpointorigin}
+	\anchor{north}{\top}
+	\anchor{south}{\top \pgf@y=-\pgf@y}
+	\anchor{east}{\topright \pgf@y=0mm}
+	\anchor{west}{\bottomleft \pgf@y=0mm}
+	\anchor{south west}{\bottomleft}
+	\anchor{north east}{\topright}
+	\anchor{north west}{\topright \pgf@x=-\pgf@x}
+	\anchor{south east}{\bottomleft \pgf@x=-\pgf@x}
+	
+	\anchor{east north east}{\pgfpoint{3mm}{3mm}}
+	\anchor{east south east}{\pgfpoint{3mm}{-3mm}}
+	\anchor{west north west}{\pgfpoint{-3mm}{3mm}}
+	\anchor{west south west}{\pgfpoint{-3mm}{-3mm}}
+	\anchor{south south east}{\pgfpointadd{\pgfpoint{0mm}{-5mm}}{\pgfpointpolar{315}{3mm and 2mm}}}
+	\anchor{south south west}{\pgfpointadd{\pgfpoint{0mm}{-5mm}}{\pgfpointpolar{225}{3mm and 2mm}}}
+	\anchor{north north east}{\pgfpointadd{\pgfpoint{0mm}{5mm}}{\pgfpointpolar{45}{3mm and 2mm}}}
+	\anchor{north north west}{\pgfpointadd{\pgfpoint{0mm}{5mm}}{\pgfpointpolar{135}{3mm and 2mm}}}
+	
+	% Special anchors (only useful for unit ext=hx)
+	\anchor{north hx}{\pgfpoint{5mm}{-2mm}}
+	\anchor{south hx}{\pgfpoint{5mm}{-5mm}}	
+	
+	% Draw it
+	\backgroundpath{		
+		% Main tank
+		\pgfpathmoveto{\topright}
+		\pgfpatharc{0}{180}{3mm and 2mm}
+		\pgfpathlineto{\bottomleft}
+		\pgfpatharc{180}{360}{3mm and 2mm}		
+		\pgfpathclose
+		\pgfsetroundjoin
+		\pgfsetroundcap
+	}
+	\foregroundpath{
+		% Fills based on unit int variable	
+
+		% unit int=liquid (liquid indicator from west to east)
+		\ifthenelse{\equal{liquid}{\pgfkeysvalueof{/tikz/unit int}}}
+		{	% Use arcs because they scale more easily (see note below)
+			\pgfpathmoveto{\pgfpoint{-3mm}{0mm}}
+			\foreach \x in {-1.5mm,0mm,...,3mm}{ 
+				\pgfpatharcto{1.5mm}{5mm}{0}{0}{1}{\pgfpoint{\x}{0mm}}
+			}		
+			% Previously this drawing was attempted with decorations but it was hard to get the decorations to scale correctly when the shape was scaled (read: I couldn't get it to work). Thus the various arc operations above were used instead, which had the ancillary benefit of being easier to get to start and stop at specific locations.
+		}{}
+	
+	
+		% unit int=liquid rotated (liquid indicator from north to south)
+		% To be used with \node[vessel, rotate=90, unit int=liquid rot] {}
+		\ifthenelse{\equal{liquid rotated}{\pgfkeysvalueof{/tikz/unit int}}}
+		{	% Use arcs because they scale more easily (see note below)
+			\pgfpathmoveto{\pgfpoint{0mm}{7mm}}
+			\foreach \y in {5mm,3mm,...,-9mm}{ 
+				\pgfpatharcto{5mm}{2mm}{0}{0}{1}{\pgfpoint{0mm}{\y}}
+			}	
+		}{}
+		
+		% unit int=phase sep (demister and knock-down)
+		\ifthenelse{\equal{phase sep}{\pgfkeysvalueof{/tikz/unit int}}}
+		{	% knock-down
+			\pgfpathmoveto{\pgfpoint{-3mm}{1mm}}
+			\pgfpathlineto{\pgfpoint{-2mm}{1mm}}
+			\pgfpathlineto{\pgfpoint{-1mm}{-1mm}}
+			
+			% demister (avoid "dashed")
+			\pgfpathmoveto{\topright}
+			\pgfpathlineto{\topright \pgf@x=2.1mm}
+			\pgfpathmoveto{\topright \pgf@x=1.3mm}
+			\pgfpathlineto{\topright \pgf@x=0.4mm}
+			\pgfpathmoveto{\topright \pgf@x=-0.4mm}
+			\pgfpathlineto{\topright \pgf@x=-1.3mm}
+			\pgfpathmoveto{\topright \pgf@x=-2.1mm}
+			\pgfpathlineto{\topright \pgf@x=-\pgf@x}
+		
+		}{}
+				
+		% unit ext=simple hx (yields hx on lower portion)
+		\ifthenelse{\equal{simple hx}{\pgfkeysvalueof{/tikz/unit ext}}}
+		{	% An additional \pgfpathmoveto is used after each stroke to "raise the pen" and prevent fill inside the hx stems
+			\pgfpathmoveto{\pgfpoint{5mm}{-2mm}}
+			\pgfpathlineto{\pgfpoint{-1mm}{-2mm}}
+			\pgfpathmoveto{\pgfpoint{-1mm}{-2mm}} % pen up
+			\pgfpathlineto{\pgfpoint{1mm}{-3.5mm}}
+			\pgfpathmoveto{\pgfpoint{1mm}{-3.5mm}} % pen up
+			\pgfpathlineto{\pgfpoint{-1mm}{-5mm}}
+			\pgfpathmoveto{\pgfpoint{-1mm}{-5mm}} % pen up
+			\pgfpathlineto{\pgfpoint{5mm}{-5mm}}
+		}{}
+		
+	}
+}
+
+
+% ==============================================================
+% Centrifugal pump
+% ==============================================================
+\pgfdeclareshape{centrifugal pump}{
+	% Plain or with stylized inlets, outlets
+			
+	\savedanchor{\center}{\pgfpointorigin}
+	\savedanchor{\north}{\pgfpoint{0mm}{3mm}}
+	\savedanchor{\east}{\pgfpoint{3mm}{0mm}}
+	\savedanchor{\northeast}{\pgfpointpolar{45}{3mm}}
+	
+	% The outlet anchor defaults to north but is otherwise selected based on unit ext
+	\savedanchor{\outlet}{
+		\ifthenelse{\equal{none}{\pgfkeysvalueof{/tikz/unit ext}}} % default to north
+			{\pgf@x=0mm \pgf@y=3mm}{}
+		\ifthenelse{\equal{outlet east}{\pgfkeysvalueof{/tikz/unit ext}}}
+			{\pgf@x=4mm \pgf@y=2mm}{}
+		\ifthenelse{\equal{outlet west}{\pgfkeysvalueof{/tikz/unit ext}}}
+			{\pgf@x=-4mm \pgf@y=2mm}{}
+		\ifthenelse{\equal{outlet north east}{\pgfkeysvalueof{/tikz/unit ext}}}
+			{\pgf@x=2mm \pgf@y=4mm}{}
+		\ifthenelse{\equal{outlet north west}{\pgfkeysvalueof{/tikz/unit ext}}}
+			{\pgf@x=-2mm \pgf@y=4mm}{}		
+	} 	
+	
+	% Normal anchors
+	\anchor{center}{\center}
+	\anchor{east}{\east}
+	\anchor{north east}{\northeast}
+	\anchor{north}{\north}
+	\anchor{north west}{\northeast \pgf@x=-\pgf@x}
+	\anchor{west}{\east \pgf@x=-\pgf@x}
+	\anchor{south west}{\northeast \pgf@x=-\pgf@x \pgf@y=-\pgf@y}
+	\anchor{south}{\pgf@x=0mm \pgf@y=-4mm}
+	\anchor{south east}{\northeast \pgf@y=-\pgf@y}
+	
+	% Special anchors (only useful for certain key=value pairs)
+	\anchor{outlet}{\outlet}
+	
+	% Draw it
+	\backgroundpath{				
+		\pgfsetroundjoin
+		\pgfsetroundcap
+		% Draw plain circle if UNITEXTERIOR is not set
+		\ifthenelse{\equal{none}{\pgfkeysvalueof{/tikz/unit ext}}}
+		{	\pgfpathcircle{\pgfpointorigin}{3mm} % Main circle = 3mm			
+		}{}
+		
+		% Outlets based on unit ext variable
+		% Outlet to east	
+		\ifthenelse{\equal{outlet east}{\pgfkeysvalueof{/tikz/unit ext}}}
+		{	\pgfpathmoveto{\north}
+			\pgfpatharc{-270}{19.4712}{3mm} % 19.4712 = asin(1/3)
+			\pgfpathlineto{\pgfpoint{4mm}{1mm}}
+			\pgfpathlineto{\pgfpoint{4mm}{3mm}}
+			\pgfpathclose
+		}{}
+
+		% Outlet to west	
+		\ifthenelse{\equal{outlet west}{\pgfkeysvalueof{/tikz/unit ext}}}
+		{	\pgfpathmoveto{\north}
+			\pgfpatharc{90}{-199.4712}{3mm} % -199.4712 = rad2deg(asin(1/3))-180
+			\pgfpathlineto{\pgfpoint{-4mm}{1mm}}
+			\pgfpathlineto{\pgfpoint{-4mm}{3mm}}
+			\pgfpathclose		
+		}{}
+		% Outlet to north west
+		\ifthenelse{\equal{outlet north west}{\pgfkeysvalueof{/tikz/unit ext}}}
+		{	\pgfpathmoveto{\east \pgf@x=-\pgf@x} % west point
+			\pgfpatharc{-180}{109.4712}{3mm} % 109.4712 = 180-rad2deg(acos(1/3))
+			\pgfpathlineto{\pgfpoint{-1mm}{4mm}}
+			\pgfpathlineto{\pgfpoint{-3mm}{4mm}}
+			\pgfpathclose	
+		}{}
+		% Outlet to north east
+		\ifthenelse{\equal{outlet north east}{\pgfkeysvalueof{/tikz/unit ext}}}
+		{	\pgfpathmoveto{\east}
+			\pgfpatharc{0}{-289.4712}{3mm} % -289.4712 = rad2deg(acos(1/3))-360
+			\pgfpathlineto{\pgfpoint{1mm}{4mm}}
+			\pgfpathlineto{\pgfpoint{3mm}{4mm}}
+			\pgfpathclose
+		}{}
+	
+
+	}
+	\foregroundpath{
+		% Inlets are in FOREGROUNDPATH so that when a fill color is used they don't produce an unfilled region.
+		
+		% Fills based on unit int variable
+
+		% Inlet from north	
+		\ifthenelse{\equal{inlet north}{\pgfkeysvalueof{/tikz/unit int}}}
+		{	\pgfpathmoveto{\pgfpoint{-1mm}{0mm}}
+			\pgfpatharc{180}{360}{1mm}			
+		}{}
+	
+		% Inlet from west	
+		\ifthenelse{\equal{inlet west}{\pgfkeysvalueof{/tikz/unit int}}}
+		{	\pgfpathmoveto{\pgfpoint{0mm}{1mm}}
+			\pgfpatharc{90}{-90}{1mm}			
+		}{}
+		
+		% Inlet from east	
+		\ifthenelse{\equal{inlet east}{\pgfkeysvalueof{/tikz/unit int}}}
+		{	\pgfpathmoveto{\pgfpoint{0mm}{1mm}}
+			\pgfpatharc{90}{270}{1mm}			
+		}{}
+		
+		% Inlet from south	
+		\ifthenelse{\equal{inlet south}{\pgfkeysvalueof{/tikz/unit int}}}
+		{	\pgfpathmoveto{\pgfpoint{1mm}{0mm}}
+			\pgfpatharc{0}{180}{1mm}			
+		}{}
+
+	}
+
+	\behindbackgroundpath{
+		% The base goes here so that when a fill color is used it doesn't produce an unfilled region. It's always drawn.
+		\pgfpathmoveto{\pgfpointpolar{225}{3mm}}
+		\pgfpathlineto{\pgfpoint{-3mm}{-4mm}}
+		\pgfpathlineto{\pgfpoint{3mm}{-4mm}}
+		\pgfpathlineto{\pgfpointpolar{315}{3mm}}
+		\pgfpatharc{315}{225}{3mm}
+		\pgfpathclose	
+	}
+		
+}
+
+
+% ==============================================================
+% Reciprocating pump
+% ==============================================================
+\pgfdeclareshape{reciprocating pump}{
+	% Two squares connected by a shaft
+	
+	% Saved anchors
+	\savedanchor{\bottomleft}{\pgfpoint{-2mm}{-8mm}}
+	\savedanchor{\topright}{\pgfpoint{2mm}{2mm}}
+	
+	% Normal anchors
+	\anchor{center}{\pgfpointorigin}
+	\anchor{north}{\topright \pgf@x=0mm}
+	\anchor{south}{\bottomleft \pgf@x=0mm}
+	\anchor{east}{\topright \pgf@y=0mm}
+	\anchor{west}{\bottomleft \pgf@y=0mm}
+	\anchor{south west}{\bottomleft}
+	\anchor{north east}{\topright}
+	\anchor{north west}{\topright \pgf@x=-\pgf@x}
+	\anchor{south east}{\bottomleft \pgf@x=-\pgf@x}
+	
+	% Special anchors
+	% OUTLET defined only so that switching between centrifugal and reciprocating doesn't break
+	\anchor{outlet}{\topright \pgf@x=0mm}
+	
+	% Draw it
+	\backgroundpath{		
+		% Pump head
+		\pgfpathrectanglecorners{\topright}{\topright \pgf@x=-\pgf@x \pgf@y=-\pgf@y}
+		% Shaft
+		\pgfpathrectanglecorners{\pgfpoint{-0.3mm}{-2mm}}{\pgfpoint{0.3mm}{-4mm}}
+		% Motor
+		\pgfpathrectanglecorners{\bottomleft}{\pgfpoint{2mm}{-4mm}}
+
+		\pgfsetroundjoin
+		\pgfsetroundcap
+	}
+}
+
+
+
+
+% ==============================================================
+% Compressor
+% ==============================================================
+\pgfdeclareshape{compressor}{
+	% Squashed quadrilateral
+	
+	% Saved anchors
+	\savedanchor{\center}{\pgfpointorigin}
+	\savedanchor{\north}{\pgfpoint{0mm}{2mm}}
+	\savedanchor{\northeast}{\pgfpoint{3mm}{1mm}}
+	\savedanchor{\southwest}{\pgfpoint{-3mm}{-3mm}}
+	
+	% Normal anchors
+	\anchor{center}{\center}
+	\anchor{east}{\northeast \pgf@y=0mm}
+	\anchor{north east}{\northeast}
+	\anchor{north}{\north}
+	\anchor{north west}{\southwest \pgf@y=-\pgf@y}
+	\anchor{west}{\southwest \pgf@y=0mm}
+	\anchor{south west}{\southwest}
+	\anchor{south}{\north \pgf@y=-\pgf@y}
+	\anchor{south east}{\northeast \pgf@y=-\pgf@y}
+	
+	\anchor{north north west}{\pgfpointlineatdistance{1mm}{\southwest \pgf@y=-\pgf@y}{\north}}
+	\anchor{north north east}{\pgfpointlineatdistance{1mm}{\northeast}{\north}}
+	\anchor{south south west}{\pgfpointlineatdistance{1mm}{\southwest}{\north \pgf@y=-\pgf@y}}
+	\anchor{south south east}{\pgfpointlineatdistance{1mm}{\northeast \pgf@y=-\pgf@y}{\north \pgf@y=-\pgf@y}}
+	\anchor{west north west}{\pgfpointlineatdistance{1mm}{\southwest \pgf@y=-\pgf@y}{\southwest}}
+	\anchor{west south west}{\pgfpointlineatdistance{1mm}{\southwest}{\southwest \pgf@y=0mm}}
+	
+	% Spacing is tight on the outlet side so these anchors placed partway between cardinals and off-cardinals
+	\anchor{east north east}{\pgfpointlineattime{0.5}{\northeast}{\northeast \pgf@y=0mm}}
+	\anchor{east south east}{\pgfpointlineattime{0.5}{\northeast \pgf@y=-\pgf@y}{\northeast \pgf@y=0mm}}
+	
+	% Draw it
+	\backgroundpath{
+		% Main circle
+		\pgfpathmoveto{\northeast}
+		\pgfpathlineto{\southwest \pgf@y=-\pgf@y}
+		\pgfpathlineto{\southwest}
+		\pgfpathlineto{\northeast \pgf@y=-\pgf@y}
+		\pgfpathclose
+		\pgfsetroundjoin
+		\pgfsetroundcap
+	}
+}
+
+
+% ==============================================================
+% Turbine
+% ==============================================================
+\pgfdeclareshape{turbine}{
+	% Squashed quadrilateral (simple mirror of compressor)
+	
+	% Saved anchors
+	\savedanchor{\center}{\pgfpointorigin}
+	\savedanchor{\north}{\pgfpoint{0mm}{2mm}}
+	\savedanchor{\northeast}{\pgfpoint{3mm}{3mm}}
+	\savedanchor{\southwest}{\pgfpoint{-3mm}{-1mm}}
+	
+	% Normal anchors
+	\anchor{center}{\center}
+	\anchor{east}{\northeast \pgf@y=0mm}
+	\anchor{north east}{\northeast}
+	\anchor{north}{\north}
+	\anchor{north west}{\southwest \pgf@y=-\pgf@y}
+	\anchor{west}{\southwest \pgf@y=0mm}
+	\anchor{south west}{\southwest}
+	\anchor{south}{\north \pgf@y=-\pgf@y}
+	\anchor{south east}{\northeast \pgf@y=-\pgf@y}
+	
+	\anchor{north north west}{\pgfpointlineatdistance{1mm}{\southwest \pgf@y=-\pgf@y}{\north}}
+	\anchor{north north east}{\pgfpointlineatdistance{1mm}{\northeast}{\north}}
+	\anchor{south south west}{\pgfpointlineatdistance{1mm}{\southwest}{\north \pgf@y=-\pgf@y}}
+	\anchor{south south east}{\pgfpointlineatdistance{1mm}{\northeast \pgf@y=-\pgf@y}{\north \pgf@y=-\pgf@y}}
+	\anchor{east north east}{\pgfpointlineatdistance{1mm}{\northeast}{\northeast \pgf@y=0mm}}
+	\anchor{east south east}{\pgfpointlineatdistance{1mm}{\northeast \pgf@y=-\pgf@y}{\northeast \pgf@y=0mm}}
+	
+	% Spacing is tight on the inlet side so these anchors placed partway between cardinals and off-cardinals
+	\anchor{west north west}{\pgfpointlineattime{0.5}{\southwest \pgf@y=-\pgf@y}{\southwest \pgf@y=0mm}}
+	\anchor{west south west}{\pgfpointlineattime{0.5}{\southwest}{\southwest \pgf@y=0mm}}
+	
+	% Draw it
+	\backgroundpath{
+		% Main circle
+		\pgfpathmoveto{\northeast}
+		\pgfpathlineto{\southwest \pgf@y=-\pgf@y}
+		\pgfpathlineto{\southwest}
+		\pgfpathlineto{\northeast \pgf@y=-\pgf@y}
+		\pgfpathclose
+		\pgfsetroundjoin
+		\pgfsetroundcap
+	}
+}
+
+
+% ==============================================================
+% Valve
+% ==============================================================
+\pgfdeclareshape{valve}{
+	% General valve with or without unspecified actuator
+	
+	% Saved anchors
+	\savedanchor{\center}{\pgfpointorigin}
+	\savedanchor{\northeast}{\pgfpoint{1.5mm}{1mm}}
+	\savedanchor{\southwest}{\pgfpoint{-1.5mm}{-1mm}}
+	
+	% Normal anchors
+	\anchor{center}{\center}
+	\anchor{east}{\northeast \pgf@y=0mm}
+	\anchor{north east}{\northeast}
+	\anchor{north}{\northeast \pgf@x=0mm}
+	\anchor{north west}{\southwest \pgf@y=-\pgf@y}
+	\anchor{west}{\southwest \pgf@y=0mm}
+	\anchor{south west}{\southwest}
+	\anchor{south}{\southwest \pgf@x=0mm}
+	\anchor{south east}{\northeast \pgf@y=-\pgf@y}
+	
+	% Special anchors
+	\anchor{actuator}{\pgfpoint{0mm}{3mm}}
+	
+	% Draw it
+	\backgroundpath{
+		\pgfpathmoveto{\northeast}
+		\pgfpathlineto{\southwest}
+		\pgfpathlineto{\southwest \pgf@y=-\pgf@y}
+		\pgfpathlineto{\northeast \pgf@y=-\pgf@y}
+		\pgfpathclose
+		\pgfsetroundjoin
+		\pgfsetroundcap
+	}
+	\foregroundpath{
+		% Actuator based on unit ext key
+		% Unspecified actuator	
+		\ifthenelse{\equal{actuator}{\pgfkeysvalueof{/tikz/unit ext}}}
+		{	\pgfpathmoveto{\center}
+			\pgfpathlineto{\pgfpoint{0mm}{2mm}}
+			\pgfpathlineto{\pgfpoint{-1mm}{2mm}}
+			\pgfpatharc{180}{0}{1mm}
+			\pgfpathlineto{\pgfpoint{0mm}{2mm}}
+			\pgfpathclose % unnecessary for stroke purposes but removes 
+			%arrowheads since used inside paths			
+		}{}	
+	}
+}
+
+
+
+
+% ==============================================================
+% Feed
+% ==============================================================
+\pgfdeclareshape{feed}{
+	% Half-filled circle, radius = 1.5 mm
+	
+	% Saved anchors
+	\savedanchor{\center}{\pgfpointorigin}
+	\savedanchor{\north}{\pgfpoint{0mm}{1.5mm}}
+	\savedanchor{\east}{\pgfpoint{1.5mm}{0mm}}
+	\savedanchor{\northeast}{\pgfpointpolar{45}{1.5mm}}
+	
+	% Normal anchors
+	\anchor{center}{\center}
+	\anchor{east}{\east}
+	\anchor{north east}{\northeast}
+	\anchor{north}{\north}
+	\anchor{north west}{\northeast \pgf@x=-\pgf@x}
+	\anchor{west}{\east \pgf@x=-\pgf@x}
+	\anchor{south west}{\northeast \pgf@x=-\pgf@x \pgf@y=-\pgf@y}
+	\anchor{south}{\north \pgf@y=-\pgf@y}
+	\anchor{south east}{\northeast \pgf@y=-\pgf@y}
+	
+	% Special anchors (only useful for certain key=value pairs)
+	\anchor{stream}{\east}
+	
+	% Draw it
+	\backgroundpath{
+		% Main circle
+		\pgfpathcircle{\pgfpointorigin}{1.5mm}
+	}
+	\beforebackgroundpath{		
+		% Filled half uses stroke color as fill
+		% Procedure for this derived from tex.stackexchange.com/questions/218968
+		\expandafter\global\expandafter\let\expandafter\pgfmysavedstrokecolor\csname\string\color@pgfstrokecolor\endcsname%
+		\expandafter\pgf@setfillcolor\pgfmysavedstrokecolor
+		\pgfpathmoveto{\north}
+		\pgfpatharc{90}{270}{1.5mm}
+		\pgfusepath{stroke, fill}
+	}
+}
+
+
+% ==============================================================
+% Product
+% ==============================================================
+\pgfdeclareshape{product}{
+	% Half-filled circle, radius = 1.5 mm
+	
+	% Saved anchors
+	\savedanchor{\center}{\pgfpointorigin}
+	\savedanchor{\north}{\pgfpoint{0mm}{1.5mm}}
+	\savedanchor{\east}{\pgfpoint{1.5mm}{0mm}}
+	\savedanchor{\northeast}{\pgfpointpolar{45}{1.5mm}}
+	
+	% Normal anchors
+	\anchor{center}{\center}
+	\anchor{east}{\east}
+	\anchor{north east}{\northeast}
+	\anchor{north}{\north}
+	\anchor{north west}{\northeast \pgf@x=-\pgf@x}
+	\anchor{west}{\east \pgf@x=-\pgf@x}
+	\anchor{south west}{\northeast \pgf@x=-\pgf@x \pgf@y=-\pgf@y}
+	\anchor{south}{\north \pgf@y=-\pgf@y}
+	\anchor{south east}{\northeast \pgf@y=-\pgf@y}
+	
+	% Special anchors (only useful for certain key=value pairs)
+	\anchor{stream}{\east \pgf@x=-\pgf@x}
+	
+	% Draw it
+	\backgroundpath{
+		% Main circle
+		\pgfpathcircle{\pgfpointorigin}{1.5mm}
+	}
+	\beforebackgroundpath{
+		% Filled half uses stroke color as fill
+		% Procedure for this derived from tex.stackexchange.com/questions/218968
+		\expandafter\global\expandafter\let\expandafter\pgfmysavedstrokecolor\csname\string\color@pgfstrokecolor\endcsname%
+		\expandafter\pgf@setfillcolor\pgfmysavedstrokecolor
+		% Filled half
+		\pgfpathmoveto{\north}
+		\pgfpatharc{90}{-90}{1.5mm}
+		\pgfusepath{stroke, fill}
+	}
+}
+
+
+
+\makeatother
+
+
+
+% ========= ADDITIONAL SHAPES ==========
+% These shapes do not require custom PGF shapes; they're modifications of 
+%existing shapes.
+\tikzset{>=Triangle} % see section 16.5 for other arrowheads (arrow tips)
+\tikzstyle{sid} = [diamond, draw, solid, fill=white, text badly centered,inner 
+sep=1pt, font=\footnotesize]
+\tikzstyle{elec} = [circle, draw, solid, fill=white, text badly centered,inner 
+sep=1pt, font=\footnotesize]
+
+
+
+% ========= DEFAULT TIKZSTYLES ==========
+% The following TIKZSTYLES set all custom shapes to, by default, be drawn with a stroke in black and no fill.
+\tikzset{tube reactor/.style={shape=tube reactor, draw=black}}
+\tikzset{tank reactor/.style={shape=tank reactor, draw=black}}
+\tikzset{column/.style={shape=column, draw=black}}
+\tikzset{vessel/.style={shape=vessel, draw=black}}
+\tikzset{basic hx/.style={shape=basic hx, draw=black}}
+\tikzset{fired hx/.style={shape=fired hx, draw=black}}
+\tikzset{shell and tube hx/.style={shape=shell and tube hx, draw=black}}
+\tikzset{plate hx/.style={shape=plate hx, draw=black}}
+\tikzset{centrifugal pump/.style={shape=centrifugal pump, draw=black}}
+\tikzset{reciprocating pump/.style={shape=reciprocating pump, draw=black}}
+\tikzset{compressor/.style={shape=compressor, draw=black}}
+\tikzset{turbine/.style={shape=turbine, draw=black}}
+\tikzset{feed/.style={shape=feed, draw=black}}
+\tikzset{product/.style={shape=product, draw=black}}
+\tikzset{valve/.style={shape=valve, draw=black, fill=white}} % fill=white since usually placed on paths
+
+
+
+% ========= ANCHOR ALIASING ==========
+% Command for aliasing anchors (tex.stackexchange.com/questions/145134)
+%\pgfdeclareanchoralias{<shape>}{<anchor>}{<alias>}
+\newcommand*\pgfdeclareanchoralias[3]{%
+	\expandafter\def\csname pgf@anchor@#1@#3\expandafter\endcsname
+	\expandafter{\csname pgf@anchor@#1@#2\endcsname}}
+
+% In general, all compass directions are aliased with their abbreviations: north=n, south east = se, etc.
+% Sure would be nice if this could be done in a for loop :/ but some are different.
+
+% Tank reactor
+\pgfdeclareanchoralias{tank reactor}{north}{n}
+\pgfdeclareanchoralias{tank reactor}{south}{s}
+\pgfdeclareanchoralias{tank reactor}{east}{e}
+\pgfdeclareanchoralias{tank reactor}{west}{w}
+\pgfdeclareanchoralias{tank reactor}{north east}{ne}
+\pgfdeclareanchoralias{tank reactor}{north west}{nw}
+\pgfdeclareanchoralias{tank reactor}{south east}{se}
+\pgfdeclareanchoralias{tank reactor}{south west}{sw}
+\pgfdeclareanchoralias{tank reactor}{north north east}{nne}
+\pgfdeclareanchoralias{tank reactor}{north north west}{nnw}
+\pgfdeclareanchoralias{tank reactor}{south south west}{ssw}
+\pgfdeclareanchoralias{tank reactor}{south south east}{sse}
+\pgfdeclareanchoralias{tank reactor}{east south east}{ese}
+\pgfdeclareanchoralias{tank reactor}{west south west}{wsw}
+
+% Tube reactor
+\pgfdeclareanchoralias{tube reactor}{north}{n}
+\pgfdeclareanchoralias{tube reactor}{south}{s}
+\pgfdeclareanchoralias{tube reactor}{east}{e}
+\pgfdeclareanchoralias{tube reactor}{west}{w}
+\pgfdeclareanchoralias{tube reactor}{north east}{ne}
+\pgfdeclareanchoralias{tube reactor}{north west}{nw}
+\pgfdeclareanchoralias{tube reactor}{south east}{se}
+\pgfdeclareanchoralias{tube reactor}{south west}{sw}
+\pgfdeclareanchoralias{tube reactor}{north north east}{nne}
+\pgfdeclareanchoralias{tube reactor}{north north west}{nnw}
+\pgfdeclareanchoralias{tube reactor}{south south west}{ssw}
+\pgfdeclareanchoralias{tube reactor}{south south east}{sse}
+\pgfdeclareanchoralias{tube reactor}{east south east}{ese}
+\pgfdeclareanchoralias{tube reactor}{west south west}{wsw}
+\pgfdeclareanchoralias{tube reactor}{west north west}{wnw}
+\pgfdeclareanchoralias{tube reactor}{east north east}{ene}
+
+% Basic hx
+\pgfdeclareanchoralias{basic hx}{north}{n}
+\pgfdeclareanchoralias{basic hx}{south}{s}
+\pgfdeclareanchoralias{basic hx}{east}{e}
+\pgfdeclareanchoralias{basic hx}{west}{w}
+\pgfdeclareanchoralias{basic hx}{north east}{ne}
+\pgfdeclareanchoralias{basic hx}{north west}{nw}
+\pgfdeclareanchoralias{basic hx}{south east}{se}
+\pgfdeclareanchoralias{basic hx}{south west}{sw}
+
+% Shell and tube hx
+\pgfdeclareanchoralias{shell and tube hx}{north}{n}
+\pgfdeclareanchoralias{shell and tube hx}{south}{s}
+\pgfdeclareanchoralias{shell and tube hx}{east}{e}
+\pgfdeclareanchoralias{shell and tube hx}{west}{w}
+\pgfdeclareanchoralias{shell and tube hx}{north east}{ne}
+\pgfdeclareanchoralias{shell and tube hx}{north west}{nw}
+\pgfdeclareanchoralias{shell and tube hx}{south east}{se}
+\pgfdeclareanchoralias{shell and tube hx}{south west}{sw}
+\pgfdeclareanchoralias{shell and tube hx}{north north east}{nne}
+\pgfdeclareanchoralias{shell and tube hx}{north north west}{nnw}
+\pgfdeclareanchoralias{shell and tube hx}{south south west}{ssw}
+\pgfdeclareanchoralias{shell and tube hx}{south south east}{sse}
+\pgfdeclareanchoralias{shell and tube hx}{east south east}{ese}
+\pgfdeclareanchoralias{shell and tube hx}{west south west}{wsw}
+\pgfdeclareanchoralias{shell and tube hx}{west north west}{wnw}
+\pgfdeclareanchoralias{shell and tube hx}{east north east}{ene}
+
+% Plate hx
+\pgfdeclareanchoralias{plate hx}{north}{n}
+\pgfdeclareanchoralias{plate hx}{south}{s}
+\pgfdeclareanchoralias{plate hx}{east}{e}
+\pgfdeclareanchoralias{plate hx}{west}{w}
+\pgfdeclareanchoralias{plate hx}{north east}{ne}
+\pgfdeclareanchoralias{plate hx}{north west}{nw}
+\pgfdeclareanchoralias{plate hx}{south east}{se}
+\pgfdeclareanchoralias{plate hx}{south west}{sw}
+\pgfdeclareanchoralias{plate hx}{north north east}{nne}
+\pgfdeclareanchoralias{plate hx}{north north west}{nnw}
+\pgfdeclareanchoralias{plate hx}{south south west}{ssw}
+\pgfdeclareanchoralias{plate hx}{south south east}{sse}
+\pgfdeclareanchoralias{plate hx}{east south east}{ese}
+\pgfdeclareanchoralias{plate hx}{west south west}{wsw}
+\pgfdeclareanchoralias{plate hx}{west north west}{wnw}
+\pgfdeclareanchoralias{plate hx}{east north east}{ene}
+
+% Fired hx
+\pgfdeclareanchoralias{fired hx}{north}{n}
+\pgfdeclareanchoralias{fired hx}{south}{s}
+\pgfdeclareanchoralias{fired hx}{east}{e}
+\pgfdeclareanchoralias{fired hx}{west}{w}
+\pgfdeclareanchoralias{fired hx}{north east}{ne}
+\pgfdeclareanchoralias{fired hx}{north west}{nw}
+\pgfdeclareanchoralias{fired hx}{south east}{se}
+\pgfdeclareanchoralias{fired hx}{south west}{sw}
+\pgfdeclareanchoralias{fired hx}{north north east}{nne}
+\pgfdeclareanchoralias{fired hx}{north north west}{nnw}
+\pgfdeclareanchoralias{fired hx}{south south west}{ssw}
+\pgfdeclareanchoralias{fired hx}{south south east}{sse}
+\pgfdeclareanchoralias{fired hx}{east south east}{ese}
+\pgfdeclareanchoralias{fired hx}{west south west}{wsw}
+\pgfdeclareanchoralias{fired hx}{west north west}{wnw}
+\pgfdeclareanchoralias{fired hx}{east north east}{ene}
+
+% Column
+\pgfdeclareanchoralias{column}{north}{n}
+\pgfdeclareanchoralias{column}{south}{s}
+\pgfdeclareanchoralias{column}{east}{e}
+\pgfdeclareanchoralias{column}{west}{w}
+\pgfdeclareanchoralias{column}{north east}{ne}
+\pgfdeclareanchoralias{column}{north west}{nw}
+\pgfdeclareanchoralias{column}{south east}{se}
+\pgfdeclareanchoralias{column}{south west}{sw}
+\pgfdeclareanchoralias{column}{north north east}{nne}
+\pgfdeclareanchoralias{column}{north north west}{nnw}
+\pgfdeclareanchoralias{column}{south south west}{ssw}
+\pgfdeclareanchoralias{column}{south south east}{sse}
+\pgfdeclareanchoralias{column}{east south east}{ese}
+\pgfdeclareanchoralias{column}{west south west}{wsw}
+\pgfdeclareanchoralias{column}{west north west}{wnw}
+\pgfdeclareanchoralias{column}{east north east}{ene}
+
+% Vessel
+\pgfdeclareanchoralias{vessel}{north}{n}
+\pgfdeclareanchoralias{vessel}{south}{s}
+\pgfdeclareanchoralias{vessel}{east}{e}
+\pgfdeclareanchoralias{vessel}{west}{w}
+\pgfdeclareanchoralias{vessel}{north east}{ne}
+\pgfdeclareanchoralias{vessel}{north west}{nw}
+\pgfdeclareanchoralias{vessel}{south east}{se}
+\pgfdeclareanchoralias{vessel}{south west}{sw}
+\pgfdeclareanchoralias{vessel}{north north east}{nne}
+\pgfdeclareanchoralias{vessel}{north north west}{nnw}
+\pgfdeclareanchoralias{vessel}{south south west}{ssw}
+\pgfdeclareanchoralias{vessel}{south south east}{sse}
+\pgfdeclareanchoralias{vessel}{east south east}{ese}
+\pgfdeclareanchoralias{vessel}{west south west}{wsw}
+\pgfdeclareanchoralias{vessel}{west north west}{wnw}
+\pgfdeclareanchoralias{vessel}{east north east}{ene}
+
+% Centrifugal pump
+\pgfdeclareanchoralias{centrifugal pump}{north}{n}
+\pgfdeclareanchoralias{centrifugal pump}{south}{s}
+\pgfdeclareanchoralias{centrifugal pump}{east}{e}
+\pgfdeclareanchoralias{centrifugal pump}{west}{w}
+\pgfdeclareanchoralias{centrifugal pump}{north east}{ne}
+\pgfdeclareanchoralias{centrifugal pump}{north west}{nw}
+\pgfdeclareanchoralias{centrifugal pump}{south east}{se}
+\pgfdeclareanchoralias{centrifugal pump}{south west}{sw}
+
+% Reciprocating pump
+\pgfdeclareanchoralias{reciprocating pump}{north}{n}
+\pgfdeclareanchoralias{reciprocating pump}{south}{s}
+\pgfdeclareanchoralias{reciprocating pump}{east}{e}
+\pgfdeclareanchoralias{reciprocating pump}{west}{w}
+\pgfdeclareanchoralias{reciprocating pump}{north east}{ne}
+\pgfdeclareanchoralias{reciprocating pump}{north west}{nw}
+\pgfdeclareanchoralias{reciprocating pump}{south east}{se}
+\pgfdeclareanchoralias{reciprocating pump}{south west}{sw}
+
+% Compressor
+\pgfdeclareanchoralias{compressor}{north}{n}
+\pgfdeclareanchoralias{compressor}{south}{s}
+\pgfdeclareanchoralias{compressor}{east}{e}
+\pgfdeclareanchoralias{compressor}{west}{w}
+\pgfdeclareanchoralias{compressor}{north east}{ne}
+\pgfdeclareanchoralias{compressor}{north west}{nw}
+\pgfdeclareanchoralias{compressor}{south east}{se}
+\pgfdeclareanchoralias{compressor}{south west}{sw}
+\pgfdeclareanchoralias{compressor}{north north east}{nne}
+\pgfdeclareanchoralias{compressor}{north north west}{nnw}
+\pgfdeclareanchoralias{compressor}{south south west}{ssw}
+\pgfdeclareanchoralias{compressor}{south south east}{sse}
+\pgfdeclareanchoralias{compressor}{east south east}{ese}
+\pgfdeclareanchoralias{compressor}{west south west}{wsw}
+\pgfdeclareanchoralias{compressor}{west north west}{wnw}
+\pgfdeclareanchoralias{compressor}{east north east}{ene}
+
+% Turbine
+\pgfdeclareanchoralias{turbine}{north}{n}
+\pgfdeclareanchoralias{turbine}{south}{s}
+\pgfdeclareanchoralias{turbine}{east}{e}
+\pgfdeclareanchoralias{turbine}{west}{w}
+\pgfdeclareanchoralias{turbine}{north east}{ne}
+\pgfdeclareanchoralias{turbine}{north west}{nw}
+\pgfdeclareanchoralias{turbine}{south east}{se}
+\pgfdeclareanchoralias{turbine}{south west}{sw}
+\pgfdeclareanchoralias{turbine}{north north east}{nne}
+\pgfdeclareanchoralias{turbine}{north north west}{nnw}
+\pgfdeclareanchoralias{turbine}{south south west}{ssw}
+\pgfdeclareanchoralias{turbine}{south south east}{sse}
+\pgfdeclareanchoralias{turbine}{east south east}{ese}
+\pgfdeclareanchoralias{turbine}{west south west}{wsw}
+\pgfdeclareanchoralias{turbine}{west north west}{wnw}
+\pgfdeclareanchoralias{turbine}{east north east}{ene}
+
+% Valve
+\pgfdeclareanchoralias{valve}{north}{n}
+\pgfdeclareanchoralias{valve}{south}{s}
+\pgfdeclareanchoralias{valve}{east}{e}
+\pgfdeclareanchoralias{valve}{west}{w}
+\pgfdeclareanchoralias{valve}{north east}{ne}
+\pgfdeclareanchoralias{valve}{north west}{nw}
+\pgfdeclareanchoralias{valve}{south east}{se}
+\pgfdeclareanchoralias{valve}{south west}{sw}
+
+% Feed
+\pgfdeclareanchoralias{feed}{north}{n}
+\pgfdeclareanchoralias{feed}{south}{s}
+\pgfdeclareanchoralias{feed}{east}{e}
+\pgfdeclareanchoralias{feed}{west}{w}
+\pgfdeclareanchoralias{feed}{north east}{ne}
+\pgfdeclareanchoralias{feed}{north west}{nw}
+\pgfdeclareanchoralias{feed}{south east}{se}
+\pgfdeclareanchoralias{feed}{south west}{sw}
+
+% Product
+\pgfdeclareanchoralias{product}{north}{n}
+\pgfdeclareanchoralias{product}{south}{s}
+\pgfdeclareanchoralias{product}{east}{e}
+\pgfdeclareanchoralias{product}{west}{w}
+\pgfdeclareanchoralias{product}{north east}{ne}
+\pgfdeclareanchoralias{product}{north west}{nw}
+\pgfdeclareanchoralias{product}{south east}{se}
+\pgfdeclareanchoralias{product}{south west}{sw}
+
+% SID (Stream identification)
+\pgfdeclareanchoralias{sid}{north}{n}
+\pgfdeclareanchoralias{sid}{south}{s}
+\pgfdeclareanchoralias{sid}{east}{e}
+\pgfdeclareanchoralias{sid}{west}{w}
+\pgfdeclareanchoralias{sid}{north east}{ne}
+\pgfdeclareanchoralias{sid}{north west}{nw}
+\pgfdeclareanchoralias{sid}{south east}{se}
+\pgfdeclareanchoralias{sid}{south west}{sw}
+
+
+% ======================================
+% Code from SPATH3 documentation for creating line breaks
+
+%\AtBeginDocument{\tikz[overlay] \path[spath/save=arc] (0,0) arc[radius=1cm, start angle=180, delta angle=-180];}
+
+% Updated to eliminate occasional whitespace per tex.stackexchange.com/questions/605800
+\AtBeginDocument{\sbox0{\tikz[overlay] \path[spath/save global=myarc] (0,0) arc[radius=1cm, start angle=180, delta angle=-180];}}
+
+\tikzset{
+	bridge path/.initial=myarc,
+	bridge radius/.initial=0pt,
+	bridge gap/.initial=4pt,
+	bridge/.style 2 args={
+		spath/split at intersections with={#1}{#2},
+		spath/insert gaps after
+		components={#1}{\pgfkeysvalueof{/tikz/bridge radius}},
+		spath/join components upright
+		with={#1}{\pgfkeysvalueof{/tikz/bridge path}},
+		spath/split at intersections with={#2}{#1},
+		spath/insert gaps after
+		components={#2}{\pgfkeysvalueof{/tikz/bridge gap}},
+	}
+}

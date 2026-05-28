@@ -1,0 +1,150 @@
+\subsubsection{Przegląd ekranów aplikacji}
+
+Interfejs użytkownika znajduje się w folderze \texttt{ui}, a jego struktura przedstawia się
+następująco:
+
+\begin{verbatim}
+ui/
+├── MainScreen.kt
+├── components/
+│   └── ConnectionStatusBar.kt
+├── map/
+│   ├── MapScreen.kt
+│   └── MapViewModel.kt
+├── nodes/
+│   ├── NodeDetailScreen.kt
+│   ├── NodeFilterState.kt
+│   ├── NodeItem.kt
+│   └── NodeListScreen.kt
+├── settings/
+│   ├── SettingsScreen.kt
+│   └── SettingsViewModel.kt
+├── theme/
+│   ├── Color.kt
+│   ├── Theme.kt
+│   └── Type.kt
+└── zones/
+    ├── ZoneBottomSheet.kt
+    ├── ZoneConfirmDialog.kt
+    ├── ZoneDetailScreen.kt
+    └── ZoneViewModel.kt
+\end{verbatim}
+
+W dolnej części ekranu znajduje się pasek nawigacyjny z trzema zakładkami:
+\textbf{Mapy}, \textbf{Węzły} i \textbf{Ustawienia}.
+
+\paragraph{Mapy.}
+
+\texttt{MapScreen} jest głównym ekranem aplikacji. Wyświetla mapę Google Maps,
+na której prezentowane są markery węzłów oraz pozycja użytkownika. Każdy marker renderowany
+jest jako bitmapa z inicjałami węzła. Kolor markera zależy od roli węzła oraz stanu połączenia.
+W prawym górnym rogu markera znajduje się znacznik jakości sygnału. W lewym dolnym rogu ekranu
+umieszczono \textit{floating button} otwierający menu geofencingu.
+
+\begin{figure}[!h]
+    \caption{Ekran mapy aplikacji MeshTracker}
+    \label{fig:map-screen}
+    \centering
+    \includegraphics[width=0.45\linewidth]{mapaZblizenie.jpg}
+\end{figure}
+
+\paragraph{Markery.}
+
+Wizualizacja markerów została zaprojektowana tak, aby w jak najbardziej przejrzysty sposób
+prezentować możliwie wiele danych jednocześnie. Kolor markera odpowiada przypisanej mu roli,
+a dodatkowa warstwa kolorów reprezentuje stan połączenia węzła z siecią Meshtastic
+(rysunek~\ref{fig:markery-kolory}).
+
+\begin{figure}[!h]
+    \centering
+    \begin{subfigure}{0.48\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{markeryRole.png}
+        \caption{Mapowanie roli węzła do koloru}
+        \label{fig:markery-role}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.48\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{markeryStanPolaczenia.png}
+        \caption{Mapowanie stanu połączenia do koloru}
+        \label{fig:markery-stan-polaczenia}
+    \end{subfigure}
+    \caption{Kodowanie kolorystyczne markerów}
+    \label{fig:markery-kolory}
+\end{figure}
+
+Węzeł lokalny - czyli ten połączony z telefonem użytkownika bezpośrednio przez Bluetooth -
+ma małą ikonkę telefonu w prawym górnym rogu. Pozostałe węzły mają w tym miejscu kropkę,
+której kolor odpowiada jakości połączenia z siecią (zakres SNR - stosunek mocy użytecznego
+sygnału do mocy szumu, wyrażony w~dB). Strzałka wewnątrz markera wskazuje kierunek
+poruszania się węzła (rysunek~\ref{fig:markery-szczegoly}).
+
+\begin{figure}[!h]
+    \centering
+    \begin{subfigure}{0.48\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{markeryJakoscPolaczenia.png}
+        \caption{Jakość połączenia (SNR) a kolor kropki}
+        \label{fig:markery-jakosc-polaczenia}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.48\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{markeryKierunek.png}
+        \caption{Kierunek poruszania się węzła}
+        \label{fig:markery-kierunek}
+    \end{subfigure}
+    \caption{Szczegóły wizualizacji markerów}
+    \label{fig:markery-szczegoly}
+\end{figure}
+
+\paragraph{Geofencing.}
+
+Menu stref dostępne jest pod \textit{floating button} w lewym dolnym rogu ekranu mapy.
+Strefy składają się z wielokątów, których wierzchołki tworzone są poprzez długie przyciśnięcie
+(\textit{long press}) wybranego punktu na mapie. Po dodaniu trzeciego wierzchołka pojawia się
+opcja \textbf{Zamknij}, która tworzy strefę z wprowadzonych punktów
+(rysunek~\ref{fig:geofencing-tworzenie}).
+
+\begin{figure}[!h]
+    \centering
+    \begin{subfigure}{0.45\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{strefyGeofencing.jpg}
+        \caption{Menu geofencingu - widok pusty}
+        \label{fig:geofencing-puste}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.45\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{strefyGeofencingWierzcholki.jpg}
+        \caption{Definiowanie wierzchołków strefy}
+        \label{fig:geofencing-wierzcholki}
+    \end{subfigure}
+    \caption{Tworzenie strefy geofencingu}
+    \label{fig:geofencing-tworzenie}
+\end{figure}
+
+Następnie użytkownik wprowadza nazwę strefy, nadaje jej kolor oraz przypisuje węzły, które
+będą wyzwalać zdarzenia wejścia i wyjścia. Dostępne strefy mogą być aktywowane i usuwane
+z poziomu listy (rysunek~\ref{fig:geofencing-zarzadzanie}).
+
+\begin{figure}[!h]
+    \centering
+    \begin{subfigure}{0.45\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{nowaStrefa.jpg}
+        \caption{Formularz tworzenia nowej strefy}
+        \label{fig:nowa-strefa}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.45\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{strefyLista.jpg}
+        \caption{Lista zdefiniowanych stref}
+        \label{fig:strefy-lista}
+    \end{subfigure}
+    \caption{Zarządzanie strefami geofencingu}
+    \label{fig:geofencing-zarzadzanie}
+\end{figure}

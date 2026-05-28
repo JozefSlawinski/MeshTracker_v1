@@ -1,0 +1,259 @@
+\subsubsection{Geofencing}
+\label{sec:geofencing}
+
+Geofencing polega na wykrywaniu przekroczenia przez obiekt wirtualnej granicy
+geograficznej wyłącznie w oparciu o dane lokalizacyjne. Wszystko, co zostało
+opisane w poprzednich rozdziałach (komunikacja radiowa, integracja z Meshtastic,
+wizualizacja na mapie), służy w ostateczności temu, żeby użytkownik dostał powiadomienie
+w momencie, gdy węzeł przekroczy granicę wyznaczonego obszaru. W projekcie MeshTracker
+granice definiowane są jako wielokąty o dowolnym kształcie, a monitorowanymi obiektami
+są węzły sieci Meshtastic.
+
+\paragraph{Model danych.}
+
+Dane geofencingu przechowywane są w bazie Room za pomocą dwóch encji:
+\texttt{Zone} i~\texttt{ZoneEvent} (tabele~\ref{tab:zone-entity}
+i~\ref{tab:zoneevent-entity}).
+
+\begin{table}[!h]
+    \caption{Encja \texttt{Zone} - strefa geofencingu}
+    \label{tab:zone-entity}
+    \centering
+    \begin{tabular}{|l|l|p{7cm}|}
+        \hline
+        \textbf{Pole} & \textbf{Typ} & \textbf{Opis} \\
+        \hline
+        \texttt{id}                 & \texttt{String (UUID)} & Klucz główny, generowany jako UUID v4 \\
+        \texttt{name}               & \texttt{String}        & Nazwa nadana przez użytkownika \\
+        \texttt{colorArgb}          & \texttt{Int}           & Kolor strefy (ARGB packed Int) \\
+        \texttt{isActive}           & \texttt{Boolean}       & Czy strefa jest aktywnie monitorowana \\
+        \texttt{verticesJson}       & \texttt{String}        & Wierzchołki wielokąta w formacie JSON \\
+        \texttt{watchedNodeIdsJson} & \texttt{String}        & Lista ID węzłów do monitorowania w JSON \\
+        \hline
+    \end{tabular}
+\end{table}
+
+Wierzchołki wielokąta i lista monitorowanych węzłów przechowywane są jako serializowane
+tablice JSON (np.\ \texttt{[\{"lat":52.1,"lon":21.0\},\ldots]}).
+
+\begin{table}[!h]
+    \caption{Encja \texttt{ZoneEvent} - zdarzenie wejścia/wyjścia ze strefy}
+    \label{tab:zoneevent-entity}
+    \centering
+    \begin{tabular}{|l|l|p{6.5cm}|}
+        \hline
+        \textbf{Pole} & \textbf{Typ} & \textbf{Opis} \\
+        \hline
+        \texttt{id}               & \texttt{Long (autoincrement)} & Klucz główny \\
+        \texttt{zoneId}           & \texttt{String}               & ID strefy  \\
+        \texttt{nodeId}           & \texttt{String}               & ID węzła w chwili zdarzenia \\
+        \texttt{eventType}        & \texttt{String}               & \texttt{"ENTER"} lub \texttt{"EXIT"} \\
+        \texttt{timestampSeconds} & \texttt{Int}                  & Czas zdarzenia (Unix timestamp [s]) \\
+        \hline
+    \end{tabular}
+\end{table}
+
+
+\paragraph{Algorytm sprawdzania przynależności do strefy.}
+
+Do wykrywania, czy punkt GPS leży wewnątrz wielokąta strefy, zastosowałem algorytm
+\textbf{rzucania promienia} (ang.\ \textit{ray casting}) \footnote{\url{https://www.geeksforgeeks.org/cpp/point-in-polygon-in-cpp/}}.
+Jest to jeden z~najszerzej stosowanych algorytmów rozwiązujących problem PIP (ang.\
+\textit{Point-In-Polygon}) ze względu na prostotę implementacji i niską złożoność obliczeniową
+$O(n)$, gdzie $n$ to liczba wierzchołków wielokąta~\cite{shimrat1962}. Uzasadnienie wyboru
+akurat tej metody, oraz omówienie rozwiązań alternatywnych, zamieściłem na końcu tej sekcji.
+
+Zasada działania jest następująca. Z badanego punktu $P = (x_P, y_P)$
+wysyłany jest poziomy promień w kierunku rosnącej długości geograficznej $y \to +\infty$.
+Zliczana jest liczba przecięć promienia z krawędziami wielokąta:
+
+\begin{itemize}
+    \item nieparzysta liczba przecięć $\Rightarrow$ punkt leży \textbf{wewnątrz} wielokąta,
+    \item parzysta liczba przecięć $\Rightarrow$ punkt leży \textbf{na zewnątrz}.
+\end{itemize}
+
+Dla każdej krawędzi łączącej wierzchołki $X_i = (x_i, y_i)$
+i~$Y_j = (x_j, y_j)$ sprawdzany jest warunek przecięcia z promieniem:
+krawędź musi mieć jeden wierzchołek ściśle powyżej szerokości geograficznej punktu
+$x_P$, a drugi poniżej lub równo z nią. Jeśli warunek jest spełniony, wyznaczana jest
+długość geograficzna przecięcia:
+
+\begin{equation}
+    y_{\text{przecięcia}} = y_i +
+        \frac{x_P - x_i}{x_j - x_i} \cdot (y_j - y_i)
+    \label{eq:ray-cast-cross}
+\end{equation}
+
+Przecięcie jest liczone tylko jeśli $y_P < y_{\text{przecięcia}}$, tzn.\ leży
+na prawo od badanego punktu (promień biegnie w prawo). Każde takie przecięcie neguje
+bieżącą wartość flagi \texttt{inside}, która na początku wynosi \texttt{false}.
+
+
+Listing~\ref{lst:geofence-contains} przedstawia pełną implementację algorytmu
+w klasie \texttt{GeofenceChecker}.
+
+\begin{lstlisting}[caption={Implementacja algorytmu ray casting w \texttt{GeofenceChecker.contains()}},
+                   label={lst:geofence-contains},
+                   basicstyle=\footnotesize\ttfamily,
+                   xleftmargin=0pt]
+fun contains(
+    pointLat: Double,
+    pointLon: Double,
+    polygon: List<ZoneVertex>
+): Boolean {
+    if (polygon.size < 3) return false
+
+    var inside = false
+    var j = polygon.lastIndex
+
+    for (i in polygon.indices) {
+        val vi = polygon[i]
+        val vj = polygon[j]
+
+        // Czy krawedz przecina poziomy promien z punktu w prawo?
+        val crossesRay =
+            (vi.lat <= pointLat && vj.lat > pointLat) ||
+            (vj.lat <= pointLat && vi.lat > pointLat)
+
+        if (crossesRay) {
+            // Dlugosc geograficzna przeciecia promienia z krawedzia
+            val intersectLon = vi.lon +
+                (pointLat-vi.lat)/(vj.lat-vi.lat)*(vj.lon-vi.lon)
+
+            if (pointLon < intersectLon) {
+                inside = !inside
+            }
+        }
+        j = i
+    }
+    return inside
+}
+\end{lstlisting}
+
+Implementacja obsługuje wielokąty \emph{wklęsłe} i~\emph{wypukłe} oraz~\emph{złożone} (z przecięciami własnymi). 
+Nie jest jednak zoptymalizowana pod kątem przypadków brzegowych, takich jak punkt leżący dokładnie na krawędzi 
+lub wierzchołku wielokąta - w takich sytuacjach wynik może być nieprzewidywalny. W praktyce, ze względu na 
+niedokładność GPS, takie przypadki są pomijalnie rzadkie i nie stanowią problemu dla funkcjonalności aplikacji.
+
+\paragraph{Wykrywanie zdarzeń wejścia i wyjścia.}
+
+Sam algorytm odpowiada w sumie na pytanie \emph{,,czy węzeł jest teraz w strefie''}.
+Aby wygenerować zdarzenia \texttt{ENTER} i \texttt{EXIT}, konieczne jest śledzenie
+zmian stanu między kolejnymi aktualizacjami pozycji.
+
+
+\texttt{ZoneMonitorService} utrzymuje słownik \texttt{previousNodeZoneMap}, 
+mapujący~ID~węzła na zbiór ID stref, których węzeł znajdował się przy poprzedniej 
+aktualizacji. Po każdym odebraniu broadcastu \texttt{ACTION\_NODE\_CHANGE} wykonywane są trzy kroki:
+
+\begin{enumerate}
+    \item Obliczany jest zbiór stref \texttt{currentZones} zawierających węzeł
+          w~chwili obecnej (tylko spośród stref, które ten węzeł monitorują).
+    \item Zdarzenia \texttt{ENTER} generowane są dla stref obecnych w \texttt{currentZones},
+          ale nieobecnych w \texttt{previousZones}.
+    \item Zdarzenia \texttt{EXIT} generowane są dla stref obecnych w \texttt{previousZones},
+          ale nieobecnych w \texttt{currentZones}.
+\end{enumerate}
+
+Po przetworzeniu słownik jest aktualizowany w taki sposób, że jeżeli węzeł nie znajduje się w~żadnej strefie,
+jego wpis jest usuwany, co minimalizuje zużycie pamięci.
+
+\paragraph{\texttt{ZoneMonitorService} - monitorowanie w tle.}
+
+Logika geofencingu działa w ramach \texttt{ZoneMonitorService} 
+- usługi działające na pierwszym planie(ang.\ \textit{foreground service}) Androida. 
+Jest to jedyna pewna metoda utrzymania procesu przy życiu w tle: system Android
+agresywnie zamyka zwykłe procesy w tle, żeby oszczędzać baterię.
+Usługi takie z widocznym powiadomieniem systemowym są chronione przed
+zakończeniem~\cite{android-foreground-service}. Widoczne powiadomienie o działaniu serwisu
+jest wymagane przez Androida i nie ma możliwości go ukryć - użytkownik zawsze widzi,
+że aplikacja monitoruje strefy w tle.
+
+Cykl życia serwisu jest następujący:
+\begin{itemize}
+    \item \textbf{Start}: \texttt{ZoneViewModel} woła \texttt{ZoneMonitorService.start()}
+          gdy w bazie istnieje \textbf{co najmniej jedna aktywna strefa}.
+    \item \textbf{Działanie}: serwis rejestruje \texttt{MeshtasticBroadcastReceiver}
+          i nasłuchuje zmian stref z bazy Room przez \texttt{Flow}. Aktualizacja strefy
+          w bazie jest propagowana do serwisu w czasie rzeczywistym bez potrzeby restartu.
+    \item \textbf{Samozatrzymanie}: gdy \texttt{Flow} z Room zwróci pustą listę aktywnych
+          stref (np.\ wszystkie zostały wyłączone lub usunięte), serwis wywołuje
+          \texttt{stopSelf()} i kończy działanie.
+    \item \textbf{Stop}: \texttt{ZoneViewModel} woła \texttt{ZoneMonitorService.stop()}
+          gdy użytkownik \textbf{wyłącza ostatnią strefę}
+\end{itemize}
+
+\paragraph{Powiadomienia o przekroczeniu strefy.}
+
+Wykrycie zdarzenia \texttt{ENTER} lub \texttt{EXIT} wyzwala wysłanie powiadomienia.
+Powiadomienie zawiera nazwę węzła i nazwę strefy,wysyłane jest z priorytetem 
+\texttt{PRIORITY\_HIGH} (kanał \texttt{CHANNEL\_ZONE\_ALERTS})
+i~automatycznie znika po dotknięciu. 
+Przy pierwszym uruchominiu aplikacji użytkownik musi jawnie przyznać uprawnienie \texttt{POST\_NOTIFICATIONS}
+(obok lokalizacji i Bluetooth). Brak uprawnienia powoduje pominięcie powiadomienia bez
+przerwania działania serwisu, co jest zachowaniem świadomym: serwis dalej wykrywa zdarzenia
+i zapisuje je w bazie, jedynie nie wyświetla alertu.
+
+\begin{figure}[!h]
+    \centering
+    \begin{subfigure}{0.48\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{uprawnieniaPowiadomienia.jpg}
+        \caption{Prośba o uprawnienie - \texttt{POST\_NOTIFICATIONS}}
+        \label{fig:uprawnienia-powiadomienia}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.48\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{strefaPowiadomienieWejscia.jpg}
+        \caption{Powiadomienie o wejściu w strefę}
+        \label{fig:strefa-powiadomienie-wejscia}
+    \end{subfigure}
+\end{figure}
+
+Dotknięcie powiadomienia otwiera aplikację
+MeshTracker na ekranie mapy.
+
+\paragraph{Uzasadnienie wyboru i metody alternatywne.}
+
+Zanim zdecydowałem się na ray casting, rozważałem kilka innych podejść, które warto
+tu opisać - zarówno dlatego, że ich odrzucenie było nieoczywiste, jak i dlatego, że
+w innych scenariuszach mogłyby być lepszym wyborem.
+
+\textbf{Strefa okrągła (promień od centrum).}
+Pierwszym pomysłem była strefa jako okrąg o środku $C = (x_C, y_C)$
+i promieniu $r$. Sprawdzenie przynależności sprowadza się wtedy do prostego porównania:
+\[
+    d(P, C) \leq r \;\Leftrightarrow\; \text{punkt wewnątrz strefy}
+\]
+To rozwiązanie jest szybsze obliczeniowo i prostsze w implementacji - nie trzeba
+przechowywać listy wierzchołków. Odrzuciłem je, bo działka na Mazurach ma kształt
+zbliżony do wydłużonego wielokąta, a nie koła. Okrąg wystarczająco duży, żeby objąć
+cały teren, wychodziłby daleko poza drogę przy granicy działki, przez co alarm byłby
+spóźniony. Okrąg wystarczająco mały, żeby nie wychodzić za drogę, nie obejmowałby
+części terenu. Wielokąt pozwala narysować granicę dokładnie wzdłuż ogrodzenia sąsiada,
+polnej miedzy, albo linii lasu.
+
+\textbf{Google Geofencing API.}
+Wstępnie myślałem o skorzystaniu z gotowego 
+geofencing API, które Android udostępnia właśnie do monitorowania przekroczeń granic
+geograficznych. Szybko okazało się jednak, że to API monitoruje wyłącznie pozycję GPS
+\emph{samego telefonu} i obsługuje tylko strefy okrągłe.
+
+
+\textbf{Algorytm liczby owiniętej (ang.\ \textit{winding number}).}
+Szukając literatury na temat PIP natknąłem się na algorytm winding number, który zlicza,
+ile razy wielokąt owija się wokół badanego punktu. Jest numerycznie bardziej stabilny od
+ray casting tzn. lepiej obsługuje przypadki brzegowe, gdzie punkt leży dokładnie na krawędzi
+wielokąta. W moim przypadku to rozróżnienie jest jednak akademickie: GPS dokładny do kilku
+metrów nigdy nie wyląduje na krawędzi wierzchołka zdefiniowanego przez użytkownika klikającego
+na ekranie. Wybrałe Ray casting nad tym algorytmem, bo implementacja jest krótsza, prostsza do zrozumienia
+i wystarczająca na potrzeby projektu. Złożoność obliczeniowa obu algorytmów wynosi $O(n)$.
+
+\textbf{Indeksowanie przestrzenne (R-tree, quadtree).}
+Gdybym chciał obsługiwać dziesiątki lub setki stref jednocześnie, liniowe sprawdzanie
+każdej z nich przy każdym broadcastcie rzeczywiście stałoby się wąskim gardłem.
+Struktury takie jak R-tree pozwalają szybko zawęzić kandydatów do stref, których obwiednia
+prostokątna zawiera dany punkt. W MeshTrackerze spodziewam się co najwyżej kilku stref
+i kilku węzłów - indeksowanie nie przyniosłoby żadnych mierzalnych korzyści, a znacznie
+skomplikowałoby implementację.

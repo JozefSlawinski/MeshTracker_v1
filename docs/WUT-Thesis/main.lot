@@ -1,0 +1,8 @@
+\babel@toc {polish}{}\relax 
+\contentsline {table}{\numberline {3.1}{\ignorespaces Predefiniowane ustawienia kanałów LoRa w Meshtastic}}{17}{table.caption.5}%
+\contentsline {table}{\numberline {3.2}{\ignorespaces Pola klasy \texttt {MeshNodeInfo}}}{25}{table.caption.24}%
+\contentsline {table}{\numberline {3.3}{\ignorespaces Pola klasy \texttt {MeshUserInfo}}}{26}{table.caption.25}%
+\contentsline {table}{\numberline {3.4}{\ignorespaces Pola klasy \texttt {MeshPosition}}}{26}{table.caption.26}%
+\contentsline {table}{\numberline {3.5}{\ignorespaces Flagi \textit {Position Flags} - pola opcjonalne pakietu pozycji}}{27}{table.caption.27}%
+\contentsline {table}{\numberline {3.6}{\ignorespaces Encja \texttt {Zone} - strefa geofencingu}}{28}{table.caption.29}%
+\contentsline {table}{\numberline {3.7}{\ignorespaces Encja \texttt {ZoneEvent} - zdarzenie wejścia/wyjścia ze strefy}}{28}{table.caption.30}%

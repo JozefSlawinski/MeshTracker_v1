@@ -1,0 +1,79 @@
+% Copyright (C) 2021 Mustafa Ibrahim
+% This work may be distributed and/or modified under the conditions of the
+% LaTeX Project Public License, either version 1.3c or higher. The latest
+% version the license is at: http://www.latex-project.org/lppl.txt
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{tiscreen}[2021/09/18 Ti calculator screen]
+
+\def\tiscreenX{16}
+\def\tiscreenY{8}
+
+\RequirePackage{lcd}
+\RequirePackage{tikz}
+\RequirePackage{tcolorbox}
+\RequirePackage{array}
+
+% Define screen characters
+\DefineLCDchar{barx}{11111000001000101010001000101010001}
+\DefineLCDchar{bary}{11111000001000110001011110000101110}
+\DefineLCDchar{ar}{00011000011100100001000010000000000}
+\DefineLCDchar{sciE}{00000000000111101000011100100001111}
+\DefineLCDchar{sigma}{00000000000111110010100101001001100}
+\DefineLCDchar{sq}{01100000100010001000011100000000000}
+\DefineLCDchar{sub1}{00000000000010001100001000010000100}
+\DefineLCDchar{sub2}{00000000000110000010001000100001110}
+\DefineLCDchar{sub3}{00000000000110000010001000001001100}
+\DefineLCDchar{sub4}{00000000000100001010011100001000010}
+\DefineLCDchar{sub5}{00000000000111001000011000001001100}
+\DefineLCDchar{sub6}{00000000000011001000011100101001110}
+\DefineLCDchar{cx}{00101000100010100000000000000000000}
+% Redefine screen characters
+\DefineLCDchar{sqrt}{00111001000010000100101000110000100}
+\DefineLCDchar{!}{00100001000010000100000000010000100}
+\DefineLCDchar{e}{00000000000111010001111101000001100}
+\DefineLCDchar{i}{01000000001100001000010000101000100}
+\DefineLCDchar{w}{00000000001000110001101011010101010}
+\DefineLCDchar{v}{00000000001000110001100010101000100}
+\DefineLCDchar{[}{00110001000010000100001000010000110}
+\DefineLCDchar{]}{01100001000010000100001000010001100}
+\DefineLCDchar{lb}{00011001000010001000001000010000011}
+\DefineLCDchar{rb}{11000001000010000010001000010011000}
+
+\RequirePackage{xcolor}
+% Screen colors
+\definecolor{tiscreenfg}{HTML}{000000}
+\definecolor{tiscreenbg}{HTML}{5d9345}
+% Button colors
+\definecolor{tibtngray}{HTML}{494F54}
+\definecolor{tibtnyellow}{HTML}{F1E78B}
+\definecolor{tibtngreen}{HTML}{D5DE93}
+\definecolor{tibtnwhite}{HTML}{E2E2E2}
+\definecolor{tibtnblue}{HTML}{CDE2E9}
+\definecolor{tibtncaseblack}{HTML}{232A32}
+
+\DeclareOption{color}{\LCDcolors{tiscreenfg}{tiscreenbg}}
+\DeclareOption*{\PackageWarning{tiscreen}{Unknown ‘\CurrentOption’}}
+\ProcessOptions\relax
+
+% Screen commands
+\newcommand{\tiscreen}{\LCD{\tiscreenY}{\tiscreenX}}
+
+% Button commands
+\newcommand{\tibtn}[3][black]{\tikz{\bfseries\tiny\sffamily \node[fill=#2, draw, rounded corners, minimum height=2.5em, minimum width=4.5em, align=center] {\textcolor{#1}{#3}};}}
+\newcommand{\tibtnextra}[3]{%
+	\tcbox[colback=tibtncaseblack,size=small]{%
+		\begin{tabular}{l@{}r}%
+			\bfseries\tiny\sffamily \textcolor{tibtnyellow}{#2} &
+			\bfseries\tiny\sffamily \textcolor{tibtngreen}{#3} \\
+			\multicolumn{2}{c}{#1}
+		\end{tabular}%
+	}%
+}
+
+% Button definitions
+\def\tibtnsecond{\tibtn{tibtnyellow}{2nd}}
+\def\tibtnalpha{\tibtn{tibtngreen}{ALPHA}}
+
+\def\tibtnmatrix{\tibtn[white]{tibtngray}{MATRX}}
+\def\tibtnmatrixextra{\tibtnextra{\tibtnmatrix}{ANGLE}{B}}

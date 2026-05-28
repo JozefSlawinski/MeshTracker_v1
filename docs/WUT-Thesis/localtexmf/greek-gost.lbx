@@ -1,0 +1,12 @@
+\ProvidesFile{greek-gost.lbx}
+[2021/05/08\space v1.22\space biblatex-gost styles]
+
+\InheritBibliographyExtras{greek}
+\InheritBibliographyStrings{greek}
+
+\iftoggle{bbx:gost:otherlangs}
+  {\DeclareBibliographyStrings{%
+    pages            = {{σελίδες}{σ\adddot}},
+  }}{}
+
+\endinput

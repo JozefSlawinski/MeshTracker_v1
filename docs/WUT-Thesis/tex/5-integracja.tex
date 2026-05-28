@@ -1,0 +1,212 @@
+\subsubsection{Integracja z aplikacją Meshtastic}
+\label{sec:integracja-meshtastic}
+
+Aplikacja MeshTracker nie komunikuje się bezpośrednio z urządzeniami radiowymi - korzysta
+z aplikacji Meshtastic zainstalowanej na tym samym telefonie, która pełni rolę pośrednika. 
+Wybrałem takiego podejścia aby nie musieć implementować protokołu Meshtastic i skupić się na 
+warstwie prezentacji i funkcjonalności geofencingu. 
+
+\paragraph{Mechanizmy IPC.}
+
+Meshtastic udpostępnia dwa mechanizmy IPC (ang.\ \textit{Inter-Process Communication}):
+
+\begin{itemize}
+    \item \textbf{Interfejs AIDL} (ang.\ \textit{Android Interface Definition Language}) -
+          umożliwia synchroniczne wywołania metod na działającym serwisie, takie jak pobranie
+          listy węzłów czy zapytanie o stan połączenia. MeshTracker korzysta z niego na żądanie,
+          głównie przy inicjalizacji i cyklicznym odświeżaniu. \footnote{Na Androidzie jeden proces 
+          nie może normalnie uzyskać dostępu do pamięci innego procesu. Aby się komunikować, muszą 
+          rozkładać obiekty na elementy, które system operacyjny może zrozumieć, i przekazywać je 
+          przez tę granicę. Kod potrzebny do tego przekształcania jest trudny do napisania, dlatego 
+          Android wykonuje to za Ciebie za pomocą AIDL.[\url{https://developer.android.com/develop/background-work/services/aidl?hl=pl}]}
+
+    \item \textbf{Broadcasty Androida} - Meshtastic rozsyła komunikaty do wszystkich
+          zainteresowanych aplikacji przy każdej zmianie stanu sieci. Pozwala to na reaktywne
+          powiadamianie o nowych danych bez aktywnego odpytywania serwisu.  
+        \footnote{Aplikacje Androida mogą wysyłać i odbierać komunikaty systemowe oraz pochodzące z innych aplikacji, zgodnie ze wzorem projektowym \textit{publish-subscribe}. \url{https://developer.android.com/guide/components/broadcasts?hl=pl}}
+\end{itemize}
+
+MeshTracker korzysta z obu mechanizmów jednocześnie: AIDL do inicjalizacji stanu i cyklicznego
+odświeżania, broadcasty do aktualizacji w czasie rzeczywistym. Takie podejście gwarantuje
+spójność danych niezależnie od tego, czy zdarzenie nastąpi między cyklami odświeżania, czy
+podczas startu aplikacji.
+
+Takie podejście do integracji między aplikacjami wprowadza pewną wrażliwość na zmiany API Meshtastic między wersjami.
+W szczególności metoda zwracająca ID węzła lokalnego zmieniała swoją nazwę w kolejnych
+wydaniach, co wymagało zaimplementowania łańcucha kandydatów:
+\texttt{getMyId()} $\to$ \texttt{getMyNodeId()} $\to$ \texttt{myId()} $\to$ \texttt{getOwnerId()}
+$\to$ przez \texttt{getMyNodeInfo().myNodeNum}. Wersja Meshtastic na telefonie użytkownika
+jest poza kontrolą dewelopera MeshTrackera, dlatego integracja musi być możliwie elastyczna i odporna na zmiany w API Meshtastic.
+
+\paragraph{Schemat nawiązywania połączenia.}
+
+Rysunek~\ref{fig:connection-flow} przedstawia sekwencję zdarzeń od uruchomienia
+\texttt{MapViewModel} do pojawienia się węzła na mapie.
+
+\begin{figure}[!h]
+    \caption{Sekwencja nawiązywania połączenia i przepływ danych}
+    \label{fig:connection-flow}
+    \centering
+    \includegraphics[width=\linewidth]{schematPolaczenia.png}
+\end{figure}
+
+\paragraph{Obsługa rozłączenia i błędów.}
+
+Wyróżnione są dwa odrębne scenariusze rozłączenia, które wymagają różnej reakcji aplikacji:
+
+\textbf{Rozłączenie celowe} następuje, gdy użytkownik zamyka aplikację. W \texttt{MeshServiceManager} flaga
+\texttt{isIntentionalDisconnect} jest ustawiana przed wywołaniem \texttt{unbindService()}.
+Gdy wywołana jest metoda \texttt{onServiceDisconnected()}, wartość powyższejflagi pozwala
+pominąć propagację zdarzenia do warstwy UI, za czym użytkownik nie powinien widzieć komunikatu
+o błędzie, skoro rozłączenie było planowane.
+
+\textbf{Rozłączenie nieoczekiwane} - sygnalizuje, że serwis Meshtastic zakończył
+działanie bez polecenia MeshTrackera (np.\ na skutek wymuszonego zamknięcia przez system).
+W takim przypadku zdarzenie jest propagowane do \texttt{MapViewModel}, który aktualizuje
+pasek stanu aplikacji (\texttt{ConnectionStatusBar}) odpowiednim komunikatem.
+
+\paragraph{Automatyczna próba ponownego połączenia.}
+
+Odebranie broadcastu \texttt{ACTION\_MESH\_DISCONNECTED} \footnote{Broadcasty nie są dostępne w dokumentacji API, jednak można je znaleźć dobrze udokumentowane w repozytorium \url{https://github.com/meshtastic/Meshtastic-Android/blob/main/core/api/src/main/kotlin/org/meshtastic/core/api/MeshtasticIntent.kt}} przy wciąż aktywnym bindingu
+z serwisem (tj.\ gdy \texttt{isBound~=~true}) uruchamia w \texttt{MapViewModel} procedurę
+automatycznego wznawiania połączenia z węzłem lokalnym (\texttt{startReconnecting()}). Działa ona
+w pętli, która wykonywana jest aż do skutku lub utraty samego bindingu.
+
+Każda iteracja pętli rozpoczyna się odliczaniem \texttt{RECONNECT\_INTERVAL\_SECONDS}~=~30
+sekund. W tym czasie stan połączenia ustawiany jest na \texttt{ConnectionState.Reconnecting},
+który przechowuje liczbę sekund pozostałych do następnej próby. Wartość ta jest co sekundę
+odświeżana i wyświetlana użytkownikowi w pasku stanu \texttt{ConnectionStatusBar}, dzięki czemu
+wie on, kiedy spodziewać się kolejnej próby.
+
+Po upływie odliczania \texttt{MapViewModel} odpytuje serwis przez AIDL o aktualny stan połączenia z węzłem lokalnym.
+Jeśli zwrócona wartość to \texttt{STATE\_CONNECTED}, procedura kończy działanie, a aplikacja
+przechodzi w stan \texttt{Connected} i wznawia cykliczne odświeżanie węzłów. W przeciwnym razie
+licznik prób jest inkrementowany i odliczanie zaczyna się od nowa. Jeśli podczas oczekiwania
+binding z serwisem zostanie utracony (\texttt{isConnected()~=~false}), pętla jest przerywana,
+a stan przechodzi w \texttt{Disconnected}.
+
+Niezależnie od automatycznych prób, użytkownik może w dowolnej chwili nacisnąć przycisk
+\textit{Ponów} widoczny w pasku stanu. Wywołuje to \texttt{retryConnect()},
+które anuluje bieżące zadania, resetuje binding i inicjuje nowe połączenie z serwisem
+od zera. Jest to przydatne np. gdy użytkownik ręcznie uruchomił aplikację Meshtastic i chce wywołać
+natychmiastową próbę połączenia bez czekania na automatyczne odświeżenie.
+
+\begin{figure}[!h]
+    \caption{Pasek stanu połączenia - \textit{Ponów}}
+    \label{fig:connection-status}
+    \centering
+    \includegraphics[width=0.45\linewidth]{nieMoznaPolaczycPasek.jpg}
+\end{figure}
+
+\paragraph{Model danych węzła.}
+
+Obiekt \texttt{NodeInfo} udostępniany przez Meshtastic jest mapowany na wewnętrzną strukturę
+danych złożoną z trzech klas: \texttt{MeshNodeInfo}, \texttt{MeshUserInfo} oraz
+\texttt{MeshPosition}. 
+
+Klasa \texttt{MeshNodeInfo} przechowuje dane identyfikacyjne i~telemetryczne węzła
+(tabela~\ref{tab:meshnodeinfo}).
+
+\begin{table}[!h]
+    \caption{Pola klasy \texttt{MeshNodeInfo}}
+    \label{tab:meshnodeinfo}
+    \centering
+    \begin{tabular}{|l|l|p{6.5cm}|}
+        \hline
+        \textbf{Pole} & \textbf{Typ} & \textbf{Opis} \\
+        \hline
+        \texttt{num}          & \texttt{Int}           & Unikalny numer węzła w sieci Meshtastic \\
+        \texttt{user}         & \texttt{MeshUserInfo} & Dane użytkownika węzła (nazwa, rola, sprzęt) \\
+        \texttt{position}     & \texttt{MeshPosition} & Ostatnia znana pozycja GPS \\
+        \texttt{snr}          & \texttt{Float}         & SNR ostatnio odebranego pakietu [dB] \\
+        \texttt{rssi}         & \texttt{Int}           & RSSI ostatnio odebranego pakietu [dBm] \\
+        \texttt{lastHeard}    & \texttt{Int}           & Czas ostatniego odbioru (Unix timestamp [s]) \\
+        \texttt{batteryLevel} & \texttt{Int}           & Poziom naładowania baterii [\%] \\
+        \texttt{channel}      & \texttt{Int}           & Indeks kanału, na którym węzeł nadaje \\
+        \texttt{hopsAway}     & \texttt{Int}           & Liczba przeskoków do węzła w sieci mesh \\
+        \hline
+    \end{tabular}
+\end{table}
+
+Klasa \texttt{MeshUserInfo} zawiera dane konfiguracyjne przypisane do węzła przez jego
+właściciela (tabela~\ref{tab:meshuserinfo}).
+
+\begin{table}[!h]
+    \caption{Pola klasy \texttt{MeshUserInfo}}
+    \label{tab:meshuserinfo}
+    \centering
+    \begin{tabular}{|l|l|p{6.5cm}|}
+        \hline
+        \textbf{Pole} & \textbf{Typ} & \textbf{Opis} \\
+        \hline
+        \texttt{id}            & \texttt{String}  & Identyfikator w formacie \texttt{!XXXXXXXX} \\
+        \texttt{longName}      & \texttt{String}  & Pełna nazwa węzła nadana przez użytkownika \\
+        \texttt{shortName}     & \texttt{String}  & Skrócona nazwa (do 4 znaków), widoczna na wyświetlaczu węzła \\
+        \texttt{hwModelString} & \texttt{String} & Model sprzętu (np.\ \texttt{T\_BEAM}, \texttt{T\_ECHO}, \texttt{T1000\_E}) \\
+        \texttt{isLicensed}    & \texttt{Boolean} & Czy węzeł jest zarejestrowany jako amatorska stacja radiowa \\
+        \texttt{role}          & \texttt{Int}     & Rola węzła w sieci (CLIENT, ROUTER, TRACKER itp.) \\
+        \hline
+    \end{tabular}
+\end{table}
+
+Klasa \texttt{MeshPosition} przechowuje dane lokalizacyjne węzła
+(tabela~\ref{tab:meshposition}). Warto zwrócić uwagę na dwie nieoczywiste konwencje
+kodowania stosowane przez Meshtastic: współrzędne geograficzne przechowywane są jako liczby
+całkowite (w formacie stopni pomnożonych przez $10^7$) \footnote{Źródło w repo: \url{https://github.com/meshtastic/Meshtastic-Android/blob/19ea164f93bd48dd556d5232d66869b5cb0b2f40/core/model/src/commonMain/kotlin/org/meshtastic/core/model/Node.kt#L110}}, 
+co pozwala na precyzję nawet do około 1 metra bez użycia typów zmiennoprzecinkowych. Natomiast kierunek ruchu (\texttt{groundTrack}) wyrażony jest, z podobnej przyczyny, w setnych stopniach (pomnożonych przez $10^5$).
+
+\begin{table}[!h]
+    \caption{Pola klasy \texttt{MeshPosition}}
+    \label{tab:meshposition}
+    \centering
+    \begin{tabular}{|l|l|p{6.5cm}|}
+        \hline
+        \textbf{Pole} & \textbf{Typ} & \textbf{Opis} \\
+        \hline
+        \texttt{latitude}        & \texttt{Double} & Szerokość geograficzna [${}^\circ$], po konwersji z $10^7$ \\
+        \texttt{longitude}       & \texttt{Double} & Długość geograficzna [${}^\circ$], po konwersji z $10^7$ \\
+        \texttt{altitude}        & \texttt{Int}    & Wysokość [m n.p.m.] \\
+        \texttt{time}            & \texttt{Int}    & Unix timestamp [s] \\
+        \texttt{satellitesInView}& \texttt{Int}    & Liczba widocznych satelitów \\
+        \texttt{groundSpeed}     & \texttt{Int}    & Prędkość [m/s] \\
+        \texttt{groundTrack}     & \texttt{Int}    & Kierunek ruchu [${}^\circ$](0\,=\,N) \\
+        \texttt{precisionBits}   & \texttt{Int}    & Precyzja pozycji (liczba bitów, max 32\,$\approx$\,1\,m) \\
+        \hline
+    \end{tabular}
+\end{table}
+
+Dostępność poszczególnych pól pozycji zależy od konfiguracji węzła nadającego - konkretnie
+od wartości \textit{Position Flags}, czyli bitowego pola opcji włączanych w ustawieniach
+radia Meshtastic.\footnote{\url{https://meshtastic.org/docs/configuration/radio/position/\#position-config-values}}
+Tabela~\ref{tab:position-flags} zestawia dostępne flagi.
+
+\begin{table}[!h]
+    \caption{Flagi \textit{Position Flags} - pola opcjonalne pakietu pozycji}
+    \label{tab:position-flags}
+    \centering
+    \begin{tabular}{|l|p{9cm}|}
+        \hline
+        \textbf{Flaga} & \textbf{Opis} \\
+        \hline
+        \texttt{ALTITUDE}           & Dołącza wartość wysokości (jeśli dostępna) \\
+        \texttt{ALTITUDE\_MSL}      & Wysokość wyrażona jako MSL (nad poziomem morza) \\
+        \texttt{GEOIDAL\_SEPARATION}& Dołącza separację geoidy \\
+        \texttt{DOP}                & Dołącza wskaźnik DOP (domyślnie PDOP) \\
+        \texttt{HVDOP}              & Zamiast PDOP wysyła osobne wartości HDOP i VDOP \\
+        \texttt{SATINVIEW}          & Dołącza liczbę widocznych satelitów \\
+        \texttt{SEQ\_NO}            & Dołącza numer sekwencyjny pakietu (rośnie co pakiet) \\
+        \texttt{TIMESTAMP}          & Dołącza znacznik czasu z rozwiązania GPS \\
+        \texttt{HEADING}            & Dołącza kierunek ruchu z rozwiązania GPS \\
+        \texttt{SPEED}              & Dołącza prędkość naziemną z rozwiązania GPS \\
+        \hline
+    \end{tabular}
+\end{table}
+
+W konfiguracji przyjętej w projekcie włączone są flagi \texttt{ALTITUDE}, \texttt{SATINVIEW},
+\texttt{TIMESTAMP}, \texttt{HEADING} oraz \texttt{SPEED}. Flagi są ustawiane per węzeł nadający. 
+Precyzja ustalania pozycji ustalana jest na poziomie kanału. Dla mojego projektu ustawiłem
+ maksymalną możliwą wartość - 32-bity na kanale \texttt{Reja}
+Jeśli dane pole nie jest aktywowane, w odebranym pakiecie przyjmuje wartość
+domyślną (zwykle 0), co MeshTracker traktuje jako brak danych. 
+
+
