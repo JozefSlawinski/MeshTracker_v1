@@ -1,508 +1,556 @@
-# Architektura — MeshTracker v1
+# ADR-001: Architektura aplikacji MeshTracker v1
 
-Dokument opisuje strukturę aplikacji, kluczowe decyzje projektowe oraz przepływ danych. Przeznaczony do użytku własnego jako punkt odniesienia podczas dalszego rozwoju.
-
----
-
-## Kontekst i cel
-
-MeshTracker to natywna aplikacja Android, która łączy się z aplikacją [Meshtastic](https://meshtastic.org/) i wyświetla pozycje węzłów sieci radiowej na interaktywnej mapie Google Maps. Aplikacja służy do śledzenia urządzeń Meshtastic w czasie rzeczywistym bez potrzeby stałego połączenia z Internetem — komunikacja radio LoRa odbywa się lokalnie.
-
-Główny przypadek użycia: śledzenie psów wyposażonych w węzły Meshtastic na nieogrodzonej działce. Gdy pies opuści wyznaczoną strefę, właściciel jest natychmiast powiadamiany.
-
-**Co robi aplikacja:**
-- Wiąże się z serwisem `MeshService` aplikacji Meshtastic przez Android Service Binding
-- Nasłuchuje broadcastów o zmianach węzłów (`NODE_CHANGE`, `MESH_CONNECTED`, `MESH_DISCONNECTED`)
-- Wyświetla węzły jako markery na mapie Google Maps (z kierunkiem ruchu jeśli dostępny)
-- Pokazuje listę wszystkich węzłów z metadanymi (bateria, SNR, RSSI, czas ostatniego kontaktu)
-- Pozwala definiować strefy kołowe na mapie i przypisywać do nich węzły
-- Wykrywa naruszenia stref i powiadamia użytkownika — również gdy aplikacja jest zamknięta
-
-**Czego aplikacja nie robi (v1):**
-- Nie wysyła wiadomości przez sieć Meshtastic
-- Nie integruje się z ATAK (choć referencyjna implementacja ATAK jest w `docs/PRZYKLADOWY_KOD.java`)
-- Nie przechowuje historii pozycji
-- Nie obsługuje wielokątnych stref (tylko okręgi — v2)
+**Status:** Accepted  
+**Data:** 2026-05-18  
+**Projekt:** MeshTracker v1 — Android  
+**Decydenci:** Jozef Slawinski
 
 ---
 
-## Struktura pakietów
+## Kontekst
 
-```
-com.example.meshtracker_v1/
-├── MainActivity.kt                    # Punkt wejścia aplikacji
-├── model/
-│   ├── MeshNodeInfo.kt                # Wrapper węzła (via reflection)
-│   ├── MeshUserInfo.kt                # Dane użytkownika węzła
-│   └── Position.kt (MeshPosition)     # Pozycja GPS
-├── service/
-│   └── MeshServiceManager.kt          # Singleton — binding z IMeshService
-├── receiver/
-│   └── MeshtasticBroadcastReceiver.kt # Odbiornik broadcastów Meshtastic
-├── mapper/
-│   └── NodeToMarkerMapper.kt          # MeshNodeInfo → Google Maps MarkerOptions
-├── util/
-│   └── Constants.kt                   # Stałe — akcje broadcastów, pakiet Meshtastic
-└── ui/
-    ├── MainScreen.kt                  # Nawigacja (dolny pasek: Mapa / Lista)
-    ├── map/
-    │   ├── MapScreen.kt               # Ekran mapy Google Maps
-    │   └── MapViewModel.kt            # Jedyny ViewModel — zarządza stanem całej aplikacji
-    ├── nodes/
-    │   ├── NodeListScreen.kt          # Lista węzłów
-    │   └── NodeItem.kt                # Kafelek pojedynczego węzła
-    ├── components/
-    │   └── ConnectionStatusBar.kt     # Pasek stanu połączenia (góra ekranu)
-    └── theme/
-        ├── Theme.kt / Color.kt / Type.kt
-```
+MeshTracker to aplikacja Android śledząca węzły sieci radiowej Meshtastic. Aplikacja łączy się z zewnętrzną aplikacją Meshtastic (przez IPC), wizualizuje pozycje węzłów na mapie Google Maps, śledzi historię ruchu oraz pozwala na zdefiniowanie wielokątnych stref geofencingu (ENTER/EXIT) z powiadomieniami. Wymagania niefunkcjonalne obejmują: pracę w tle (foreground service), reaktywne odświeżanie UI oraz testowalność warstwy danych.
 
 ---
 
-## Warstwy architektury
+## Decyzja
 
-Aplikacja stosuje wzorzec **MVVM** (Model-View-ViewModel) z reaktywnym stanem przez `StateFlow`.
-
-```
-┌─────────────────────────────────────────────┐
-│                  UI Layer                   │
-│  MainActivity → MainScreen                  │
-│      ├── MapScreen (Google Maps)            │
-│      └── NodeListScreen                     │
-│  Czyta StateFlow z ViewModelu               │
-└──────────────────┬──────────────────────────┘
-                   │ collectAsState()
-┌──────────────────▼──────────────────────────┐
-│              ViewModel Layer                │
-│  MapViewModel (AndroidViewModel)            │
-│  • nodes: StateFlow<Map<String,MeshNodeInfo>>│
-│  • connectionState: StateFlow<ConnectionState>│
-│  • Logika ponownego łączenia (backoff)       │
-└────────────┬──────────────┬─────────────────┘
-             │              │
-┌────────────▼──────┐  ┌────▼─────────────────┐
-│   Service Layer   │  │   Receiver Layer      │
-│ MeshServiceManager│  │ MeshtasticBroadcast-  │
-│ (Singleton)       │  │ Receiver              │
-│ Binding do        │  │ Nasłuchuje broadcastów│
-│ IMeshService      │  │ NODE_CHANGE itp.      │
-└────────────┬──────┘  └────┬─────────────────┘
-             │              │
-             └──────┬───────┘
-                    │
-┌───────────────────▼─────────────────────────┐
-│              Model Layer                    │
-│  MeshNodeInfo / MeshUserInfo / MeshPosition │
-│  fromMeshtasticNodeInfo() via Reflection    │
-└─────────────────────────────────────────────┘
-```
+Aplikacja przyjmuje **wzorzec MVVM** (Model-View-ViewModel) z **warstwową architekturą** Clean-inspired, wstrzykiwaniem zależności przez **Hilt/Dagger** oraz **reaktywnymi strumieniami danych** (Kotlin StateFlow/Flow). Całość napisana w Kotlin z Jetpack Compose jako UI toolkit.
 
 ---
 
-## Kluczowe komponenty
+## Opcje rozważane
 
-### MapViewModel
+### Opcja A: MVVM + Hilt + Jetpack Compose ✅ (wybrana)
 
-Centralny punkt aplikacji. Implementuje `MeshtasticBroadcastReceiver.MeshtasticReceiverListener`, więc bezpośrednio odbiera zdarzenia z receivera.
+| Wymiar | Ocena |
+|--------|-------|
+| Złożoność | Średnia |
+| Koszt utrzymania | Niski — wzorzec oficjalnie wspierany przez Google |
+| Skalowalność | Wysoka — łatwe dodawanie nowych ekranów i repozytoriów |
+| Znajomość przez zespół | Wysoka — standardowy stack Android |
+| Testowalność | Wysoka — ViewModele i repozytoria łatwe do izolowania |
 
-**Stan wewnętrzny:**
-- `_nodes: MutableStateFlow<Map<String, MeshNodeInfo>>` — słownik węzłów po ID
-- `_connectionState: MutableStateFlow<ConnectionState>` — aktualny stan połączenia
-- `_selectedNodeId: MutableStateFlow<String?>` — wybrany węzeł (do animacji kamery)
-- `nodesMutex: Mutex` — chroni zapis do `_nodes` z wielu coroutine
+**Zalety:** Reaktywne UI przez StateFlow/Compose, prosta integracja DI, naturalne zarządzanie cyklem życia, czytelny podział warstw.  
+**Wady:** Nieco więcej boilerplate niż MVI, złożona konfiguracja Hilt przy dużym projekcie.
 
-**Cykl życia połączenia:**
+### Opcja B: MVI (Model-View-Intent)
 
-```
-init()
-  ├── setupServiceListener()   ← rejestruje ConnectionListener w MeshServiceManager
-  ├── registerReceiver()       ← rejestruje BroadcastReceiver
-  └── attemptConnect()
-        ├── isMeshtasticInstalled? → NIE → ConnectionState.MeshtasticNotInstalled
-        └── TAK → meshServiceManager.connect()
-              ├── SUKCES → onServiceConnected()
-              │     ├── radioState == CONNECTED → onFullyConnected()
-              │     └── inaczej → startConnectionCheck() (polling co 2s)
-              └── BŁĄD → scheduleReconnect() z exponential backoff
-```
+| Wymiar | Ocena |
+|--------|-------|
+| Złożoność | Wysoka |
+| Testowalność | Bardzo wysoka |
+| Znajomość przez zespół | Niska — wymaga dodatkowych bibliotek (Orbit, Mavericks) |
 
-**Exponential backoff:**
-Opóźnienie między próbami = `min(2000ms × 2^attempt, 60000ms)`. Odliczanie jest widoczne w UI przez `ConnectionState.Reconnecting(retryInSeconds)`.
-
-**`onCleared()`** wywoływane przez Androida gdy ViewModel jest niszczony: anuluje coroutines, wyrejestrowuje receiver, rozłącza serwis.
+**Zalety:** Jednokierunkowy przepływ danych, łatwy debugging stanu.  
+**Wady:** Wyższy próg wejścia, naddatek abstrakcji dla projektu tej skali.
 
 ---
 
-### MeshServiceManager
+## Analiza kompromisów
 
-Singleton zarządzający jednym `ServiceConnection` do `com.geeksville.mesh.service.MeshService`.
-
-**Kluczowy problem — brak AIDL na etapie kompilacji:**
-Aplikacja Meshtastic eksportuje interfejs `IMeshService` przez AIDL, ale pliki `.aidl` nie są dostępne jako biblioteka Maven. Zamiast dołączać AIDL lub całą aplikację Meshtastic jako zależność, `MeshServiceManager` używa **Java Reflection**:
-
-```kotlin
-// W onServiceConnected():
-val stubClass = Class.forName("org.meshtastic.core.service.IMeshService\$Stub")
-val asInterfaceMethod = stubClass.getMethod("asInterface", IBinder::class.java)
-meshService = asInterfaceMethod.invoke(null, service) // zwraca Any?
-
-// Wywołanie metody:
-val getNodesMethod = meshService?.javaClass?.getMethod("getNodes")
-val nodes = getNodesMethod?.invoke(meshService) as? List<*>
-```
-
-Zaleta: brak zależności kompilacyjnej od Meshtastic.  
-Wada: błędy wykrywane w runtime, a nie w czasie kompilacji. Nazwy metod mogą zmienić się po aktualizacji Meshtastic.
-
-**Sprawdzanie instalacji:**
-Przed próbą bindingu `isMeshtasticInstalled()` sprawdza przez `PackageManager` czy pakiet `com.geeksville.mesh` jest zainstalowany. Jeśli nie — UI pokazuje odpowiedni komunikat bez próby połączenia.
+MVVM z Hilt oferuje optymalny balans między testowalną separacją warstw a produktywnością developmentu. MVI byłby lepszym wyborem dla bardzo złożonych ekranów z dziesiątkami zdarzeń, ale przy ekranach tej skali (mapa + lista + strefy) stanowiłby przerost formy. Reaktywne StateFlow w ViewModelach spełnia główny cel MVI — jeden punkt prawdy dla stanu UI.
 
 ---
 
-### MeshtasticBroadcastReceiver
+## Architektura systemu
 
-Odbiera trzy broadcasty systemowe z aplikacji Meshtastic:
-
-| Akcja | Znaczenie |
-|---|---|
-| `com.geeksville.mesh.NODE_CHANGE` | Węzeł pojawił się, zmienił pozycję lub zniknął |
-| `com.geeksville.mesh.MESH_CONNECTED` | Radio Meshtastic połączyło się |
-| `com.geeksville.mesh.MESH_DISCONNECTED` | Radio Meshtastic rozłączyło się |
-
-**Problem ClassLoader przy deserializacji `NodeInfo`:**
-
-`NodeInfo` to klasa `Parcelable` z pakietu `org.meshtastic.core.model`. Kiedy Android deserializuje `Intent.extras`, używa domyślnego ClassLoadera aplikacji — który nie zna tej klasy. Powoduje to `ClassNotFoundException` przy `getParcelableExtra()`.
-
-Rozwiązanie zastosowane w `handleNodeChange()`:
-
-```kotlin
-// 1. Wczytaj ClassLoader z aplikacji Meshtastic
-val meshtasticContext = context.createPackageContext(
-    MESHTASTIC_PACKAGE,
-    CONTEXT_INCLUDE_CODE or CONTEXT_IGNORE_SECURITY
-)
-val meshtasticClassLoader = meshtasticContext.classLoader
-
-// 2. Ustaw go jako Thread context ClassLoader PRZED dostępem do Bundle
-Thread.currentThread().contextClassLoader = meshtasticClassLoader
-bundle.classLoader = meshtasticClassLoader
-
-// 3. Pobierz NodeInfo z Bundle
-val nodeInfoClass = meshtasticClassLoader.loadClass("org.meshtastic.core.model.NodeInfo")
-val nodeInfo = bundle.getParcelable("com.geeksville.mesh.NodeInfo", nodeInfoClass)
+Aplikacja wykorzystuje architekturę opartą na wzorcu **MVVM (Model-View-ViewModel)** z dodatkowymi warstwami odpowiedzialnymi za komunikację zewnętrzną i zarządzanie danymi.
 ```
-
-Blok `finally` przywraca oryginalny ClassLoader. Cała procedura jest otoczona obsługą wyjątków — jeśli się nie uda, receiver loguje dostępne klucze extras dla debugowania.
-
----
-
-### MeshNodeInfo i modele danych
-
-`MeshNodeInfo` to wewnętrzna klasa Kotlin będąca "bezpiecznym opakowaniem" dla obiektu `Any?` zwróconego z Meshtastic. Parsowanie odbywa się przez reflection w `fromMeshtasticNodeInfo()`:
-
-```
-org.meshtastic.core.model.NodeInfo (Any?)
-    ↓ reflection
-MeshNodeInfo(
-    num: Int,           // numer węzła
-    user: MeshUserInfo, // id, longName, shortName, hwModel, role
-    position: MeshPosition, // lat, lng, alt, speed, heading, precisionBits, time
-    snr, rssi, lastHeard, batteryLevel, channel, hopsAway
-)
-```
-
-**`MeshPosition.isValid()`** — pozycja jest uznawana za prawidłową gdy `lat != 0.0 || lng != 0.0` oraz mieści się w zakresach `[-90, 90]` i `[-180, 180]`.
-
-**`MeshNodeInfo.isOnline()`** — węzeł jest "online" jeśli `lastHeard` jest w ciągu ostatnich 300 sekund (5 minut).
-
----
-
-### MapScreen — wizualizacja na mapie
-
-**Markery:** Każdy węzeł z prawidłową pozycją otrzymuje marker. Typ markera zależy od dostępności danych kierunku ruchu (`groundTrack`):
-
-- `groundTrack > 0` → strzałka narysowana przez `Canvas` API, obrócona o kąt `heading`. Ikony są cachowane w `Map<Triple<Int, Int, Boolean>, BitmapDescriptor>` gdzie klucz to `(heading, kolor, zaznaczony)`.
-- `groundTrack == 0` → standardowy pin Google Maps z kolorem zależnym od roli węzła.
-
-**Kolory ról:**
-
-| Rola (int) | Kolor | Meshtastic role |
-|---|---|---|
-| 0 | Czerwony | CLIENT |
-| 5 | Zielony | TRACKER |
-| inne | Niebieski | Pozostałe |
-
-**Kamera:** Domyślna pozycja to centrum Polski (`52.0, 19.0`, zoom 6). Gdy użytkownik kliknie węzeł na liście, kamera animuje się do jego pozycji z zoom 15.
-
----
-
-## Przepływ danych
-
-```
-[Urządzenie Meshtastic] ←→ (LoRa radio) ←→ [Aplikacja Meshtastic]
-                                                      │
-                                              MeshService (Android Service)
-                                                      │
-                      ┌───────────────────────────────┤
-                      │ bindService()                 │ broadcast intent
-                      ▼                               ▼
-              MeshServiceManager              MeshtasticBroadcastReceiver
-              .getNodes()                     .onReceive(ACTION_NODE_CHANGE)
-              (via reflection)                │
-                      │                       │ ClassLoader dance
-                      │                       │ NodeInfo → MeshNodeInfo
-                      └──────────┬────────────┘
-                                 ▼
-                           MapViewModel
-                           _nodes.value[id] = MeshNodeInfo
-                                 │
-                                 │ StateFlow
-                                 ▼
-                      ┌──────────────────────┐
-                      │  MapScreen           │  ─→ Google Maps markers
-                      │  NodeListScreen      │  ─→ LazyColumn z kartami
-                      │  ConnectionStatusBar │  ─→ Stan połączenia
-                      └──────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                         WARSTWA UI                              │
+│  MainActivity → MainScreen (nawigacja dolna)                    │
+│  ┌──────────────┐  ┌────────────────┐  ┌───────────────────┐   │
+│  │  MapScreen   │  │ NodeListScreen │  │  SettingsScreen   │   │
+│  │  MapViewModel│  │ NodeDetail...  │  │  SettingsViewModel│   │
+│  └──────────────┘  └────────────────┘  └───────────────────┘   │
+│  ┌──────────────────────────────────────┐                       │
+│  │  ZoneDetailScreen / ZoneBottomSheet  │                       │
+│  │  ZoneViewModel                       │                       │
+│  └──────────────────────────────────────┘                       │
+└─────────────────────┬───────────────────────────────────────────┘
+                      │ StateFlow / coroutines
+┌─────────────────────▼───────────────────────────────────────────┐
+│                         WARSTWA LOGIKI                          │
+│  GeofenceChecker  (ray-casting — czyste JVM, bez Android SDK)   │
+│  NodeFilterState  (kryteria filtrowania listy węzłów)           │
+│  NodeToMarkerMapper (model → marker na mapie)                   │
+└─────────────────────┬───────────────────────────────────────────┘
+                      │
+┌─────────────────────▼───────────────────────────────────────────┐
+│                    WARSTWA DANYCH                               │
+│  ┌─────────────────────┐  ┌─────────────────────────────────┐   │
+│  │   MeshRepository    │  │       ZoneRepository            │   │
+│  │  (interface + impl) │  │  (Room Flow — strefy, eventy)   │   │
+│  └──────────┬──────────┘  └───────────────┬─────────────────┘   │
+│  ┌──────────▼──────────┐  ┌───────────────▼─────────────────┐   │
+│  │PositionHistory Repo │  │   PacketStatsRepository         │   │
+│  │  (in-memory Flow)   │  │   (in-memory, per-node stats)   │   │
+│  └─────────────────────┘  └─────────────────────────────────┘   │
+│  AppPreferences (DataStore Preferences)                         │
+└─────────────────────┬───────────────────────────────────────────┘
+                      │
+┌─────────────────────▼───────────────────────────────────────────┐
+│                     WARSTWA SERWISÓW                            │
+│  ┌───────────────────────┐   ┌──────────────────────────────┐   │
+│  │  MeshServiceManager   │   │    ZoneMonitorService        │   │
+│  │  (AIDL binding,       │   │  (Foreground Service,        │   │
+│  │   singleton)          │   │   geofence ENTER/EXIT)       │   │
+│  └───────────┬───────────┘   └──────────────────────────────┘   │
+│  ┌───────────▼───────────────────────────────────────────────┐  │
+│  │  MeshtasticBroadcastReceiver                              │  │
+│  │  (odbiera ACTION_NODE_CHANGE, CONNECTED, DISCONNECTED)    │  │
+│  └───────────────────────────────────────────────────────────┘  │
+└─────────────────────┬───────────────────────────────────────────┘
+                      │ 
+┌─────────────────────▼───────────────────────────────────────────┐
+│               ZEWNĘTRZNA APLIKACJA MESHTASTIC                   │
+│  com.geeksville.mesh — IMeshService (AIDL)                      │
+│  Broadcasty: ACTION_NODE_CHANGE, MESH_CONNECTED, etc.           │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Kluczowe decyzje i kompromisy
+## Opis warstw
 
-### 1. Reflection zamiast AIDL
-**Dlaczego:** Brak dostępu do plików AIDL Meshtastic jako publicznej zależności Maven.  
-**Koszt:** Błędy wykrywane w runtime. Przy aktualizacji Meshtastic nazwy metod mogą się zmienić bez ostrzeżenia kompilatora.  
-**Alternatywa:** Dołączyć Meshtastic jako lokalną zależność AAR lub skonfigurować AIDL ręcznie — ale wymaga utrzymywania kopii plików AIDL.
+### 1. Warstwa UI (Presentation)
 
-### 2. ClassLoader do deserializacji Parcelable
-**Dlaczego:** Android nie potrafi zdeserializować `NodeInfo` bez ClassLoadera z pakietu `com.geeksville.mesh`.  
-**Koszt:** Skomplikowany kod z obsługą wyjątków. Wymaga `CONTEXT_INCLUDE_CODE` — jeśli Meshtastic zmieni eksportowanie klas, przestanie działać.  
-**Alternatywa:** Konwertować dane po stronie Meshtastic i wysyłać prostsze typy (String, int) w broadcastach — ale wymaga modyfikacji Meshtastic.
+Zbudowana w **Jetpack Compose + Material 3**. Nawigacja odbywa się przez dolny pasek (`NavigationSuiteScaffold`). Każdy ekran posiada dedykowany `ViewModel` wstrzykiwany przez Hilt.
 
-### 3. Jeden ViewModel dla obu ekranów
-**Dlaczego:** Mapa i lista węzłów współdzielą ten sam zestaw danych (`nodes`, `connectionState`). Jeden ViewModel eliminuje synchronizację stanu.  
-**Koszt:** `MapViewModel` jest odpowiedzialny za zbyt wiele (połączenie, stan węzłów, zaznaczenie). W przyszłości warto wydzielić `ConnectionViewModel` i `NodeRepository`.
+- **`MapScreen` / `MapViewModel`** — główny ekran z mapą Google Maps Compose, markerami węzłów, historią tras i nakładką stref geofencingu.
+- **`NodeListScreen` / `NodeDetailScreen`** — lista i szczegóły węzłów z filtrowaniem (online/GPS/szukaj).
+- **`ZoneDetailScreen` / `ZoneViewModel`** — zarządzanie strefami (rysowanie wielokąta long-pressem, CRUD, log zdarzeń ENTER/EXIT).
+- **`SettingsScreen` / `SettingsViewModel`** — konfiguracja: typ mapy, próg "online", interwał odświeżania, eksport CSV.
 
-### 4. Google Maps zamiast ATAK
-**Dlaczego:** Wersja v1 to samodzielna aplikacja — prostsze środowisko testowe, nie wymaga instalacji ATAK.  
-**Kontekst:** `docs/PRZYKLADOWY_KOD.java` zawiera gotową implementację wysyłania pozycji jako CoT Events do ATAK — do użycia gdy aplikacja będzie rozwijana jako ATAK plugin.
+Stan każdego `ViewModel` wystawiony jest jako `StateFlow`, co zapewnia reaktywne re-kompozycje UI.
 
-### 5. `StateFlow` + Compose
-**Dlaczego:** Naturalna integracja z Jetpack Compose przez `collectAsState()`. Reaktywna aktualizacja UI przy każdej zmianie węzłów bez ręcznego zarządzania odświeżaniem.
+### 2. Warstwa domeny / logiki
 
----
+Czyste klasy Kotlin bez zależności od Android SDK — w pełni testowalne jako unit testy JVM.
 
-## Wymagania środowiskowe
+- **`GeofenceChecker`** — algorytm ray-casting do sprawdzania przynależności punktu GPS do wielokąta. Wystawia też `computeNodeZoneMap()` dla reaktywnego przeliczenia całej mapy węzłów.
+- **`NodeFilterState`** — niemutowalne data class z kryteriami filtrowania.
+- **`NodeToMarkerMapper`** — mapuje `MeshNodeInfo` na dane markera dla Compose Maps.
 
-**Hardware:** Urządzenie Meshtastic (np. Heltec LoRa 32, T-Beam, RAK WisNode) podłączone do smartfona przez Bluetooth lub USB.
+### 3. Warstwa danych
 
-**Software:**
-- Android 7.0+ (minSdk 24), targetSdk 36
-- Aplikacja Meshtastic (`com.geeksville.mesh`) zainstalowana i połączona z urządzeniem
-- Klucz API Google Maps w `local.properties` pod kluczem `MAPS_API_KEY`
+Zapewnia abstrakcję źródeł danych i zarządza logiką persystencji.
 
-**Uprawnienia:**
-- `INTERNET` — Google Maps SDK
-- `ACCESS_FINE_LOCATION` / `ACCESS_COARSE_LOCATION` — wyświetlanie własnej lokalizacji na mapie
-- `<queries>` dla pakietu `com.geeksville.mesh` — wymagane przez Android 11+ (Package Visibility)
+- **`MeshRepository`** — interfejs definiujący kontrakt połączenia i odbioru zdarzeń z sieci Meshtastic. Implementacja produkcyjna: `MeshServiceRepository`; w testach podmieniana na `FakeMeshRepository`.
+- **`ZoneRepository`** — CRUD dla stref i logów zdarzeń; wystawia `Flow<List<Zone>>` i `Flow<List<ZoneEvent>>` z Room.
+- **`PositionHistoryRepository`** — historia pozycji węzłów (in-memory `MutableStateFlow`); zachowuje maksymalnie N punktów z minimalną odległością między nimi.
+- **`PacketStatsRepository`** — zlicza odebrane pakiety per węzeł (in-memory).
+- **`AppPreferences`** — ustawienia użytkownika przez DataStore Preferences.
 
-**Budowanie:**
-```bash
-# Dodaj do local.properties:
-MAPS_API_KEY=twoj_klucz_api
+### 4. Warstwa serwisów i IPC
 
-./gradlew assembleDebug
-```
+- **`MeshServiceManager`** — singleton zarządzający cyklem życia bindingu AIDL do aplikacji Meshtastic. Używa Java Reflection do obsługi różnych wersji API Meshtastic (`getNodes()`, `getMyId()`, `connectionState()`). Opcjonalnie przechodzi do trybu broadcast-only gdy klasy AIDL nie są dostępne w classpath.
+- **`ZoneMonitorService`** — Foreground Service uruchamiany przez `ZoneViewModel` gdy istnieje ≥1 aktywna strefa. Rejestruje własną instancję `MeshtasticBroadcastReceiver`, zbiera aktywne strefy przez `Flow` z Room i na każdy update węzła sprawdza przynależność do stref (algorytm ray-casting), zapisuje zdarzenie i wysyła powiadomienie push.
+- **`MeshtasticBroadcastReceiver`** — odbiera broadcasty z aplikacji Meshtastic (`ACTION_NODE_CHANGE`, `MESH_CONNECTED`, `MESH_DISCONNECTED`) i konwertuje je na wywołania interfejsu `MeshtasticReceiverListener`.
 
----
+### 5. Persystencja danych
 
-## Znane ograniczenia i obszary do poprawy
+| Magazyn | Technologia | Dane |
+|---------|-------------|------|
+| Strefy geofencingu | Room (`ZoneDatabase`) | `Zone`, `ZoneEvent` (relacja 1:N, CASCADE delete) |
+| Ustawienia użytkownika | DataStore Preferences | Progi, interwały, typ mapy |
+| Historia pozycji | In-memory (`StateFlow`) | Max N punktów na węzeł, brak persystencji między sesjami |
+| Statystyki pakietów | In-memory (`ConcurrentHashMap`) | Licznik pakietów per węzeł |
 
-**Reflection i ClassLoader:**
-- Kod jest kruchy względem zmian API Meshtastic. Warto napisać testy integracyjne z mock serwisem.
-- Logi debugowania w `MeshNodeInfo.fromMeshtasticNodeInfo()` są bardzo szczegółowe — wyczyścić przed wersją produkcyjną.
-
-**Brak persystencji:**
-- Węzły znikają po restarcie aplikacji. Rozważyć Room DB lub DataStore do cache'owania ostatnio widzianych węzłów.
-
-**Jeden ViewModel:**
-- `MapViewModel` zarządza i połączeniem, i danymi węzłów. Wydzielenie `NodeRepository` jako pośrednika ułatwi testowanie jednostkowe.
-
-**Brak testów:**
-- Istnieją tylko szablonowe `ExampleUnitTest` i `ExampleInstrumentedTest`. Priorytet: testy dla `MeshNodeInfo.fromMeshtasticNodeInfo()` z mock danymi.
-
-**Cache ikon:**
-- `iconCache` w `MapScreen` to `remember { mutableMapOf() }` — nie jest czyszczony. Przy wielu węzłach z różnymi kursami może rosnąć w nieskończoność. Dodać `LruCache`.
+Wierzchołki wielokątów i listy obserwowanych węzłów przechowywane są jako JSON string w kolumnach Room (bez `TypeConverter`) — upraszcza migracje i pozwala uniknąć zależności od Room dla klas dziedzinowych.
 
 ---
 
-## Geofencing — architektura (planowana)
+## Integracja z Meshtastic
 
-### Cel i decyzje projektowe
-
-Użytkownik definiuje **strefy kołowe** na mapie i przypisuje do nich węzły (1 węzeł = 1 strefa). Gdy węzeł opuści swoją strefę, aplikacja wykrywa naruszenie i powiadamia użytkownika — również gdy aplikacja jest zamknięta.
-
-Kluczowe decyzje:
-- **Kształt strefy:** tylko okrąg (v1). Wystarczający dla działki z marginesem, najprostszy w obsłudze dotykowej i obliczeniach. Wielokąty — v2.
-- **Model przypisania:** 1 węzeł = 1 strefa. Zmiana strefy nadpisuje poprzednie przypisanie.
-- **Detekcja w tle:** wymagana nawet gdy aplikacja jest zamknięta → `ForegroundService`.
-- **Debounce:** smart — agresywny polling po pierwszym podejrzanym odczycie, powiadomienie po potwierdzeniu. Czas reakcji ≤ 15 s.
-
-### Nowe komponenty
+Aplikacja Meshtastic działa jako osobna apka na urządzeniu. MeshTracker komunikuje się z nią na dwa uzupełniające się sposoby:
 
 ```
-com.example.meshtracker_v1/
-├── service/
-│   └── MeshTrackerForegroundService.kt   # Hostuje BroadcastReceiver i BreachDetector w tle
-├── geofence/
-│   ├── BreachDetector.kt                 # Stateful per-node; zarządza licznikiem i pollingiem
-│   ├── GeofenceChecker.kt                # Utility: isOutside(lat, lng, zone): Boolean (Haversine)
-│   ├── PositionRequester.kt              # requestPosition(nodeNum) via IMeshService reflection
-│   └── BreachNotificationManager.kt      # Tworzy/aktualizuje/anuluje powiadomienia systemowe
-├── data/
-│   ├── db/
-│   │   ├── AppDatabase.kt                # Room DB
-│   │   ├── ZoneDao.kt
-│   │   ├── ZoneAssignmentDao.kt
-│   │   └── BreachStateDao.kt
-│   ├── entity/
-│   │   ├── ZoneEntity.kt
-│   │   ├── ZoneAssignmentEntity.kt
-│   │   └── BreachStateEntity.kt
-│   └── ZoneRepository.kt                 # Źródło prawdy; eksponuje Flow do UI i Service
-└── ui/
-    ├── zones/
-    │   ├── ZoneListScreen.kt             # Trzecia zakładka nawigacji
-    │   └── ZoneViewModel.kt              # CRUD stref, przypisania węzłów
-    └── map/
-        └── ZoneCreationOverlay.kt        # Nakładka na MapScreen: okrąg + uchwyt promienia
+Meshtastic App
+     │
+     ├─► AIDL IMeshService (bindService)
+     │     → getNodes(), connectionState(), getMyId()
+     │     → MeshServiceManager (singleton, reflection)
+     │
+     └─► Broadcast Intents (ACTION_NODE_CHANGE itp.)
+           → MeshtasticBroadcastReceiver
+           → MeshServiceRepository / ZoneMonitorService
 ```
 
-### Schemat Room DB
+Podejście z reflection pozwala zachować zgodność z różnymi wersjami aplikacji Meshtastic bez recompilacji AIDL stub. Tryb broadcast-only działa nawet gdy AIDL nie jest dostępne.
 
-**`zones`**
+---
 
-| Kolumna | Typ | Opis |
-|---|---|---|
-| `id` | `INTEGER PK AUTOINCREMENT` | |
-| `name` | `TEXT NOT NULL` | Nazwa strefy, np. "Działka Kowalskich" |
-| `center_lat` | `REAL NOT NULL` | |
-| `center_lng` | `REAL NOT NULL` | |
-| `radius_meters` | `REAL NOT NULL` | |
-| `color_hex` | `TEXT NOT NULL` | Kolor okręgu na mapie |
-| `created_at` | `INTEGER NOT NULL` | Epoch seconds |
-
-**`zone_assignments`**
-
-| Kolumna | Typ | Opis |
-|---|---|---|
-| `node_id` | `TEXT PRIMARY KEY` | ID węzła (klucz główny — 1 węzeł = 1 strefa) |
-| `zone_id` | `INTEGER NOT NULL FK→zones(id) ON DELETE CASCADE` | |
-| `assigned_at` | `INTEGER NOT NULL` | |
-
-**`breach_states`**
-
-| Kolumna | Typ | Opis |
-|---|---|---|
-| `node_id` | `TEXT PRIMARY KEY` | |
-| `is_in_breach` | `INTEGER NOT NULL` | 0 = w strefie, 1 = poza strefą |
-| `breach_start` | `INTEGER` | Epoch seconds, nullable |
-| `last_lat` | `REAL` | Ostatnia znana pozycja poza strefą |
-| `last_lng` | `REAL` | |
-
-### Smart debounce — algorytm
-
-Gdy węzeł po raz pierwszy pojawi się poza strefą, `BreachDetector` uruchamia **agresywny polling** przez `requestPosition(nodeNum)` co 5 s. Powiadomienie jest wysyłane po 3 kolejnych odczytach poza strefą (lub po 2 odczytach jeśli upłynęło ≥ 15 s — failsafe).
+## Wstrzykiwanie zależności (Hilt)
 
 ```
-T = 0 s   → 1. odczyt poza strefą → start pollingu (requestPosition co 5 s)
-T ≈ 5 s   → 2. odczyt poza strefą
-T ≈ 10 s  → 3. odczyt poza strefą → BREACH CONFIRMED → powiadomienie
+SingletonComponent
+  ├── MeshServiceManager  (Provides — singleton z Application context)
+  ├── MeshRepository      (Binds → MeshServiceRepository)
+  ├── ZoneDatabase        (Provides via DatabaseModule)
+  ├── ZoneDao             (Provides via DatabaseModule)
+  ├── AppPreferences      (Provides via DatabaseModule)
+  └── CsvExporter         (Provides via DatabaseModule)
+
+ViewModelComponent (HiltViewModel)
+  ├── MapViewModel
+  ├── ZoneViewModel
+  └── SettingsViewModel
 ```
 
-Łączny czas reakcji: ~10 s normalnie, max 15 s (failsafe). Mieści się w wymaganiu.
+---
 
-Reset: jeśli którykolwiek odczyt wróci do strefy — licznik zerowany, polling zatrzymywany.
+## Zarządzanie stanem połączenia
 
-Pseudokod `BreachDetector.onPositionUpdate()`:
-```kotlin
-fun onPositionUpdate(node: MeshNodeInfo, zone: ZoneEntity) {
-    val outside = GeofenceChecker.isOutside(node.position, zone)
+`MapViewModel` modeluje stan połączenia jako sealed class:
 
-    if (!outside) {
-        if (suspiciousCount > 0 || currentState == BREACH) {
-            resetSuspicion()                      // polling off, licznik = 0
-            if (currentState == BREACH) notifyReturn(node, zone)
-            setState(INSIDE)
-        }
-        return
-    }
+```
+Disconnected ──connect()──► Connecting ──AIDL ready──► [check radio]
+                                                              │
+                                            radioState=CONNECTED ──► Connected
+                                            radioState≠CONNECTED ──► Connecting (poll 2s)
+                                            AIDL unavailable ──────► Connecting (wait broadcast)
 
-    // węzeł poza strefą
-    suspiciousCount++
-    if (suspiciousCount == 1) startAggressivePolling(node.num)  // requestPosition co 5s
-
-    val timeElapsed = now() - suspiciousStartTime
-    if (suspiciousCount >= 3 || (suspiciousCount >= 2 && timeElapsed >= 15_000)) {
-        stopAggressivePolling()
-        confirmBreach(node, zone)   // zapisz do Room DB + wyślij powiadomienie
-    }
-}
+Connected ──MESH_DISCONNECTED──► Reconnecting (countdown 30s) ──► Connected / Disconnected
 ```
 
-### ForegroundService — cykl życia
+Automatyczny reconnect działa z 30-sekundowymi interwałami. Odbierany broadcast `ACTION_NODE_CHANGE` inkrementalnie naprawia stan z `Connecting` na `Connected` (race-condition guard).
 
-`MeshTrackerForegroundService` startuje przy uruchomieniu aplikacji (`Application.onCreate()`) i działa do czasu jawnego wyłączenia przez użytkownika (opcja w ustawieniach) lub odinstalowania aplikacji.
+---
 
-Serwis przejmuje odpowiedzialność za:
-- Binding do `IMeshService` (dotychczas w `MapViewModel`)
-- Rejestrację `MeshtasticBroadcastReceiver`
-- Wywołania `BreachDetector` przy każdym `NODE_CHANGE`
+## Konsekwencje
 
-`MapViewModel` przestaje zarządzać połączeniem bezpośrednio. Zamiast tego czyta stan węzłów i naruszenia przez `Flow` z `ZoneRepository` (Room DB) — serwis zapisuje, UI czyta reaktywnie.
+**Ułatwione przez tę architekturę:**
+- Podmiana implementacji repozytorium w testach (interfejs `MeshRepository`).
+- Testowanie logiki geofencingu jako czystych unit testów JVM (brak zależności Android).
+- Reaktywne, wydajne UI dzięki granularnym StateFlow i Compose.
+- Praca w tle (ZoneMonitorService) niezależna od cyklu życia Activity.
 
-### Powiadomienia — dwa kanały
+**Utrudnione / do rozważenia w przyszłości:**
+- Historia pozycji i statystyki pakietów są in-memory — utrata danych po zamknięciu aplikacji. Do rozważenia: persystencja w Room.
+- JSON strings dla wierzchołków stref utrudniają zapytania SQL (np. "wszystkie strefy zawierające dany punkt"). Przy rozbudowie warto wprowadzić `TypeConverter` lub osobną tabelę `zone_vertices`.
+- Reflection dla AIDL jest kruche — aktualizacja Meshtastic może zmienić API. Do rozważenia: oficjalny Meshtastic SDK lub generowany kod z protobuf.
+- Brak eksportu schematu Room (`exportSchema = false`) — należy włączyć i skonfigurować migracje przed pierwszym release produkcyjnym.
 
-**`CHANNEL_SERVICE`** (`IMPORTANCE_LOW`) — cichy status serwisu, zawsze widoczny w szufladzie:
-> "MeshTracker aktywny · 2 węzły monitorowane · 0 poza strefą"
+---
 
-**`CHANNEL_BREACH`** (`IMPORTANCE_HIGH`) — alarm naruszenia:
-> "Burek opuścił strefę! · Działka Kowalskich · 3 min temu"
-- Heads-up banner (zajmuje górę ekranu przy odblokowanym telefonie)
-- Dźwięk + wibracja
-- `ongoing = true` — nie można usunąć przeciągnięciem, znika gdy węzeł wróci
-- Akcja "Pokaż na mapie" — otwiera aplikację z wyśrodkowaną kamerą na węźle
-- Akcja "Wycisz na 1h" — tymczasowe wyciszenie dla danego węzła
+## Działania do podjęcia
 
-### Stan naruszenia w UI
+- [ ] Włączyć `exportSchema = true` w `ZoneDatabase` i dodać migracje Room przed v1.0
+- [ ] Rozważyć persystencję historii pozycji (Room lub pliki) dla użytkowników z przerwami sieciowymi
+- [ ] Dodać tabelę `zone_vertices` lub `TypeConverter` jeśli pojawią się zapytania przestrzenne
+- [ ] Monitorować zmiany API Meshtastic i rozważyć oficjalny SDK gdy będzie dostępny
+- [ ] Zwiększyć pokrycie testami integracyjnymi `MeshServiceRepository` (Hilt + Espresso)
 
-Po potwierdzeniu breachState w Room DB, UI reaguje automatycznie przez `Flow`:
-- Marker na mapie zmienia się z normalnego (zielony/czerwony/niebieski) na **czerwony z ikoną ostrzeżenia**
-- Strefa na mapie zmienia obramowanie na **czerwone**
-- Pod `ConnectionStatusBar` pojawia się **sticky banner**: "Burek jest poza strefą 'Działka Kowalskich' · Od 14 min"
-- `NodeItem` na liście pokazuje **czerwoną plakietkę "POZA STREFĄ"**
-- Banner i plakietka znikają gdy węzeł wróci (automatycznie przez Flow)
+---
 
-### UX tworzenia strefy
+## Opis ekranów aplikacji
 
-1. Użytkownik długo przytrzymuje punkt na mapie → pojawia się okrąg z domyślnym promieniem 100 m
-2. Przeciąga uchwyt na krawędzi okręgu → dostosowuje promień (wyświetlany w metrach)
-3. Tapy przycisku "Zapisz" → bottom sheet z polem nazwy + wyborem koloru
-4. Opcjonalnie: od razu przypisanie węzła(ów) do nowo utworzonej strefy
+Aplikacja zawiera **5 ekranów nawigacyjnych** zarządzanych przez `MainScreen`. Trzy główne ekrany dostępne są przez dolny pasek nawigacyjny (Mapa / Węzły / Ustawienia). Dwa ekrany szczegółów (węzeł, strefa) zastępują pasek nawigacyjny i wyświetlają własny `TopAppBar` z przyciskiem powrotu.
 
-### Ryzyko: `requestPosition()` przez reflection
+Globalny komponent `ConnectionStatusBar` pojawia się nad każdym z trzech głównych ekranów i informuje o stanie połączenia z Meshtastic.
 
-`PositionRequester` wywołuje `IMeshService.requestPosition(Int)` przez reflection. Metoda istnieje w aktualnych wersjach Meshtastic, ale jej nazwa może różnić się między wersjami.
+---
 
-Zabezpieczenie: przy starcie `MeshTrackerForegroundService` wykonać **discovery** — zalogować wszystkie dostępne metody IMeshService i sprawdzić obecność `requestPosition`. Jeśli metoda niedostępna — fallback: debounce oparty wyłącznie na naturalnych broadcastach `NODE_CHANGE` z licznikiem ≥ 2 odczytów poza strefą.
+### Ekran 1 — Mapa (`MapScreen`)
 
-### Kolejność implementacji
+**Plik:** `ui/map/MapScreen.kt` | **ViewModel:** `MapViewModel`
 
-1. Room DB + `ZoneRepository` (encje, DAO, podstawowy CRUD + Flow)
-2. UI tworzenia stref (`ZoneCreationOverlay` + `ZoneListScreen`)
-3. `GeofenceChecker` + testy jednostkowe
-4. `MeshTrackerForegroundService` (samo przeżycie w tle, bez detekcji)
-5. `BreachDetector` + `BreachNotificationManager`
-6. `PositionRequester` z discovery `requestPosition()`
-7. Aktualizacja UI: markery, banner, `NodeItem` plakietka
-8. Refaktoryzacja `MapViewModel` — oddanie połączenia serwisowi
+Główny ekran aplikacji. Wyświetla interaktywną mapę Google Maps z nakładkami węzłów i stref geofencingu oraz obsługuje tryb rysowania wielokątów.
+
+#### Elementy wizualne
+
+**Mapa Google Maps (GoogleMap Compose)** — zajmuje cały ekran. Typ mapy konfigurowalny (normalny / satelita / teren / hybryda). Stan kamery przechowywany w `MainScreen` — przeżywa przełączanie zakładek.
+
+**Markery węzłów** — każdy marker to niestandardowa bitmapa rysowana programowo na `Canvas`:
+- Kółko z 1-2 inicjałami węzła (skrócona nazwa lub prefix node ID)
+- Kolor kółka zależy od stanu: żółty (zaznaczony), szary (offline), magenta (w strefie), czerwony (CLIENT), niebieski (ROUTER), zielony (TRACKER)
+- Dot SNR w prawym górnym rogu kółka — zielony/pomarańczowy/czerwony zależnie od jakości sygnału
+- Węzeł lokalny (BT) — zamiast dota SNR pokazuje niebieską ikonkę telefonu
+- Węzeł statyczny: marker z pinem (anchor w czubku)
+- Węzeł w ruchu (`groundTrack > 0`): strzałka wychodząca z kółka w kierunku ruchu, anchor w środku kółka
+- Ikony cachowane w `MutableMap<MarkerKey, BitmapDescriptor>` — bitmapa przerysowywana tylko gdy zmieni się stan wizualny
+- Snippet markera zawiera: status online/offline, bateria %, SNR dB, prędkość m/s, kierunek °, wiek GPS, ostrzeżenie o obniżonej precyzji
+
+**Wielokąty stref** — aktywne strefy renderowane jako `Polygon` z przezroczystym wypełnieniem (alpha 0.25) i obrysem w kolorze strefy.
+
+**Historia tras (Polyline)** — w trybie "wszystkie ślady": trasy wszystkich węzłów jednocześnie (zaznaczony — niebieski gruby, tracker — zielony, pozostałe — szare półprzezroczyste). W trybie domyślnym: tylko trasa zaznaczonego węzła.
+
+**Podgląd rysowanego wielokąta** — zielona polilinia + zielone markery wierzchołków podczas trybu rysowania.
+
+**Komunikaty stanu:**
+- "Brak węzłów w sieci" / "Brak węzłów z pozycją GPS" gdy lista jest pusta
+- Spinner `CircularProgressIndicator` podczas łączenia
+- Pasek informacyjny "Dodano N wierzchołków • Przytrzymaj mapę, aby dodać kolejny" w trybie rysowania
+
+**Floating Action Buttons (lewy dolny róg):**
+- Tryb normalny: pojedynczy FAB `Place` — otwiera ZoneBottomSheet
+- Tryb rysowania: trzy `ExtendedFloatingActionButton` — Anuluj / Cofnij (gdy ≥1 wierzchołek) / Zamknij (gdy ≥3 wierzchołki)
+- Tryb potwierdzania: FABs ukryte (dialog zajmuje ekran)
+
+#### Interakcje użytkownika
+
+| Gest | Efekt |
+|------|-------|
+| Tap markera węzła | Zaznaczenie węzła — kamera animuje do jego pozycji, marker powiększa się |
+| Tap mapy (poza markerem) | Odznaczenie węzła |
+| Long-press na mapie (tryb rysowania) | Dodanie wierzchołka wielokąta |
+| FAB Strefy | Otwarcie ZoneBottomSheet |
+| FAB Zamknij | Zamknięcie wielokąta → dialog ZoneConfirmDialog |
+| FAB Cofnij | Usunięcie ostatniego wierzchołka |
+| FAB Anuluj | Porzucenie rysowania |
+
+#### Obsługa uprawnień
+
+Przy pierwszym uruchomieniu automatycznie prosi o `ACCESS_FINE_LOCATION` i `ACCESS_COARSE_LOCATION`. Mapa włącza niebieską kropkę "Moja lokalizacja" po przyznaniu uprawnienia.
+
+---
+
+### Ekran 2 — Lista węzłów (`NodeListScreen`)
+
+**Plik:** `ui/nodes/NodeListScreen.kt` | **ViewModel:** `MapViewModel` (współdzielony)
+
+Ekran przeglądu wszystkich węzłów sieci z możliwością filtrowania i wyszukiwania.
+
+#### Elementy wizualne
+
+**Pasek wyszukiwania** (`OutlinedTextField`) — wyszukiwanie po nazwie węzła lub node ID (case-insensitive). Przycisk X do czyszczenia zapytania.
+
+**Chipy filtrów** (`FilterChip`) — dwa togglowalne filtry:
+- "Tylko online" — ukrywa węzły, od których nie było słyszalności przez `onlineThreshold` minut
+- "Ma GPS" — ukrywa węzły bez ważnej pozycji
+- Gdy aktywny jakikolwiek filtr — pojawia się link "Wyczyść filtry"
+
+**Licznik wyników** — "Węzły: N" lub "Wyniki: X / N węzłów" gdy filtry są aktywne.
+
+**Lista węzłów** (`LazyColumn`) — elementy `NodeItem` z kluczem `nodeId` (wydajna rekompozycja). Sortowanie: online przed offline, w ramach grupy alfabetycznie.
+
+**Każdy `NodeItem` zawiera:**
+- Nazwa węzła + badge Online (zielony) / Offline (szary)
+- ID węzła (monospace)
+- Rola (CLIENT / TRACKER / inne)
+- Współrzędne GPS + wysokość (jeśli dostępne)
+- Prędkość i kierunek (jeśli w ruchu)
+- Wiek pozycji GPS — czerwony gdy > 10 minut
+- Ostrzeżenie ⚠ o obniżonej precyzji GPS (precisionBits ≤ 27)
+- Poziom baterii 🔋, SNR 📡, RSSI 📶
+- Czas ostatniego kontaktu (format HH:mm:ss gdy dziś, dd.MM HH:mm wcześniej)
+- Liczba przeskoków (hopCount > 0)
+
+**Stany puste:**
+- Spinner podczas łączenia gdy brak węzłów
+- "Brak węzłów spełniających kryteria" + przycisk "Wyczyść filtry" gdy filtry nie pasują
+- "Brak węzłów w sieci" / "Brak połączenia z Meshtastic" gdy lista globalnie pusta
+
+#### Interakcje
+
+Kliknięcie `NodeItem` → nawigacja do `NodeDetailScreen` z przekazanym `nodeId`.
+
+---
+
+### Ekran 3 — Szczegóły węzła (`NodeDetailScreen`)
+
+**Plik:** `ui/nodes/NodeDetailScreen.kt` | **ViewModel:** `MapViewModel` (współdzielony)
+
+Pełny widok informacji o wybranym węźle. Ekran szczegółów — brak dolnego paska nawigacyjnego.
+
+#### Nagłówek (`TopAppBar`)
+
+Tytuł: nazwa węzła. Przycisk ← powrót do listy węzłów.
+
+#### Karty informacyjne (przewijana kolumna)
+
+**Karta nagłówkowa:**
+- Pełna nazwa węzła + skrócona (shortName)
+- Badge ONLINE (zielony) / OFFLINE (szary)
+- Node ID w formacie monospace
+
+**Karta Tożsamość:**
+- Rola węzła (CLIENT, ROUTER, ROUTER_CLIENT, REPEATER, TRACKER, SENSOR, TAK)
+- Model sprzętu
+- Flaga licencji HAM
+- Numer kanału
+- Liczba przeskoków (bezpośrednio / N przeskoki)
+
+**Karta Sygnał:**
+- SNR z opisem jakości (Doskonały ≥5 dB / Dobry ≥0 / Słaby ≥-5 / Bardzo słaby)
+- RSSI w dBm
+- Poziom baterii % + pasek `LinearProgressIndicator` (zielony/pomarańczowy/czerwony)
+
+**Karta Statystyki odbioru:**
+- Liczba odebranych pakietów
+- Średni Δt między pakietami (s), min/max Δt
+- PDR (Packet Delivery Rate) % — stosunek odebranych pakietów do oczekiwanych przy zadanym interwale broadcastu; pasek wizualny
+- Oczekiwany interwał broadcastu (z ustawień)
+- Przycisk "Resetuj statystyki" z potwierdzeniem w `AlertDialog`
+
+**Karta Pozycja GPS** (gdy dostępna):
+- Szerokość/długość geograficzna (6 miejsc po przecinku)
+- Wysokość n.p.m.
+- Liczba widocznych satelitów
+- Prędkość (m/s) i kierunek (° z nazwą kardynalną: N/NE/E/SE/S/SW/W/NW)
+- Dokładność pozycji szacowana z `precisionBits` (metry)
+- Wiek ostatniego odczytu GPS
+
+**Karta Ostatni kontakt:**
+- Data i czas w formacie `yyyy-MM-dd HH:mm:ss`
+- Względny wiek: Ns / N min / Nh Nmin / N dni
+
+**Karta Historia pozycji** (gdy historia niepusta):
+- Nagłówek zawiera całkowity dystans trasy (km)
+- Ostatnie 10 punktów w układzie: timestamp | lat, lon (format monospace)
+- Wzmianka "… i N wcześniejszych" gdy historia > 10 punktów
+
+#### Przyciski akcji
+
+| Przycisk | Warunek widoczności | Efekt |
+|----------|--------------------|----|
+| Pokaż na mapie | Węzeł ma pozycję GPS | Przejście do MapScreen, kamera animuje do węzła |
+| Udostępnij | Zawsze | `Intent.ACTION_SEND` z tekstem: nazwa, ID, koord., link Google Maps |
+| Eksportuj dane CSV | Historia niepusta | `Intent.ACTION_SEND` z plikiem CSV (pozycje węzła) |
+
+---
+
+### Ekran 4 — Szczegóły strefy (`ZoneDetailScreen`)
+
+**Plik:** `ui/zones/ZoneDetailScreen.kt` | **ViewModel:** `ZoneViewModel`
+
+Widok szczegółowy strefy geofencingu z logiem zdarzeń ENTER/EXIT. Ekran szczegółów — brak dolnego paska.
+
+#### Nagłówek (`TopAppBar`)
+
+Tytuł: nazwa strefy. Przycisk ← powrót do mapy. Przycisk 🗑 (czerwony) — czyszczenie logu, widoczny gdy log niepusty, z potwierdzeniem w `AlertDialog`.
+
+#### Karta informacji o strefie
+
+- Kolorowe kółko + nazwa strefy + chip "Aktywna" / "Nieaktywna" (klikalny — toggle)
+- Liczba wierzchołków wielokąta
+- Lista ID monitorowanych węzłów (lub "—")
+- Łączna liczba zdarzeń w logu
+
+#### Log zdarzeń (`LazyColumn`)
+
+Każdy wiersz `ZoneEventRow` zawiera:
+- Etykieta **▶ WEJŚCIE** (zielone tło `primaryContainer`) lub **◀ WYJŚCIE** (czerwone `errorContainer`)
+- Nazwa węzła
+- Timestamp w formacie `dd.MM HH:mm:ss`
+
+Zdarzenia sortowane od najnowszego (Room `ORDER BY id DESC`). Przy pustym logu wyświetla informację jak dodać węzeł do strefy.
+
+---
+
+### Ekran 5 — Ustawienia (`SettingsScreen`)
+
+**Plik:** `ui/settings/SettingsScreen.kt` | **ViewModel:** `SettingsViewModel`
+
+Ekran konfiguracji aplikacji z sekcjami zgrupowanymi nagłówkami.
+
+#### Sekcja: Połączenie
+
+| Ustawienie | Opcje | Opis |
+|-----------|-------|------|
+| Interwał odświeżania | 5 / 10 / 30 / 60 s | Jak często ViewModel odpytuje `getNodes()` przez AIDL |
+| Próg "online" | 5 / 10 / 30 min | Po jakim czasie bez słyszalności węzeł staje się "offline" |
+| Oczekiwany interwał broadcastu | 15 / 30 / 60 / 120 s | Używany do kalkulacji PDR (pakiety/oczekiwane) |
+
+#### Sekcja: Filtry domyślne
+
+- Switch "Domyślnie: tylko online" — zaznaczony filtr "Tylko online" przy starcie aplikacji
+- Switch "Domyślnie: tylko z GPS" — zaznaczony filtr "Ma GPS" przy starcie
+
+#### Sekcja: Mapa
+
+- Typ mapy — `SingleChoiceSegmentedButtonRow` z 4 opcjami: Normalny / Satelita / Teren / Hybryda
+- Switch "Pokaż ślady wszystkich węzłów" — włącza jednoczesne rysowanie tras wszystkich węzłów na mapie
+
+#### Sekcja: Historia pozycji
+
+| Ustawienie | Opcje | Opis |
+|-----------|-------|------|
+| Max punktów historii | 10 / 50 / 100 / 200 | Limit punktów przechowywanych w pamięci per węzeł |
+| Min. odległość nowego punktu | 0 / 10 / 20 / 50 / 100 m | Filtr odległości — nowy punkt dodawany tylko gdy węzeł przemieścił się o min. tę odległość |
+
+#### Sekcja: Dane testowe
+
+- **Eksportuj sesję do CSV** — eksportuje historię pozycji wszystkich węzłów przez `Intent.ACTION_SEND` (share sheet)
+- **Wyczyść historię pozycji** — usuwa in-memory historię i statystyki pakietów wszystkich węzłów; wymaga potwierdzenia
+
+#### Reset
+
+**Przywróć domyślne** — resetuje wszystkie wartości DataStore do domyślnych; wymaga potwierdzenia.
+
+---
+
+### Nakładka: ConnectionStatusBar
+
+**Plik:** `ui/components/ConnectionStatusBar.kt`
+
+Pasek wyświetlany nad ekranami Mapa i Węzły (nie na Ustawieniach i nie na ekranach szczegółów).
+
+| Stan | Kolor paska | Treść |
+|------|------------|-------|
+| Connected | Zielony (primary) | "Połączono z Meshtastic" + liczba węzłów |
+| Connecting | Niebieski (secondary) + spinner | "Łączenie z Meshtastic..." |
+| Reconnecting | Niebieski + spinner | "Ponowne łączenie za Ns..." (odlicza sekundy) |
+| Disconnected | Czerwony (error) | Powód rozłączenia + przycisk "Ponów" |
+| MeshtasticNotInstalled | Czerwony | "Meshtastic nie jest zainstalowane" + "Ponów" |
+
+Przejścia między stanami animowane przez `AnimatedContent` (fade in/out).
+
+---
+
+### Nakładka: ZoneBottomSheet
+
+**Plik:** `ui/zones/ZoneBottomSheet.kt`
+
+`ModalBottomSheet` otwierany przyciskiem FAB na ekranie Mapy.
+
+Zawiera listę wszystkich zdefiniowanych stref (`LazyColumn`, max 360 dp wysokości). Każdy wiersz strefy (`ZoneListItem`) pokazuje:
+- Kolorowe kółko koloru strefy
+- Nazwa + info (liczba wierzchołków, liczba monitorowanych węzłów)
+- Switch aktywności (toggle inline)
+- Przycisk 🗑 usunięcia strefy
+- Przycisk → przejścia do `ZoneDetailScreen`
+
+Na dole przyciski "Dodaj strefę" — zamyka sheet i aktywuje tryb rysowania (`DrawingState.Drawing`).
+
+---
+
+### Dialog: ZoneConfirmDialog
+
+**Plik:** `ui/zones/ZoneConfirmDialog.kt`
+
+Dialog wyświetlany po zamknięciu wielokąta (`DrawingState.Confirming`). Umożliwia:
+- Wpisanie nazwy nowej strefy
+- Wybranie koloru z 5 predefiniowanych (`Zone.PRESET_COLORS`)
+- Wybór węzłów do monitorowania (checkboxy z listy aktualnych węzłów)
+
+Po zatwierdzeniu: `ZoneViewModel.confirmZone()` → zapis do Room → `DrawingState.Idle`.
+
+---
+
+### Przepływ nawigacji
+
+```
+MainActivity
+    └── MainScreen
+           ├── [BottomNav: Mapa / Węzły / Ustawienia]
+           │
+           ├─ Screen.Map ──────────────────────────── MapScreen
+           │                   ├── FAB → ZoneBottomSheet (overlay)
+           │                   ├── FAB Zamknij → ZoneConfirmDialog (overlay)
+           │                   └── ZoneBottomSheet "→" → Screen.ZoneDetail
+           │
+           ├─ Screen.List ─────────────────────────── NodeListScreen
+           │                   └── tap NodeItem → Screen.NodeDetail
+           │
+           ├─ Screen.NodeDetail ───────────────────── NodeDetailScreen
+           │                   ├── ← back → Screen.List
+           │                   └── "Pokaż na mapie" → Screen.Map + selectNode()
+           │
+           ├─ Screen.ZoneDetail ───────────────────── ZoneDetailScreen
+           │                   └── ← back → Screen.Map
+           │
+           └─ Screen.Settings ─────────────────────── SettingsScreen
+```

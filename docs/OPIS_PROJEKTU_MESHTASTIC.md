@@ -2,7 +2,8 @@
 
 ## Wprowadzenie
 
-Meshtastic® to innowacyjny projekt open source, który umożliwia wykorzystanie niedrogich radi LoRa jako długodystansowej platformy komunikacyjnej działającej poza siecią, w obszarach bez istniejącej lub niezawodnej infrastruktury komunikacyjnej. Projekt jest w 100% napędzany przez społeczność i całkowicie otwarty, co oznacza, że kod źródłowy jest dostępny publicznie, a rozwój odbywa się dzięki zaangażowaniu wolontariuszy z całego świata.
+Meshtastic® to innowacyjny projekt op
+en source, który umożliwia wykorzystanie niedrogich radi LoRa jako długodystansowej platformy komunikacyjnej działającej poza siecią, w obszarach bez istniejącej lub niezawodnej infrastruktury komunikacyjnej. Projekt jest w 100% napędzany przez społeczność i całkowicie otwarty, co oznacza, że kod źródłowy jest dostępny publicznie, a rozwój odbywa się dzięki zaangażowaniu wolontariuszy z całego świata.
 
 Projekt powstał z potrzeby stworzenia niezależnego systemu komunikacji, który nie wymaga infrastruktury telekomunikacyjnej, działając w pełni autonomicznie. Meshtastic rozwiązuje problem komunikacji w sytuacjach, gdy tradycyjne metody, takie jak sieć komórkowa czy internet, są niedostępne, zawodne lub niepożądane ze względów bezpieczeństwa i prywatności.
 

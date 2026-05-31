@@ -1,31 +1,27 @@
 \babel@toc {polish}{}\relax 
-\contentsline {section}{\numberline {1\relax .\enspace }Wprowadzenie}{9}{section.1}%
-\contentsline {subsection}{\numberline {1.1\relax .\enspace }Tło i obszar tematyczny}{9}{subsection.1.1}%
-\contentsline {subsection}{\numberline {1.2\relax .\enspace }Motywacja}{9}{subsection.1.2}%
-\contentsline {subsection}{\numberline {1.3\relax .\enspace }Cel pracy}{9}{subsection.1.3}%
+\contentsline {section}{\numberline {1\relax .\enspace }Wstęp}{9}{section.1}%
+\contentsline {subsection}{Motywacja}{9}{subsection*.2}%
+\contentsline {subsection}{Cel pracy}{9}{subsection*.3}%
 \contentsline {section}{\numberline {2\relax .\enspace }Sformułowanie problemu i wymagania}{10}{section.2}%
-\contentsline {subsection}{\numberline {2.1\relax .\enspace }Przeznaczenie systemu i charakterystyka użytkownika}{10}{subsection.2.1}%
-\contentsline {subsection}{\numberline {2.2\relax .\enspace }Wymagania funkcjonalne}{10}{subsection.2.2}%
-\contentsline {subsubsection}{\numberline {2.2.1\relax .\enspace }Faza 1 - Wizualizacja pozycji}{10}{subsubsection.2.2.1}%
-\contentsline {subsubsection}{\numberline {2.2.2\relax .\enspace }Faza 2 - Geofencing}{11}{subsubsection.2.2.2}%
-\contentsline {subsubsection}{\numberline {2.2.3\relax .\enspace }Faza 3 - Rozszerzenia}{11}{subsubsection.2.2.3}%
-\contentsline {subsection}{\numberline {2.3\relax .\enspace }Wymagania parametryczne}{11}{subsection.2.3}%
-\contentsline {subsubsection}{\numberline {2.3.1\relax .\enspace }Parametry sieci radiowej}{11}{subsubsection.2.3.1}%
-\contentsline {subsubsection}{\numberline {2.3.2\relax .\enspace }Parametry węzła mobilnego (obroża)}{11}{subsubsection.2.3.2}%
-\contentsline {subsubsection}{\numberline {2.3.3\relax .\enspace }Parametry aplikacji mobilnej}{11}{subsubsection.2.3.3}%
-\contentsline {subsection}{\numberline {2.4\relax .\enspace }Przegląd istniejących rozwiązań}{12}{subsection.2.4}%
-\contentsline {subsubsection}{\numberline {2.4.1\relax .\enspace }Dogtra Pathfinder 2}{12}{subsubsection.2.4.1}%
-\contentsline {subsubsection}{\numberline {2.4.2\relax .\enspace }Dogtrace DOG GPS X25}{12}{subsubsection.2.4.2}%
-\contentsline {section}{\numberline {3\relax .\enspace }Projekt}{15}{section.3}%
-\contentsline {subsection}{\numberline {3.1\relax .\enspace }Wybór technologii}{15}{subsection.3.1}%
-\contentsline {subsubsection}{\numberline {3.1.1\relax .\enspace }Modulacja LoRa i technika Chirp Spread Spectrum}{15}{subsubsection.3.1.1}%
-\contentsline {subsubsection}{\numberline {3.1.2\relax .\enspace }Wybór platformy sprzętowej}{16}{subsubsection.3.1.2}%
-\contentsline {subsubsection}{\numberline {3.1.3\relax .\enspace }Konfiguracja sieci Meshtastic}{17}{subsubsection.3.1.3}%
-\contentsline {subsection}{\numberline {3.2\relax .\enspace }Aplikacja mobilna MeshTracker}{18}{subsection.3.2}%
-\contentsline {subsubsection}{\numberline {3.2.1\relax .\enspace }Architektura}{18}{subsubsection.3.2.1}%
-\contentsline {subsubsection}{\numberline {3.2.2\relax .\enspace }Przegląd ekranów aplikacji}{18}{subsubsection.3.2.2}%
-\contentsline {subsubsection}{\numberline {3.2.3\relax .\enspace }Integracja z aplikacją Meshtastic}{22}{subsubsection.3.2.3}%
-\contentsline {subsubsection}{\numberline {3.2.4\relax .\enspace }Geofencing}{27}{subsubsection.3.2.4}%
-\contentsline {section}{Bibliografia}{33}{section*.37}%
-\contentsline {section}{Spis rysunków}{34}{section*.37}%
-\contentsline {section}{Spis tabel}{34}{section*.37}%
+\contentsline {subsection}{Przeznaczenie systemu i charakterystyka użytkownika}{10}{subsection*.4}%
+\contentsline {section}{\numberline {3\relax .\enspace }Przegląd istniejących rozwiązań}{12}{section.3}%
+\contentsline {subsection}{Dogtra Pathfinder 2}{12}{subsection*.7}%
+\contentsline {subsection}{Dogtrace DOG GPS X25}{13}{subsection*.9}%
+\contentsline {subsection}{Porównanie z proponowanym rozwiązaniem}{14}{subsection*.11}%
+\contentsline {section}{\numberline {4\relax .\enspace }Projekt}{15}{section.4}%
+\contentsline {subsection}{Wybór technologii}{15}{subsection*.13}%
+\contentsline {subsection}{Modulacja LoRa i technika Chirp Spread Spectrum}{15}{subsection*.14}%
+\contentsline {subsection}{Wybór platformy sprzętowej}{16}{subsection*.15}%
+\contentsline {subsection}{Konfiguracja sieci Meshtastic}{18}{subsection*.18}%
+\contentsline {section}{\numberline {5\relax .\enspace }Aplikacja mobilna MeshTracker}{19}{section.5}%
+\contentsline {subsection}{Architektura}{19}{subsection*.21}%
+\contentsline {subsection}{Przegląd ekranów aplikacji}{20}{subsection*.23}%
+\contentsline {subsection}{Integracja z aplikacją Meshtastic}{23}{subsection*.35}%
+\contentsline {subsection}{Schemat nawiązywania połączenia.}{26}{subsection*.37}%
+\contentsline {subsubsection}{\numberline {5.0.1\relax .\enspace }Geofencing}{30}{subsubsection.5.0.1}%
+\contentsline {subsection}{Model danych.}{30}{subsection*.47}%
+\contentsline {subsection}{Wykrywanie zdarzeń wejścia i wyjścia.}{32}{subsection*.52}%
+\contentsline {subsection}{Powiadomienia o przekroczeniu strefy.}{33}{subsection*.54}%
+\contentsline {section}{Bibliografia}{37}{section*.57}%
+\contentsline {section}{Spis rysunków}{38}{section*.57}%
+\contentsline {section}{Spis tabel}{38}{section*.57}%

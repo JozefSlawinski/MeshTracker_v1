@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.5.18)  28 MAY 2026 20:47
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.5.18)  29 MAY 2026 12:59
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -892,6 +892,39 @@ Package caption Info: New subtype `subfigure' on input line 238.
 \c@subfigure=\count474
 Package caption Info: New subtype `subtable' on input line 238.
 \c@subtable=\count475
+) (c:/texlive/2026/texmf-dist/tex/generic/dirtree/dirtree.sty
+Package: dirtree 2012/12/11 v0.32 package wrapper for dirtree
+ (c:/texlive/2026/texmf-dist/tex/generic/dirtree/dirtree.tex `dirtree' v0.32, 2012/12/11 (jcc)
+\DT@offset=\dimen194
+\DT@width=\dimen195
+\DT@sep=\dimen196
+\DT@all=\dimen197
+\DT@rulewidth=\dimen198
+\DT@dotwidth=\dimen199
+\DTbaselineskip=\dimen256
+\DT@counti=\count476
+\DT@countii=\count477
+\DT@countiii=\count478
+\DT@countiv=\count479
+\DT@indent=\dimen257
+\DT@parskip=\dimen258
+\DT@baselineskip=\dimen259
+)
+File: dirtree.tex 2012/12/11 v0.32 `dirtree' (jcc)
+) (c:/texlive/2026/texmf-dist/tex/latex/float/float.sty
+Package: float 2001/11/08 v1.3d Float enhancements (AL)
+\c@float@type=\count480
+\float@exts=\toks42
+\float@box=\box66
+\@float@everytoks=\toks43
+\@floatcapt=\box67
+) (c:/texlive/2026/texmf-dist/tex/latex/wrapfig/wrapfig.sty
+\wrapoverhang=\dimen260
+\WF@size=\dimen261
+\c@WF@wrappedlines=\count481
+\WF@box=\box68
+\WF@everypar=\toks44
+Package: wrapfig 2003/01/31  v 3.6
 )
 
 Package biblatex Warning: Load 'inputenc' before biblatex.
@@ -900,47 +933,50 @@ Package biblatex Warning: Load 'inputenc' before biblatex.
 Package biblatex Warning: 'babel/polyglossia' detected but 'csquotes' missing.
 (biblatex)                Loading 'csquotes' recommended.
 
-\@quotelevel=\count476
-\@quotereset=\count477
-(./main.aux)
+\@quotelevel=\count482
+\@quotereset=\count483
+(./main.aux
+Package babel Info: 'polish' activates 'polish' shorthands.
+(babel)             Reported on input line 10.
+)
 \openout1 = `main.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 53.
-LaTeX Font Info:    ... okay on input line 53.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 53.
-LaTeX Font Info:    ... okay on input line 53.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 53.
-LaTeX Font Info:    ... okay on input line 53.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 53.
-LaTeX Font Info:    ... okay on input line 53.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 53.
-LaTeX Font Info:    ... okay on input line 53.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 53.
-LaTeX Font Info:    ... okay on input line 53.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 53.
-LaTeX Font Info:    ... okay on input line 53.
-LaTeX Font Info:    Checking defaults for FML/futm/m/it on input line 53.
-LaTeX Font Info:    Trying to load font information for FML+futm on input line 53.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 56.
+LaTeX Font Info:    ... okay on input line 56.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 56.
+LaTeX Font Info:    ... okay on input line 56.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 56.
+LaTeX Font Info:    ... okay on input line 56.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 56.
+LaTeX Font Info:    ... okay on input line 56.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 56.
+LaTeX Font Info:    ... okay on input line 56.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 56.
+LaTeX Font Info:    ... okay on input line 56.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 56.
+LaTeX Font Info:    ... okay on input line 56.
+LaTeX Font Info:    Checking defaults for FML/futm/m/it on input line 56.
+LaTeX Font Info:    Trying to load font information for FML+futm on input line 56.
  (c:/texlive/2026/texmf-dist/tex/latex/fourier/fmlfutm.fd
 File: fmlfutm.fd 2004/10/30 Fontinst v1.926 font definitions for FML/futm.
 )
-LaTeX Font Info:    ... okay on input line 53.
-LaTeX Font Info:    Checking defaults for FMS/futm/m/n on input line 53.
-LaTeX Font Info:    Trying to load font information for FMS+futm on input line 53.
+LaTeX Font Info:    ... okay on input line 56.
+LaTeX Font Info:    Checking defaults for FMS/futm/m/n on input line 56.
+LaTeX Font Info:    Trying to load font information for FMS+futm on input line 56.
  (c:/texlive/2026/texmf-dist/tex/latex/fourier/fmsfutm.fd
 File: fmsfutm.fd 2004/10/30 Fontinst v1.926 font definitions for FMS/futm.
 )
-LaTeX Font Info:    ... okay on input line 53.
-LaTeX Font Info:    Checking defaults for FMX/futm/m/n on input line 53.
-LaTeX Font Info:    Trying to load font information for FMX+futm on input line 53.
+LaTeX Font Info:    ... okay on input line 56.
+LaTeX Font Info:    Checking defaults for FMX/futm/m/n on input line 56.
+LaTeX Font Info:    Trying to load font information for FMX+futm on input line 56.
  (c:/texlive/2026/texmf-dist/tex/latex/fourier/fmxfutm.fd
 File: fmxfutm.fd futm-extension
 )
-LaTeX Font Info:    ... okay on input line 53.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 53.
-LaTeX Font Info:    ... okay on input line 53.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 53.
-LaTeX Font Info:    ... okay on input line 53.
+LaTeX Font Info:    ... okay on input line 56.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 56.
+LaTeX Font Info:    ... okay on input line 56.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 56.
+LaTeX Font Info:    ... okay on input line 56.
 Package biblatex Info: Trying to load language 'polish'...
 Package biblatex Info: ... file 'polish.lbx' found.
  (c:/texlive/2026/texmf-dist/tex/latex/biblatex/lbx/polish.lbx
@@ -954,9 +990,10 @@ Package biblatex Info: Automatic encoding selection.
 Package biblatex Info: Trying to load bibliographic data...
 Package biblatex Info: ... file 'main.bbl' found.
  (./main.bbl)
-Package biblatex Info: Reference section=0 on input line 53.
-Package biblatex Info: Reference segment=0 on input line 53.
+Package biblatex Info: Reference section=0 on input line 56.
+Package biblatex Info: Reference segment=0 on input line 56.
 Package caption Info: Begin \AtBeginDocument code.
+Package caption Info: float package is loaded.
 Package caption Info: hyperref package is loaded.
 Package caption Info: listings package is loaded.
 Package caption Info: longtable package is loaded.
@@ -964,38 +1001,39 @@ Package caption Info: longtable package is loaded.
 Package: ltcaption 2021/01/08 v1.4c longtable captions (AR)
 )
 Package caption Info: scrextend package is loaded.
-\caption@addmargin@hsize=\dimen194
-\caption@addmargin@linewidth=\dimen195
+\caption@addmargin@hsize=\dimen262
+\caption@addmargin@linewidth=\dimen263
+Package caption Info: wrapfig package is loaded.
 Package caption Info: End \AtBeginDocument code.
-LaTeX Font Info:    Redeclaring math accent \widehat on input line 53.
-LaTeX Font Info:    Redeclaring math accent \widetilde on input line 53.
+LaTeX Font Info:    Redeclaring math accent \widehat on input line 56.
+LaTeX Font Info:    Redeclaring math accent \widetilde on input line 56.
  (c:/texlive/2026/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count478
-\scratchdimen=\dimen196
-\scratchbox=\box66
-\nofMPsegments=\count479
-\nofMParguments=\count480
-\everyMPshowfont=\toks42
-\MPscratchCnt=\count481
-\MPscratchDim=\dimen197
-\MPnumerator=\count482
-\makeMPintoPDFobject=\count483
-\everyMPtoPDFconversion=\toks43
+\scratchcounter=\count484
+\scratchdimen=\dimen264
+\scratchbox=\box69
+\nofMPsegments=\count485
+\nofMParguments=\count486
+\everyMPshowfont=\toks45
+\MPscratchCnt=\count487
+\MPscratchDim=\dimen265
+\MPnumerator=\count488
+\makeMPintoPDFobject=\count489
+\everyMPtoPDFconversion=\toks46
 ) (c:/texlive/2026/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty
 Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
 Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 485.
  (c:/texlive/2026/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Live
 ))
-\c@lstlisting=\count484
-LaTeX Info: Redefining \microtypecontext on input line 53.
-Package microtype Info: Applying patch `item' on input line 53.
-Package microtype Info: Applying patch `toc' on input line 53.
-Package microtype Info: Applying patch `eqnum' on input line 53.
-Package microtype Info: Applying patch `footnote' on input line 53.
-Package microtype Info: Applying patch `verbatim' on input line 53.
-LaTeX Info: Redefining \microtypesetup on input line 53.
+\c@lstlisting=\count490
+LaTeX Info: Redefining \microtypecontext on input line 56.
+Package microtype Info: Applying patch `item' on input line 56.
+Package microtype Info: Applying patch `toc' on input line 56.
+Package microtype Info: Applying patch `eqnum' on input line 56.
+Package microtype Info: Applying patch `footnote' on input line 56.
+Package microtype Info: Applying patch `verbatim' on input line 56.
+LaTeX Info: Redefining \microtypesetup on input line 56.
 Package microtype Info: Generating PDF output.
 Package microtype Info: Character protrusion enabled (level 2).
 Package microtype Info: Using default protrusion set `alltext'.
@@ -1017,7 +1055,8 @@ File: color.cfg 2016/01/02 v1.6 sample color configuration
 )
 Package color Info: Driver file: pdftex.def on input line 149.
  (c:/texlive/2026/texmf-dist/tex/latex/graphics/mathcolor.ltx))
-Package hyperref Info: Link coloring ON on input line 53.
+Package hyperref Info: Link coloring ON on input line 56.
+ (./main.out) (./main.out)
 \@outlinefile=\write4
 \openout4 = `main.out'.
 
@@ -1057,17 +1096,15 @@ Package hyperref Info: Link coloring ON on input line 53.
 * \@reversemarginfalse
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
-Package babel Info: 'polish' activates 'polish' shorthands.
-(babel)             Reported on input line 53.
-<eiti/header.png, id=4, 483.7272pt x 76.8471pt>
+<eiti/header.png, id=106, 483.7272pt x 76.8471pt>
 File: eiti/header.png Graphic file (type png)
 <use eiti/header.png>
-Package pdftex.def Info: eiti/header.png  used on input line 71.
+Package pdftex.def Info: eiti/header.png  used on input line 74.
 (pdftex.def)             Requested size: 438.17247pt x 69.61084pt.
-<eiti/title-inz.png, id=5, 483.7272pt x 105.39375pt>
+<eiti/title-inz.png, id=107, 483.7272pt x 105.39375pt>
 File: eiti/title-inz.png Graphic file (type png)
 <use eiti/title-inz.png>
-Package pdftex.def Info: eiti/title-inz.png  used on input line 71.
+Package pdftex.def Info: eiti/title-inz.png  used on input line 74.
 (pdftex.def)             Requested size: 438.17247pt x 95.4694pt.
 [1
 
@@ -1075,47 +1112,59 @@ Package pdftex.def Info: eiti/title-inz.png  used on input line 71.
 
 
 ] [3] [4]
-<eiti/oswiadczenie_autora_pracy.pdf, id=25, 597.55246pt x 845.07718pt>
+<eiti/oswiadczenie_autora_pracy.pdf, id=127, 597.55246pt x 845.07718pt>
 File: eiti/oswiadczenie_autora_pracy.pdf Graphic file (type pdf)
 <use eiti/oswiadczenie_autora_pracy.pdf>
-Package pdftex.def Info: eiti/oswiadczenie_autora_pracy.pdf  used on input line 94.
+Package pdftex.def Info: eiti/oswiadczenie_autora_pracy.pdf  used on input line 97.
 (pdftex.def)             Requested size: 521.4263pt x 737.46782pt.
  [5 <./eiti/oswiadczenie_autora_pracy.pdf>] [6
 
 
 
 
-]
-No file main.toc.
-\tf@toc=\write5
-\openout5 = `main.toc'.
-
-[7] [8
-
-
-] (./tex/1-wprowadzenie.tex) (./tex/2-wymagania.tex [9]
-LaTeX Font Info:    Trying to load font information for FML+futmi on input line 26.
+] (./main.toc
+LaTeX Font Info:    Trying to load font information for FML+futmi on input line 2.
  (c:/texlive/2026/texmf-dist/tex/latex/fourier/fmlfutmi.fd
 File: fmlfutmi.fd 2004/10/30 Fontinst v1.926 font definitions for FML/futmi.
 )
+LaTeX Font Info:    Font shape `FMX/futm/m/n' will be
+(Font)              scaled to size 11.03998pt on input line 2.
+LaTeX Font Info:    Font shape `FMX/futm/m/n' will be
+(Font)              scaled to size 8.27998pt on input line 2.
+LaTeX Font Info:    Font shape `FMX/futm/m/n' will be
+(Font)              scaled to size 6.43999pt on input line 2.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 2.
+ (c:/texlive/2026/texmf-dist/tex/latex/amsfonts/umsa.fd
+File: umsa.fd 2013/01/14 v3.01 AMS symbols A
+) (c:/texlive/2026/texmf-dist/tex/latex/microtype/mt-msa.cfg
+File: mt-msa.cfg 2006/02/04 v1.1 microtype config. file: AMS symbols (a) (RS)
+)
+LaTeX Font Info:    Trying to load font information for U+msb on input line 2.
+ (c:/texlive/2026/texmf-dist/tex/latex/amsfonts/umsb.fd
+File: umsb.fd 2013/01/14 v3.01 AMS symbols B
+) (c:/texlive/2026/texmf-dist/tex/latex/microtype/mt-msb.cfg
+File: mt-msb.cfg 2005/06/01 v1.0 microtype config. file: AMS symbols (b) (RS)
+)
+LaTeX Font Info:    Font shape `U/futm/m/n' will be
+(Font)              scaled to size 11.03998pt on input line 2.
+LaTeX Font Info:    Font shape `U/futm/m/n' will be
+(Font)              scaled to size 8.27998pt on input line 2.
+LaTeX Font Info:    Font shape `U/futm/m/n' will be
+(Font)              scaled to size 6.43999pt on input line 2.
+)
+\tf@toc=\write5
+\openout5 = `main.toc'.
+
+ [7] [8
+
+
+] (./tex/1-wprowadzenie.tex) (./tex/2-wymagania.tex [9]
 LaTeX Font Info:    Font shape `FMX/futm/m/n' will be
 (Font)              scaled to size 13.24796pt on input line 26.
 LaTeX Font Info:    Font shape `FMX/futm/m/n' will be
 (Font)              scaled to size 9.19998pt on input line 26.
 LaTeX Font Info:    Font shape `FMX/futm/m/n' will be
 (Font)              scaled to size 7.35999pt on input line 26.
-LaTeX Font Info:    Trying to load font information for U+msa on input line 26.
- (c:/texlive/2026/texmf-dist/tex/latex/amsfonts/umsa.fd
-File: umsa.fd 2013/01/14 v3.01 AMS symbols A
-) (c:/texlive/2026/texmf-dist/tex/latex/microtype/mt-msa.cfg
-File: mt-msa.cfg 2006/02/04 v1.1 microtype config. file: AMS symbols (a) (RS)
-)
-LaTeX Font Info:    Trying to load font information for U+msb on input line 26.
- (c:/texlive/2026/texmf-dist/tex/latex/amsfonts/umsb.fd
-File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-) (c:/texlive/2026/texmf-dist/tex/latex/microtype/mt-msb.cfg
-File: mt-msb.cfg 2005/06/01 v1.0 microtype config. file: AMS symbols (b) (RS)
-)
 LaTeX Font Info:    Font shape `U/futm/m/n' will be
 (Font)              scaled to size 13.24796pt on input line 26.
 LaTeX Font Info:    Font shape `U/futm/m/n' will be
@@ -1124,1382 +1173,371 @@ LaTeX Font Info:    Font shape `U/futm/m/n' will be
 (Font)              scaled to size 7.35999pt on input line 26.
  [10]
 Package babel Info: 'polish' activates 'polish' shorthands.
-(babel)             Reported on input line 102.
+(babel)             Reported on input line 95.
  [11]
 LaTeX Font Info:    Font shape `FMX/futm/m/n' will be
-(Font)              scaled to size 11.03998pt on input line 123.
+(Font)              scaled to size 6.99199pt on input line 126.
 LaTeX Font Info:    Font shape `FMX/futm/m/n' will be
-(Font)              scaled to size 8.27998pt on input line 123.
-LaTeX Font Info:    Font shape `FMX/futm/m/n' will be
-(Font)              scaled to size 6.43999pt on input line 123.
+(Font)              scaled to size 5.51999pt on input line 126.
 LaTeX Font Info:    Font shape `U/futm/m/n' will be
-(Font)              scaled to size 11.03998pt on input line 123.
+(Font)              scaled to size 6.99199pt on input line 126.
 LaTeX Font Info:    Font shape `U/futm/m/n' will be
-(Font)              scaled to size 8.27998pt on input line 123.
-LaTeX Font Info:    Font shape `U/futm/m/n' will be
-(Font)              scaled to size 6.43999pt on input line 123.
-LaTeX Font Info:    Font shape `FMX/futm/m/n' will be
-(Font)              scaled to size 6.99199pt on input line 125.
-LaTeX Font Info:    Font shape `FMX/futm/m/n' will be
-(Font)              scaled to size 5.51999pt on input line 125.
-LaTeX Font Info:    Font shape `U/futm/m/n' will be
-(Font)              scaled to size 6.99199pt on input line 125.
-LaTeX Font Info:    Font shape `U/futm/m/n' will be
-(Font)              scaled to size 5.51999pt on input line 125.
+(Font)              scaled to size 5.51999pt on input line 126.
 Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             `cmtt' (encoding: T1).
 (microtype)             For optimal results, create family-specific settings.
 (microtype)             See the microtype manual for details.
-<img/dogtra.jpg, id=120, 552.0625pt x 552.0625pt>
+<img/dogtra.jpg, id=241, 552.0625pt x 552.0625pt>
 File: img/dogtra.jpg Graphic file (type jpg)
 <use img/dogtra.jpg>
-Package pdftex.def Info: img/dogtra.jpg  used on input line 141.
-(pdftex.def)             Requested size: 219.08623pt x 219.08578pt.
-
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-<img/dogtraremote.png, id=121, 552.0625pt x 552.0625pt>
+Package pdftex.def Info: img/dogtra.jpg  used on input line 142.
+(pdftex.def)             Requested size: 210.3209pt x 210.32504pt.
+<img/dogtraremote.png, id=242, 552.0625pt x 552.0625pt>
 File: img/dogtraremote.png Graphic file (type png)
 <use img/dogtraremote.png>
-Package pdftex.def Info: img/dogtraremote.png  used on input line 148.
-(pdftex.def)             Requested size: 219.08623pt x 219.08578pt.
+Package pdftex.def Info: img/dogtraremote.png  used on input line 149.
+(pdftex.def)             Requested size: 210.3209pt x 210.32504pt.
+
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
-[12{c:/texlive/2026/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc}]
-Underfull \vbox (badness 1132) has occurred while \output is active []
 
- [13 <./img/dogtra.jpg> <./img/dogtraremote.png (PNG copy)>]
-<img/Dogtrace.png, id=147, 750.55406pt x 605.26125pt>
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [12{c:/texlive/2026/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc}]
+<img/Dogtrace.png, id=255, 750.55406pt x 605.26125pt>
 File: img/Dogtrace.png Graphic file (type png)
 <use img/Dogtrace.png>
-Package pdftex.def Info: img/Dogtrace.png  used on input line 181.
+Package pdftex.def Info: img/Dogtrace.png  used on input line 186.
 (pdftex.def)             Requested size: 219.08623pt x 176.6757pt.
-) (./tex/3-projekt.tex [14 <./img/Dogtrace.png>]
-Overfull \hbox (117.93297pt too wide) in paragraph at lines 35--35
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+
+Underfull \vbox (badness 5460) has occurred while \output is active []
+
+ [13 <./img/dogtra.jpg> <./img/dogtraremote.png (PNG copy)>]
+
+Package caption Warning: \label without proper reference on input line 211.
+See the caption package documentation for explanation.
+
+
+LaTeX Warning: Reference `tab:porownanie' on page 14 undefined on input line 208.
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+) (./tex/3-projekt.tex [14 <./img/Dogtrace.png>] [15]
+Overfull \hbox (117.93297pt too wide) in paragraph at lines 39--39
 [][][][][][]$\T1/cmtt/m/n/10 https : / / josefmtd . com / 2018 / 08 / 14 / spreading-[]factor-[]bandwidth-[]coding-[]rate-[]and-[]bit-[]rate-[]in-[]lora-[]english/$[][]| 
  []
 
 
-LaTeX Warning: Reference `eq:lora-bitrate' on page 15 undefined on input line 49.
+Underfull \hbox (badness 10000) in paragraph at lines 73--73
+[][][][]\T1/futs/m/n/10 (+20) Repozytorium apli-ka-cji Me-sh-ta-stic na An-droid: [][]$\T1/cmtt/m/n/10 https : / / github . com / meshtastic /
+ []
 
-[15]
+[16]
+<img/tbeam.png, id=302, 822.07124pt x 581.17125pt>
+File: img/tbeam.png Graphic file (type png)
+<use img/tbeam.png>
+Package pdftex.def Info: img/tbeam.png  used on input line 97.
+(pdftex.def)             Requested size: 210.3209pt x 148.68887pt.
+<img/tracker-t1000-e.png, id=303, 478.03593pt x 599.23875pt>
+File: img/tracker-t1000-e.png Graphic file (type png)
+<use img/tracker-t1000-e.png>
+Package pdftex.def Info: img/tracker-t1000-e.png  used on input line 104.
+(pdftex.def)             Requested size: 210.3209pt x 263.64758pt.
 
-LaTeX Warning: Reference `tab:lora-presets' on page 16 undefined on input line 90.
+
+Package caption Warning: \label without proper reference on input line 118.
+See the caption package documentation for explanation.
+
+
+LaTeX Warning: Reference `tab:lora-presets' on page 17 undefined on input line 115.
 
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
-
-Underfull \vbox (badness 7667) has occurred while \output is active []
-
- [16]
-Overfull \hbox (8.1351pt too wide) in paragraph at lines 155--160
+[17 <./img/tbeam.png> <./img/tracker-t1000-e.png>]
+<img/schematSieci.png, id=317, 1227.83719pt x 511.15968pt>
+File: img/schematSieci.png Graphic file (type png)
+<use img/schematSieci.png>
+Package pdftex.def Info: img/schematSieci.png  used on input line 154.
+(pdftex.def)             Requested size: 394.35254pt x 164.175pt.
+ [18 <./img/schematSieci.png>]) (./tex/4-przeglad-ekranow.tex
+Overfull \hbox (8.35686pt too wide) in paragraph at lines 5--14
 []\T1/futs/m/n/12 (-20) Aplikacja wy-ko-rzy-stuje ar-chi-tek-tur� opart� na wzorcu \T1/futs/b/n/12 (-20) MVVM (Model-View-ViewModel)[][][][][]
  []
 
-
-Underfull \vbox (badness 1515) has occurred while \output is active []
-
- [17]
-<img/ArchitectureWhiteBackground.png, id=198, 646.3648pt x 704.6325pt>
+<img/ArchitectureWhiteBackground.png, id=327, 646.3648pt x 704.6325pt>
 File: img/ArchitectureWhiteBackground.png Graphic file (type png)
 <use img/ArchitectureWhiteBackground.png>
-Package pdftex.def Info: img/ArchitectureWhiteBackground.png  used on input line 165.
-(pdftex.def)             Requested size: 394.35254pt x 429.91122pt.
-) (./tex/4-przeglad-ekranow.tex [18 <./img/ArchitectureWhiteBackground.png>]
+Package pdftex.def Info: img/ArchitectureWhiteBackground.png  used on input line 18.
+(pdftex.def)             Requested size: 350.5393pt x 382.14091pt.
 
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ├ (U+251C)
-               not set up for use with LaTeX.
+Underfull \vbox (badness 10000) has occurred while \output is active []
 
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ├ (U+251C)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character │ (U+2502)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character └ (U+2514)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ├ (U+251C)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character │ (U+2502)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ├ (U+251C)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character │ (U+2502)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character └ (U+2514)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ├ (U+251C)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character │ (U+2502)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ├ (U+251C)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character │ (U+2502)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ├ (U+251C)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character │ (U+2502)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ├ (U+251C)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character │ (U+2502)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character └ (U+2514)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ├ (U+251C)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character │ (U+2502)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ├ (U+251C)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character │ (U+2502)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character └ (U+2514)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ├ (U+251C)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character │ (U+2502)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ├ (U+251C)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character │ (U+2502)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ├ (U+251C)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character │ (U+2502)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character └ (U+2514)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character └ (U+2514)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ├ (U+251C)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ├ (U+251C)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ├ (U+251C)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character └ (U+2514)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-./tex/4-przeglad-ekranow.tex:31: LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.31 \end{verbatim}
-                   
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-<../img/mapaZblizenie.jpg, id=208, 1084.05pt x 2278.5125pt>
+ [19]
+<../img/mapaZblizenie.jpg, id=338, 1084.05pt x 2278.5125pt>
 File: ../img/mapaZblizenie.jpg Graphic file (type jpg)
 <use ../img/mapaZblizenie.jpg>
-Package pdftex.def Info: ../img/mapaZblizenie.jpg  used on input line 48.
-(pdftex.def)             Requested size: 197.17627pt x 414.42569pt.
+Package pdftex.def Info: ../img/mapaZblizenie.jpg  used on input line 86.
+(pdftex.def)             Requested size: 210.3209pt x 442.0309pt.
+<../img/wezlyLista.jpg, id=339, 1084.05pt x 2681.01625pt>
+File: ../img/wezlyLista.jpg Graphic file (type jpg)
+<use ../img/wezlyLista.jpg>
+Package pdftex.def Info: ../img/wezlyLista.jpg  used on input line 93.
+(pdftex.def)             Requested size: 210.3209pt x 520.11653pt.
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [20 <./img/ArchitectureWhiteBackground.png>]
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
-
-LaTeX Warning: Reference `fig:markery-kolory' on page 19 undefined on input line 56.
-
-<../img/markeryRole.png, id=209, 409.53pt x 117.43875pt>
+<../img/markeryRole.png, id=346, 409.53pt x 117.43875pt>
 File: ../img/markeryRole.png Graphic file (type png)
 <use ../img/markeryRole.png>
-Package pdftex.def Info: ../img/markeryRole.png  used on input line 62.
+Package pdftex.def Info: ../img/markeryRole.png  used on input line 111.
 (pdftex.def)             Requested size: 210.3209pt x 60.31407pt.
-<../img/markeryStanPolaczenia.png, id=210, 419.31656pt x 126.4725pt>
+<../img/markeryStanPolaczenia.png, id=347, 419.31656pt x 126.4725pt>
 File: ../img/markeryStanPolaczenia.png Graphic file (type png)
 <use ../img/markeryStanPolaczenia.png>
-Package pdftex.def Info: ../img/markeryStanPolaczenia.png  used on input line 69.
+Package pdftex.def Info: ../img/markeryStanPolaczenia.png  used on input line 118.
 (pdftex.def)             Requested size: 210.3209pt x 63.43486pt.
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
-
-LaTeX Warning: Reference `fig:markery-szczegoly' on page 19 undefined on input line 81.
-
-<../img/markeryJakoscPolaczenia.png, id=211, 503.63156pt x 117.43875pt>
+<../img/markeryJakoscPolaczenia.png, id=350, 503.63156pt x 117.43875pt>
 File: ../img/markeryJakoscPolaczenia.png Graphic file (type png)
 <use ../img/markeryJakoscPolaczenia.png>
-Package pdftex.def Info: ../img/markeryJakoscPolaczenia.png  used on input line 87.
+Package pdftex.def Info: ../img/markeryJakoscPolaczenia.png  used on input line 137.
 (pdftex.def)             Requested size: 210.3209pt x 49.04259pt.
-<../img/markeryKierunek.png, id=212, 294.34969pt x 87.32625pt>
+<../img/markeryKierunek.png, id=351, 294.34969pt x 87.32625pt>
 File: ../img/markeryKierunek.png Graphic file (type png)
 <use ../img/markeryKierunek.png>
-Package pdftex.def Info: ../img/markeryKierunek.png  used on input line 94.
+Package pdftex.def Info: ../img/markeryKierunek.png  used on input line 144.
 (pdftex.def)             Requested size: 210.3209pt x 62.39781pt.
-[19]
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
-
-LaTeX Warning: Reference `fig:geofencing-tworzenie' on page 20 undefined on input line 108.
-
-<../img/strefyGeofencing.jpg, id=220, 1084.05pt x 2278.5125pt>
+<../img/strefyGeofencing.jpg, id=353, 1084.05pt x 2278.5125pt>
 File: ../img/strefyGeofencing.jpg Graphic file (type jpg)
 <use ../img/strefyGeofencing.jpg>
-Package pdftex.def Info: ../img/strefyGeofencing.jpg  used on input line 114.
+Package pdftex.def Info: ../img/strefyGeofencing.jpg  used on input line 164.
 (pdftex.def)             Requested size: 197.17627pt x 414.42569pt.
-<../img/strefyGeofencingWierzcholki.jpg, id=221, 1084.05pt x 2278.5125pt>
+<../img/strefyGeofencingWierzcholki.jpg, id=354, 1084.05pt x 2278.5125pt>
 File: ../img/strefyGeofencingWierzcholki.jpg Graphic file (type jpg)
 <use ../img/strefyGeofencingWierzcholki.jpg>
-Package pdftex.def Info: ../img/strefyGeofencingWierzcholki.jpg  used on input line 121.
+Package pdftex.def Info: ../img/strefyGeofencingWierzcholki.jpg  used on input line 171.
 (pdftex.def)             Requested size: 197.17627pt x 414.42569pt.
-[20 <../img/mapaZblizenie.jpg> <../img/markeryRole.png> <../img/markeryStanPolaczenia.png>]
-
-LaTeX Warning: Reference `fig:geofencing-zarzadzanie' on page 21 undefined on input line 131.
-
-<../img/nowaStrefa.jpg, id=231, 1084.05pt x 2278.5125pt>
-File: ../img/nowaStrefa.jpg Graphic file (type jpg)
-<use ../img/nowaStrefa.jpg>
-Package pdftex.def Info: ../img/nowaStrefa.jpg  used on input line 137.
-(pdftex.def)             Requested size: 197.17627pt x 414.42569pt.
-<../img/strefyLista.jpg, id=232, 1084.05pt x 2278.5125pt>
-File: ../img/strefyLista.jpg Graphic file (type jpg)
-<use ../img/strefyLista.jpg>
-Package pdftex.def Info: ../img/strefyLista.jpg  used on input line 144.
-(pdftex.def)             Requested size: 197.17627pt x 414.42569pt.
-[21 <../img/markeryJakoscPolaczenia.png> <../img/markeryKierunek.png> <../img/strefyGeofencing.jpg> <../img/strefyGeofencingWierzcholki.jpg>]) (./tex/5-integracja.tex [22 <../img/nowaStrefa.jpg> <../img/strefyLista.jpg>]
-
-LaTeX Warning: Reference `fig:connection-flow' on page 23 undefined on input line 43.
-
-<../img/schematPolaczenia.png, id=252, 654.19406pt x 566.115pt>
-File: ../img/schematPolaczenia.png Graphic file (type png)
-<use ../img/schematPolaczenia.png>
-Package pdftex.def Info: ../img/schematPolaczenia.png  used on input line 50.
-(pdftex.def)             Requested size: 438.17247pt x 379.17415pt.
+[21]
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
+<../img/nowaStrefa.jpg, id=368, 1084.05pt x 2278.5125pt>
+File: ../img/nowaStrefa.jpg Graphic file (type jpg)
+<use ../img/nowaStrefa.jpg>
+Package pdftex.def Info: ../img/nowaStrefa.jpg  used on input line 187.
+(pdftex.def)             Requested size: 197.17627pt x 414.42569pt.
+<../img/strefyLista.jpg, id=369, 1084.05pt x 2278.5125pt>
+File: ../img/strefyLista.jpg Graphic file (type jpg)
+<use ../img/strefyLista.jpg>
+Package pdftex.def Info: ../img/strefyLista.jpg  used on input line 194.
+(pdftex.def)             Requested size: 197.17627pt x 414.42569pt.
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [22 <../img/mapaZblizenie.jpg> <../img/wezlyLista.jpg>]) (./tex/5-integracja.tex [23 <../img/markeryRole.png> <../img/markeryStanPolaczenia.png> <../img/markeryJakoscPolaczenia.png> <../img/markeryKierunek.png>] [24 <../img/strefyGeofencing.jpg> <../img/strefyGeofencingWierzcholki.jpg>]
+Underfull \vbox (badness 1776) has occurred while \output is active []
+
+ [25 <../img/nowaStrefa.jpg> <../img/strefyLista.jpg>]
+
+Package caption Warning: \label without proper reference on input line 47.
+See the caption package documentation for explanation.
+
+
+LaTeX Warning: Reference `fig:connection-flow' on page 26 undefined on input line 43.
+
+<../img/schematPolaczenia.png, id=409, 654.19406pt x 566.115pt>
+File: ../img/schematPolaczenia.png Graphic file (type png)
+<use ../img/schematPolaczenia.png>
+Package pdftex.def Info: ../img/schematPolaczenia.png  used on input line 49.
+(pdftex.def)             Requested size: 438.17247pt x 379.17415pt.
 
 Overfull \hbox (18.25381pt too wide) in paragraph at lines 57--62
 []\T1/futs/b/n/12 (-20) Roz��czenie ce-lowe \T1/futs/m/n/12 (-20) na-st�-puje, gdy u�yt-kow-nik za-myka apli-ka-cj�. W \T1/cmtt/m/n/12 MeshServiceManager
  []
 
-
+[26 <../img/schematPolaczenia.png>]
 Overfull \hbox (50.88893pt too wide) in paragraph at lines 70--74
 [] []\T1/futs/b/n/12 (-20) Automatyczna pr�ba ponownego po��czenia. []\T1/futs/m/n/12 (-20) Ode-bra-nie bro-ad-ca-stu \T1/cmtt/m/n/12 ACTION_MESH_DISCONNECTED
  []
 
-[23]
+
 Overfull \hbox (3.88503pt too wide) in paragraph at lines 75--80
 \T1/futs/m/n/12 (-20) se-kund. W tym cza-sie stan po-��-cze-nia usta-wiany jest na \T1/cmtt/m/n/12 ConnectionState.Reconnecting\T1/futs/m/n/12 (-20) ,
  []
 
-[24 <../img/schematPolaczenia.png>]
-<../img/nieMoznaPolaczycPasek.jpg, id=275, 813.0375pt x 126.4725pt>
+<../img/nieMoznaPolaczycPasek.jpg, id=420, 813.0375pt x 126.4725pt>
 File: ../img/nieMoznaPolaczycPasek.jpg Graphic file (type jpg)
 <use ../img/nieMoznaPolaczycPasek.jpg>
-Package pdftex.def Info: ../img/nieMoznaPolaczycPasek.jpg  used on input line 98.
+Package pdftex.def Info: ../img/nieMoznaPolaczycPasek.jpg  used on input line 97.
 (pdftex.def)             Requested size: 197.17627pt x 30.6705pt.
 
+Package caption Warning: \label without proper reference on input line 111.
+See the caption package documentation for explanation.
 
-LaTeX Warning: Reference `tab:meshnodeinfo' on page 25 undefined on input line 108.
+
+LaTeX Warning: Reference `tab:meshnodeinfo' on page 27 undefined on input line 108.
 
 
-Underfull \hbox (badness 3199) in paragraph at lines 121--122
+Underfull \hbox (badness 3199) in paragraph at lines 120--121
 []|\T1/futs/m/n/12 (+20) SNR ostat-nio ode-bra-nego pa-kietu
  []
 
 
-Underfull \hbox (badness 2426) in paragraph at lines 122--123
+Underfull \hbox (badness 2426) in paragraph at lines 121--122
 []|\T1/futs/m/n/12 (+20) RSSI ostat-nio ode-bra-nego pa-kietu
  []
 
 
-LaTeX Warning: Reference `tab:meshuserinfo' on page 25 undefined on input line 132.
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+
+Package caption Warning: \label without proper reference on input line 135.
+See the caption package documentation for explanation.
+
+
+LaTeX Warning: Reference `tab:meshuserinfo' on page 27 undefined on input line 132.
+
+[27 <../img/nieMoznaPolaczycPasek.jpg>]
+
+Package caption Warning: \label without proper reference on input line 160.
+See the caption package documentation for explanation.
+
+
+LaTeX Warning: Reference `tab:meshposition' on page 28 undefined on input line 153.
+
+
+Overfull \hbox (89.84843pt too wide) in paragraph at lines 156--156
+[][][][][][]$\T1/cmtt/m/n/10 https : / / github . com / meshtastic / Meshtastic-[]Android / blob / 19ea164f93bd48dd556d5232d66869b5cb0b2f40 /
+ []
 
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
 
-LaTeX Warning: Reference `tab:meshposition' on page 25 undefined on input line 153.
-
-./tex/5-integracja.tex:155: Illegal parameter number in definition of \Hy@tempa.
-<to be read again> 
-                   L
-l.155 .../org/meshtastic/core/model/Node.kt#L110}}
-                                                  ,
-You meant to type ## instead of #, right?
-Or maybe a } was forgotten somewhere earlier, and things
-are all screwed up? I'm going to assume that you meant ##.
-
-./tex/5-integracja.tex:155: Illegal parameter number in definition of \Hy@tempa.
-<to be read again> 
-                   L
-l.155 .../org/meshtastic/core/model/Node.kt#L110}}
-                                                  ,
-You meant to type ## instead of #, right?
-Or maybe a } was forgotten somewhere earlier, and things
-are all screwed up? I'm going to assume that you meant ##.
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 155--155
-[][][][]\T1/futs/m/n/10 (+20) �r�d�o w repo: [][]$\T1/cmtt/m/n/10 https : / / github . com / meshtastic / Meshtastic-[]Android / blob /
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 155--155
-\T1/cmtt/m/n/10 19ea164f93bd48dd556d5232d66869b5cb0b2f40 / core / model / src / commonMain / kotlin / org /
- []
-
-[25 <../img/nieMoznaPolaczycPasek.jpg>]
-Underfull \hbox (badness 10000) in paragraph at lines 180--180
+Underfull \hbox (badness 10000) in paragraph at lines 181--181
 [][][][][][]$\T1/cmtt/m/n/10 https : / / meshtastic . org / docs / configuration / radio / position /
  []
 
 
-LaTeX Warning: Reference `tab:position-flags' on page 26 undefined on input line 181.
+Package caption Warning: \label without proper reference on input line 185.
+See the caption package documentation for explanation.
 
 
-LaTeX Warning: `!h' float specifier changed to `!ht'.
+LaTeX Warning: Reference `tab:position-flags' on page 28 undefined on input line 182.
 
-
-Overfull \hbox (8.43108pt too wide) in paragraph at lines 205--211
+[28]
+Overfull \hbox (8.43108pt too wide) in paragraph at lines 206--212
 []\T1/futs/m/n/12 (-20) W kon-fi-gu-ra-cji przy-j�-tej w pro-jek-cie w��-czone s� flagi \T1/cmtt/m/n/12 ALTITUDE\T1/futs/m/n/12 (-20) , \T1/cmtt/m/n/12 SATINVIEW\T1/futs/m/n/12 (-20) , \T1/cmtt/m/n/12 TIMESTAMP\T1/futs/m/n/12 (-20) ,
  []
 
-[26]) (./tex/6-geofencing.tex
+) (./tex/6-geofencing.tex
+Underfull \vbox (badness 1881) has occurred while \output is active []
 
-LaTeX Warning: Reference `tab:zone-entity' on page 27 undefined on input line 15.
+ [29]
 
-
-LaTeX Warning: Reference `tab:zoneevent-entity' on page 27 undefined on input line 16.
-
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
+Package caption Warning: \label without proper reference on input line 19.
+See the caption package documentation for explanation.
 
 
-Overfull \hbox (6.61617pt too wide) in paragraph at lines 43--54
+LaTeX Warning: Reference `tab:zone-entity' on page 30 undefined on input line 15.
+
+
+Package caption Warning: \label without proper reference on input line 40.
+See the caption package documentation for explanation.
+
+
+LaTeX Warning: Reference `tab:zoneevent-entity' on page 30 undefined on input line 16.
+
+
+Overfull \hbox (6.61617pt too wide) in paragraph at lines 42--53
  [][] 
  []
 
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-[27]
-
-LaTeX Warning: Reference `lst:geofence-contains' on page 28 undefined on input line 92.
-
-Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on input line 98.
+[30]
+<../img/strefaGeofencingRayCasting.jpg, id=467, 813.0375pt x 625.58719pt>
+File: ../img/strefaGeofencingRayCasting.jpg Graphic file (type jpg)
+<use ../img/strefaGeofencingRayCasting.jpg>
+Package pdftex.def Info: ../img/strefaGeofencingRayCasting.jpg  used on input line 94.
+(pdftex.def)             Requested size: 438.17247pt x 337.14386pt.
+ [31 <../img/strefaGeofencingRayCasting.jpg>]
+Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on input line 102.
 LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <10> not available
-(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 99.
-[28] [29]
-LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <12> not available
-(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 163.
+(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 103.
 
-Overfull \hbox (80.48524pt too wide) in paragraph at lines 163--171
+Overfull \hbox (68.05504pt too wide) in paragraph at lines 144--149
+\T1/futs/m/n/12 (-20) dzy ko-lej-nymi ak-tu-ali-za-cjami po-zy-cji. \T1/cmtt/m/n/12 ZoneMonitorService \T1/futs/m/n/12 (-20) utrzy-muje s�ow-nik \T1/cmtt/m/n/12 previousNodeZoneMap\T1/futs/m/n/12 (-20) ,
+ []
+
+[32]
+LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <12> not available
+(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 164.
+
+Overfull \hbox (80.48524pt too wide) in paragraph at lines 164--172
 [] []\T1/cmtt/m/n/12 ZoneMonitorService \T1/futs/b/n/12 (-20) - monitorowanie w tle. []\T1/futs/m/n/12 (-20) Lo-gika geo-fen-cingu dzia�a w ra-mach \T1/cmtt/m/n/12 ZoneMonitorService
  []
 
-<../img/uprawnieniaPowiadomienia.jpg, id=362, 1084.05pt x 2278.5125pt>
+<../img/uprawnieniaPowiadomienia.jpg, id=515, 1084.05pt x 2278.5125pt>
 File: ../img/uprawnieniaPowiadomienia.jpg Graphic file (type jpg)
 <use ../img/uprawnieniaPowiadomienia.jpg>
-Package pdftex.def Info: ../img/uprawnieniaPowiadomienia.jpg  used on input line 201.
+Package pdftex.def Info: ../img/uprawnieniaPowiadomienia.jpg  used on input line 202.
 (pdftex.def)             Requested size: 210.3209pt x 442.0309pt.
-<../img/strefaPowiadomienieWejscia.jpg, id=363, 1084.05pt x 2278.5125pt>
+
+Underfull \hbox (badness 10000) in paragraph at lines 203--203
+[]\T1/futs/b/n/10.95 (+20) Rysunek 5.12. |\T1/futs/m/n/10.95 (+20) Pro�ba o upraw-nie-nie -
+ []
+
+<../img/strefaPowiadomienieWejscia.jpg, id=516, 1084.05pt x 2278.5125pt>
 File: ../img/strefaPowiadomienieWejscia.jpg Graphic file (type jpg)
 <use ../img/strefaPowiadomienieWejscia.jpg>
-Package pdftex.def Info: ../img/strefaPowiadomienieWejscia.jpg  used on input line 208.
+Package pdftex.def Info: ../img/strefaPowiadomienieWejscia.jpg  used on input line 209.
 (pdftex.def)             Requested size: 210.3209pt x 442.0309pt.
+
+Underfull \hbox (badness 1097) in paragraph at lines 210--210
+[]\T1/futs/b/n/10.95 (+20) Rysunek 5.13. |\T1/futs/m/n/10.95 (+20) Po-wia-do-mie-nie o wej-�ciu w
+ []
+
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
+[33]
+Underfull \vbox (badness 2726) has occurred while \output is active []
 
-Underfull \vbox (badness 1603) has occurred while \output is active []
-
- [30]
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
- [31 <../img/uprawnieniaPowiadomienia.jpg> <../img/strefaPowiadomienieWejscia.jpg>]) [32]
-Overfull \hbox (5.67154pt too wide) in paragraph at lines 121--121
-[]\T1/futs/m/n/12 (-20) Google LLC, \T1/futs/m/it/12 (-20) Fo-re-gro-und se-rvi-ces -- An-droid De-ve-lo-pers\T1/futs/m/n/12 (-20) , [][]$\T1/cmtt/m/n/12 https : / / developer . android .
- []
-
-[33
+ [34 <../img/uprawnieniaPowiadomienia.jpg> <../img/strefaPowiadomienieWejscia.jpg>]) [35] [36
 
 
 ]
-No file main.lof.
+Overfull \hbox (5.67154pt too wide) in paragraph at lines 124--124
+[]\T1/futs/m/n/12 (-20) Google LLC, \T1/futs/m/it/12 (-20) Fo-re-gro-und se-rvi-ces -- An-droid De-ve-lo-pers\T1/futs/m/n/12 (-20) , [][]$\T1/cmtt/m/n/12 https : / / developer . android .
+ []
+
+[37] (./main.lof)
 \tf@lof=\write6
 \openout6 = `main.lof'.
 
-No file main.lot.
+ (./main.lot)
 \tf@lot=\write7
 \openout7 = `main.lot'.
 
-[34] (./main.aux)
+ [38] (./main.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-04-28>
@@ -2508,39 +1546,25 @@ L3 programming layer <2026-04-28>
 
 LaTeX Warning: There were undefined references.
 
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
-
-
-Package rerunfilecheck Warning: File `main.out' has changed.
-(rerunfilecheck)                Rerun to get outlines right
-(rerunfilecheck)                or use package `bookmark'.
-
-Package rerunfilecheck Info: Checksums for `main.out':
-(rerunfilecheck)             Before: <no file>
-(rerunfilecheck)             After:  2C9AFD55C5944B96ABC33019F19DAC07;5426.
-
-Package biblatex Warning: Please (re)run Biber on the file:
-(biblatex)                main
-(biblatex)                and rerun LaTeX afterwards.
-
+Package rerunfilecheck Info: File `main.out' has not changed.
+(rerunfilecheck)             Checksum: 284143AE3A7B7018D9BA9EECE980AA27;4638.
 Package logreq Info: Writing requests to 'main.run.xml'.
 \openout1 = `main.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 28726 strings out of 467341
- 495657 string characters out of 5419596
- 1788976 words of memory out of 5000000
- 56681 multiletter control sequences out of 15000+600000
- 792682 words of font info for 531 fonts, out of 8000000 for 9000
+ 29086 strings out of 467341
+ 501507 string characters out of 5419596
+ 1815660 words of memory out of 5000000
+ 56996 multiletter control sequences out of 15000+600000
+ 793487 words of font info for 541 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 123i,12n,121p,1069b,2249s stack positions out of 10000i,1000n,20000p,200000b,200000s
-<c:/texlive/2026/texmf-dist/fonts/type1/public/fourier/fourier-ms.pfb><c:/texlive/2026/texmf-dist/fonts/type1/adobe/utopia/putb8a.pfb><c:/texlive/2026/texmf-dist/fonts/type1/adobe/utopia/putbi8a.pfb><c:/texlive/2026/texmf-dist/fonts/type1/adobe/utopia/putr8a.pfb><c:/texlive/2026/texmf-dist/fonts/type1/adobe/utopia/putri8a.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfit1000.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sftt1000.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sftt1095.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sftt1200.pfb>
-Output written on main.pdf (34 pages, 8448092 bytes).
+ 123i,13n,121p,1069b,1942s stack positions out of 10000i,1000n,20000p,200000b,200000s
+<c:/texlive/2026/texmf-dist/fonts/type1/public/fourier/fourier-ml.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/fourier/fourier-ms.pfb><c:/texlive/2026/texmf-dist/fonts/type1/adobe/utopia/putb8a.pfb><c:/texlive/2026/texmf-dist/fonts/type1/adobe/utopia/putbi8a.pfb><c:/texlive/2026/texmf-dist/fonts/type1/adobe/utopia/putr8a.pfb><c:/texlive/2026/texmf-dist/fonts/type1/adobe/utopia/putri8a.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfit1000.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sftt1000.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sftt1095.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sftt1200.pfb>
+Output written on main.pdf (38 pages, 9336916 bytes).
 PDF statistics:
- 475 PDF objects out of 1000 (max. 8388607)
- 384 compressed objects within 4 object streams
- 164 named destinations out of 1000 (max. 500000)
- 118885 words of extra memory for PDF output out of 128383 (max. 10000000)
+ 667 PDF objects out of 1000 (max. 8388607)
+ 560 compressed objects within 6 object streams
+ 173 named destinations out of 1000 (max. 500000)
+ 119118 words of extra memory for PDF output out of 128383 (max. 10000000)
 

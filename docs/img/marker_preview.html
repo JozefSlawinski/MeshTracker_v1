@@ -1,0 +1,169 @@
+
+<style>
+body{margin:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:16px;padding:1rem 0}
+.cell{display:flex;flex-direction:column;align-items:center;gap:8px}
+.label{font-size:12px;color:var(--color-text-secondary);text-align:center;line-height:1.3}
+.sublabel{font-size:11px;color:var(--color-text-tertiary);text-align:center}
+.section-title{font-size:13px;font-weight:500;color:var(--color-text-secondary);margin:1.5rem 0 0.5rem;border-bottom:0.5px solid var(--color-border-tertiary);padding-bottom:4px}
+</style>
+
+<h2 class="sr-only">Podgląd markerów węzłów Meshtastic — różne kolory i wskaźniki SNR</h2>
+
+<p class="section-title">Role węzłów</p>
+<div class="grid" id="roles"></div>
+
+<p class="section-title">Stany połączenia</p>
+<div class="grid" id="states"></div>
+
+<p class="section-title">Wskaźniki SNR</p>
+<div class="grid" id="snr"></div>
+
+<p class="section-title">Węzeł w ruchu (z kierunkiem)</p>
+<div class="grid" id="moving"></div>
+
+<script>
+function drawMarker(cfg){
+  const {
+    initials='AB', fillColor='#03A9F4', snrColor='#4CAF50',
+    selected=false, heading=0, isLocal=false,
+    size=52
+  }=cfg;
+
+  const dpr=window.devicePixelRatio||1;
+  const cv=document.createElement('canvas');
+  const S=size*dpr;
+  cv.width=S*2; cv.height=S*2;
+  cv.style.width=size*2+'px'; cv.style.height=size*2+'px';
+  const ctx=cv.getContext('2d');
+  ctx.scale(dpr,dpr);
+
+  const CX=size, CY=size;
+  const r=selected?size*0.44:size*0.34;
+  const pinH=selected?size*0.34:size*0.26;
+  const snrR=selected?size*0.13:size*0.10;
+  const ringW=selected?size*0.07:0;
+
+  if(heading===0){
+    // pin
+    if(selected){
+      ctx.fillStyle='#fff';
+      ctx.beginPath();
+      ctx.moveTo(CX-r*0.3-ringW,CY+r);
+      ctx.lineTo(CX,CY+r+pinH+ringW);
+      ctx.lineTo(CX+r*0.3+ringW,CY+r);
+      ctx.closePath();ctx.fill();
+      ctx.beginPath();ctx.arc(CX,CY,r+ringW,0,Math.PI*2);ctx.fill();
+    }
+    ctx.fillStyle=fillColor;
+    ctx.beginPath();
+    ctx.moveTo(CX-r*0.28,CY+r-2);
+    ctx.lineTo(CX,CY+r+pinH);
+    ctx.lineTo(CX+r*0.28,CY+r-2);
+    ctx.closePath();ctx.fill();
+    ctx.beginPath();ctx.arc(CX,CY,r,0,Math.PI*2);ctx.fill();
+  } else {
+    const rad=heading*Math.PI/180;
+    const dx=Math.sin(rad), dy=-Math.cos(rad);
+    const arrowLen=r*1.35;
+    const base=r*0.55;
+    const tipX=CX+dx*(r+arrowLen), tipY=CY+dy*(r+arrowLen);
+    const bX=CX+dx*r, bY=CY+dy*r;
+    const px=-dy, py=dx;
+    if(selected){
+      ctx.fillStyle='#fff';
+      ctx.beginPath();
+      ctx.moveTo(tipX,tipY);
+      ctx.lineTo(bX+px*(base+ringW),bY+py*(base+ringW));
+      ctx.lineTo(bX-px*(base+ringW),bY-py*(base+ringW));
+      ctx.closePath();ctx.fill();
+      ctx.beginPath();ctx.arc(CX,CY,r+ringW,0,Math.PI*2);ctx.fill();
+    }
+    ctx.fillStyle=fillColor;
+    ctx.beginPath();
+    ctx.moveTo(tipX,tipY);
+    ctx.lineTo(bX+px*base,bY+py*base);
+    ctx.lineTo(bX-px*base,bY-py*base);
+    ctx.closePath();ctx.fill();
+    ctx.beginPath();ctx.arc(CX,CY,r,0,Math.PI*2);ctx.fill();
+  }
+
+  // badge
+  const bx=CX+r*0.68, by=CY-r*0.68;
+  if(isLocal){
+    ctx.fillStyle='#1565C0';
+    ctx.beginPath();ctx.arc(bx,by,snrR+1,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='#fff';ctx.lineWidth=1.2;
+    ctx.beginPath();ctx.arc(bx,by,snrR+1,0,Math.PI*2);ctx.stroke();
+    const pw=snrR*0.5,ph=snrR*0.8;
+    ctx.strokeStyle='#fff';ctx.lineWidth=1.1;
+    ctx.beginPath();ctx.roundRect(bx-pw,by-ph,pw*2,ph*2,pw*0.3);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(bx-pw*0.35,by-ph*0.78);ctx.lineTo(bx+pw*0.35,by-ph*0.78);ctx.stroke();
+  } else {
+    ctx.fillStyle=snrColor;
+    ctx.beginPath();ctx.arc(bx,by,snrR,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='#fff';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.arc(bx,by,snrR,0,Math.PI*2);ctx.stroke();
+  }
+
+  // initials
+  ctx.fillStyle='#fff';
+  ctx.font=`500 ${r*0.82}px system-ui,sans-serif`;
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(initials,CX,CY+r*0.06);
+
+  return cv;
+}
+
+function cell(cv,label,sublabel=''){
+  const d=document.createElement('div');d.className='cell';
+  d.appendChild(cv);
+  const l=document.createElement('div');l.className='label';l.textContent=label;
+  d.appendChild(l);
+  return d;
+}
+
+const roles=[
+  {initials:'CL',fillColor:'#F44336',snrColor:'#4CAF50',label:'CLIENT'},
+  {initials:'RT',fillColor:'#2196F3',snrColor:'#4CAF50',label:'ROUTER'},
+  {initials:'TR',fillColor:'#4CAF50',snrColor:'#4CAF50',label:'TRACKER'},
+  {initials:'??',fillColor:'#03A9F4',snrColor:'#9E9E9E',label:'domyślny'},
+];
+const rD=document.getElementById('roles');
+roles.forEach(r=>rD.appendChild(cell(drawMarker(r),r.label,r.sublabel)));
+
+const states=[
+  {initials:'TR',fillColor:'#4CAF50',snrColor:'#4CAF50',label:'Online',fillColor2:'#E91E63'},
+  {initials:'TR',fillColor:'#9E9E9E',snrColor:'#9E9E9E',label:'Offline'},
+  {initials:'TR',fillColor:'#4CAF50',snrColor:'#4CAF50',selected:true,label:'Zaznaczony',fillColor2:'#FFC107'},
+  {initials:'TR',fillColor:'#1565C0',snrColor:'#1565C0',isLocal:true,label:'Węzeł lokalny'},
+];
+const sD=document.getElementById('states');
+states.forEach(s=>{
+  const cfg=Object.assign({},s);
+  if(cfg.fillColor2 && !cfg.selected) cfg.fillColor=cfg.fillColor2;
+  if(cfg.selected) cfg.fillColor='#FFC107';
+  sD.appendChild(cell(drawMarker(cfg),s.label));
+});
+
+const snrLevels=[
+  {snr:8,  color:'#4CAF50',label:'≥ 5 dB',sublabel:'doskonały'},
+  {snr:2,  color:'#8BC34A',label:'0 – 5 dB',sublabel:'dobry'},
+  {snr:-3, color:'#FF9800',label:'−5 – 0 dB',sublabel:'słaby'},
+  {snr:-9, color:'#F44336',label:'< −5 dB',sublabel:'bardzo słaby'},
+  {snr:null,color:'#9E9E9E',label:'brak danych',sublabel:'Float.MAX_VALUE'},
+];
+const snrD=document.getElementById('snr');
+snrLevels.forEach(s=>{
+  const marker=drawMarker({initials:'TR',fillColor:'#4CAF50',snrColor:s.color,size:52});
+  const c=cell(marker,s.label,s.sublabel);
+  snrD.appendChild(c);
+});
+
+const headings=[0,45,90,135,180,225,270,315];
+const mD=document.getElementById('moving');
+headings.forEach(h=>{
+  const marker=drawMarker({initials:'TR',fillColor:'#4CAF50',snrColor:'#4CAF50',heading:h,size:52});
+  mD.appendChild(cell(marker,h+'°'));
+});
+</script>

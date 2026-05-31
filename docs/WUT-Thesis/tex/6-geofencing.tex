@@ -9,14 +9,13 @@ w momencie, gdy węzeł przekroczy granicę wyznaczonego obszaru. W projekcie Me
 granice definiowane są jako wielokąty o dowolnym kształcie, a monitorowanymi obiektami
 są węzły sieci Meshtastic.
 
-\paragraph{Model danych.}
+\subsection*{Model danych.}
 
 Dane geofencingu przechowywane są w bazie Room za pomocą dwóch encji:
 \texttt{Zone} i~\texttt{ZoneEvent} (tabele~\ref{tab:zone-entity}
 i~\ref{tab:zoneevent-entity}).
 
 \begin{table}[!h]
-    \caption{Encja \texttt{Zone} - strefa geofencingu}
     \label{tab:zone-entity}
     \centering
     \begin{tabular}{|l|l|p{7cm}|}
@@ -31,13 +30,13 @@ i~\ref{tab:zoneevent-entity}).
         \texttt{watchedNodeIdsJson} & \texttt{String}        & Lista ID węzłów do monitorowania w JSON \\
         \hline
     \end{tabular}
+    \caption{Encja \texttt{Zone} - strefa geofencingu}
 \end{table}
 
 Wierzchołki wielokąta i lista monitorowanych węzłów przechowywane są jako serializowane
 tablice JSON (np.\ \texttt{[\{"lat":52.1,"lon":21.0\},\ldots]}).
 
 \begin{table}[!h]
-    \caption{Encja \texttt{ZoneEvent} - zdarzenie wejścia/wyjścia ze strefy}
     \label{tab:zoneevent-entity}
     \centering
     \begin{tabular}{|l|l|p{6.5cm}|}
@@ -51,17 +50,18 @@ tablice JSON (np.\ \texttt{[\{"lat":52.1,"lon":21.0\},\ldots]}).
         \texttt{timestampSeconds} & \texttt{Int}                  & Czas zdarzenia (Unix timestamp [s]) \\
         \hline
     \end{tabular}
+    \caption{Encja \texttt{ZoneEvent} - zdarzenie wejścia/wyjścia ze strefy}
 \end{table}
 
 
 \paragraph{Algorytm sprawdzania przynależności do strefy.}
 
-Do wykrywania, czy punkt GPS leży wewnątrz wielokąta strefy, zastosowałem algorytm
+Do wykrywania, czy punkt GPS leży wewnątrz wielokąta strefy, zastosowano algorytm
 \textbf{rzucania promienia} (ang.\ \textit{ray casting}) \footnote{\url{https://www.geeksforgeeks.org/cpp/point-in-polygon-in-cpp/}}.
 Jest to jeden z~najszerzej stosowanych algorytmów rozwiązujących problem PIP (ang.\
 \textit{Point-In-Polygon}) ze względu na prostotę implementacji i niską złożoność obliczeniową
 $O(n)$, gdzie $n$ to liczba wierzchołków wielokąta~\cite{shimrat1962}. Uzasadnienie wyboru
-akurat tej metody, oraz omówienie rozwiązań alternatywnych, zamieściłem na końcu tej sekcji.
+akurat tej metody, oraz omówienie rozwiązań alternatywnych, zamieszczono na końcu tej sekcji.
 
 Zasada działania jest następująca. Z badanego punktu $P = (x_P, y_P)$
 wysyłany jest poziomy promień w kierunku rosnącej długości geograficznej $y \to +\infty$.
@@ -88,9 +88,13 @@ Przecięcie jest liczone tylko jeśli $y_P < y_{\text{przecięcia}}$, tzn.\ leż
 na prawo od badanego punktu (promień biegnie w prawo). Każde takie przecięcie neguje
 bieżącą wartość flagi \texttt{inside}, która na początku wynosi \texttt{false}.
 
+\begin{figure}[!h]
+    \label{fig:ray-casting}
+    \centering
+    \includegraphics[width=\linewidth]{strefaGeofencingRayCasting.jpg}
+    \caption{Wizualizacja algorytmu ray casting - liczba punktów przecięcia z krawędziami jednoznacznie wskazuje, czy punkt leży wewnątrz czy na zewnątrz wielokąta}
+\end{figure}
 
-Listing~\ref{lst:geofence-contains} przedstawia pełną implementację algorytmu
-w klasie \texttt{GeofenceChecker}.
 
 \begin{lstlisting}[caption={Implementacja algorytmu ray casting w \texttt{GeofenceChecker.contains()}},
                    label={lst:geofence-contains},
@@ -135,13 +139,10 @@ Nie jest jednak zoptymalizowana pod kątem przypadków brzegowych, takich jak pu
 lub wierzchołku wielokąta - w takich sytuacjach wynik może być nieprzewidywalny. W praktyce, ze względu na 
 niedokładność GPS, takie przypadki są pomijalnie rzadkie i nie stanowią problemu dla funkcjonalności aplikacji.
 
-\paragraph{Wykrywanie zdarzeń wejścia i wyjścia.}
+\subsection*{Wykrywanie zdarzeń wejścia i wyjścia.}
 
-Sam algorytm odpowiada w sumie na pytanie \emph{,,czy węzeł jest teraz w strefie''}.
 Aby wygenerować zdarzenia \texttt{ENTER} i \texttt{EXIT}, konieczne jest śledzenie
 zmian stanu między kolejnymi aktualizacjami pozycji.
-
-
 \texttt{ZoneMonitorService} utrzymuje słownik \texttt{previousNodeZoneMap}, 
 mapujący~ID~węzła na zbiór ID stref, których węzeł znajdował się przy poprzedniej 
 aktualizacji. Po każdym odebraniu broadcastu \texttt{ACTION\_NODE\_CHANGE} wykonywane są trzy kroki:
@@ -183,7 +184,7 @@ Cykl życia serwisu jest następujący:
           gdy użytkownik \textbf{wyłącza ostatnią strefę}
 \end{itemize}
 
-\paragraph{Powiadomienia o przekroczeniu strefy.}
+\subsection*{Powiadomienia o przekroczeniu strefy.}
 
 Wykrycie zdarzenia \texttt{ENTER} lub \texttt{EXIT} wyzwala wysłanie powiadomienia.
 Powiadomienie zawiera nazwę węzła i nazwę strefy,wysyłane jest z priorytetem 
@@ -196,19 +197,19 @@ i zapisuje je w bazie, jedynie nie wyświetla alertu.
 
 \begin{figure}[!h]
     \centering
-    \begin{subfigure}{0.48\linewidth}
+    \begin{minipage}{0.48\linewidth}
         \centering
         \includegraphics[width=\linewidth]{uprawnieniaPowiadomienia.jpg}
         \caption{Prośba o uprawnienie - \texttt{POST\_NOTIFICATIONS}}
         \label{fig:uprawnienia-powiadomienia}
-    \end{subfigure}
+    \end{minipage}
     \hfill
-    \begin{subfigure}{0.48\linewidth}
+    \begin{minipage}{0.48\linewidth}
         \centering
         \includegraphics[width=\linewidth]{strefaPowiadomienieWejscia.jpg}
         \caption{Powiadomienie o wejściu w strefę}
         \label{fig:strefa-powiadomienie-wejscia}
-    \end{subfigure}
+    \end{minipage}
 \end{figure}
 
 Dotknięcie powiadomienia otwiera aplikację
@@ -216,7 +217,7 @@ MeshTracker na ekranie mapy.
 
 \paragraph{Uzasadnienie wyboru i metody alternatywne.}
 
-Zanim zdecydowałem się na ray casting, rozważałem kilka innych podejść, które warto
+Przed wyborem ray castingu rozważono kilka innych podejść, które warto
 tu opisać - zarówno dlatego, że ich odrzucenie było nieoczywiste, jak i dlatego, że
 w innych scenariuszach mogłyby być lepszym wyborem.
 
@@ -227,7 +228,7 @@ i promieniu $r$. Sprawdzenie przynależności sprowadza się wtedy do prostego p
     d(P, C) \leq r \;\Leftrightarrow\; \text{punkt wewnątrz strefy}
 \]
 To rozwiązanie jest szybsze obliczeniowo i prostsze w implementacji - nie trzeba
-przechowywać listy wierzchołków. Odrzuciłem je, bo działka na Mazurach ma kształt
+przechowywać listy wierzchołków. Rozwiązanie to odrzucono, ponieważ działka na Mazurach ma kształt
 zbliżony do wydłużonego wielokąta, a nie koła. Okrąg wystarczająco duży, żeby objąć
 cały teren, wychodziłby daleko poza drogę przy granicy działki, przez co alarm byłby
 spóźniony. Okrąg wystarczająco mały, żeby nie wychodzić za drogę, nie obejmowałby
@@ -235,25 +236,25 @@ części terenu. Wielokąt pozwala narysować granicę dokładnie wzdłuż ogrod
 polnej miedzy, albo linii lasu.
 
 \textbf{Google Geofencing API.}
-Wstępnie myślałem o skorzystaniu z gotowego 
+Wstępnie rozważano skorzystanie z gotowego
 geofencing API, które Android udostępnia właśnie do monitorowania przekroczeń granic
 geograficznych. Szybko okazało się jednak, że to API monitoruje wyłącznie pozycję GPS
 \emph{samego telefonu} i obsługuje tylko strefy okrągłe.
 
 
 \textbf{Algorytm liczby owiniętej (ang.\ \textit{winding number}).}
-Szukając literatury na temat PIP natknąłem się na algorytm winding number, który zlicza,
+W literaturze dotyczącej problemu PIP zidentyfikowano również algorytm winding number, który zlicza,
 ile razy wielokąt owija się wokół badanego punktu. Jest numerycznie bardziej stabilny od
-ray casting tzn. lepiej obsługuje przypadki brzegowe, gdzie punkt leży dokładnie na krawędzi
-wielokąta. W moim przypadku to rozróżnienie jest jednak akademickie: GPS dokładny do kilku
+ray castingu, tzn.\ lepiej obsługuje przypadki brzegowe, gdzie punkt leży dokładnie na krawędzi
+wielokąta. W kontekście niniejszego projektu rozróżnienie to jest jednak akademickie: GPS dokładny do kilku
 metrów nigdy nie wyląduje na krawędzi wierzchołka zdefiniowanego przez użytkownika klikającego
-na ekranie. Wybrałe Ray casting nad tym algorytmem, bo implementacja jest krótsza, prostsza do zrozumienia
+na ekranie. Wybór padł na ray casting, ponieważ implementacja jest krótsza, prostsza do zrozumienia
 i wystarczająca na potrzeby projektu. Złożoność obliczeniowa obu algorytmów wynosi $O(n)$.
 
 \textbf{Indeksowanie przestrzenne (R-tree, quadtree).}
 Gdybym chciał obsługiwać dziesiątki lub setki stref jednocześnie, liniowe sprawdzanie
 każdej z nich przy każdym broadcastcie rzeczywiście stałoby się wąskim gardłem.
 Struktury takie jak R-tree pozwalają szybko zawęzić kandydatów do stref, których obwiednia
-prostokątna zawiera dany punkt. W MeshTrackerze spodziewam się co najwyżej kilku stref
-i kilku węzłów - indeksowanie nie przyniosłoby żadnych mierzalnych korzyści, a znacznie
+prostokątna zawiera dany punkt. W MeshTrackerze spodziewanych jest co najwyżej kilka stref
+i kilka węzłów --- indeksowanie nie przyniosłoby żadnych mierzalnych korzyści, a znacznie
 skomplikowałoby implementację.

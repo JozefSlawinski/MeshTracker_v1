@@ -1,4 +1,4 @@
-\subsubsection{Integracja z aplikacją Meshtastic}
+\subsection*{Integracja z aplikacją Meshtastic}
 \label{sec:integracja-meshtastic}
 
 Aplikacja MeshTracker nie komunikuje się bezpośrednio z urządzeniami radiowymi - korzysta
@@ -38,16 +38,16 @@ wydaniach, co wymagało zaimplementowania łańcucha kandydatów:
 $\to$ przez \texttt{getMyNodeInfo().myNodeNum}. Wersja Meshtastic na telefonie użytkownika
 jest poza kontrolą dewelopera MeshTrackera, dlatego integracja musi być możliwie elastyczna i odporna na zmiany w API Meshtastic.
 
-\paragraph{Schemat nawiązywania połączenia.}
+\subsection*{Schemat nawiązywania połączenia.}
 
 Rysunek~\ref{fig:connection-flow} przedstawia sekwencję zdarzeń od uruchomienia
 \texttt{MapViewModel} do pojawienia się węzła na mapie.
 
 \begin{figure}[!h]
-    \caption{Sekwencja nawiązywania połączenia i przepływ danych}
     \label{fig:connection-flow}
     \centering
     \includegraphics[width=\linewidth]{schematPolaczenia.png}
+    \caption{Sekwencja nawiązywania połączenia i przepływ danych}
 \end{figure}
 
 \paragraph{Obsługa rozłączenia i błędów.}
@@ -92,10 +92,10 @@ od zera. Jest to przydatne np. gdy użytkownik ręcznie uruchomił aplikację Me
 natychmiastową próbę połączenia bez czekania na automatyczne odświeżenie.
 
 \begin{figure}[!h]
-    \caption{Pasek stanu połączenia - \textit{Ponów}}
     \label{fig:connection-status}
     \centering
     \includegraphics[width=0.45\linewidth]{nieMoznaPolaczycPasek.jpg}
+    \caption{Pasek stanu połączenia - \textit{Ponów}}
 \end{figure}
 
 \paragraph{Model danych węzła.}
@@ -108,7 +108,6 @@ Klasa \texttt{MeshNodeInfo} przechowuje dane identyfikacyjne i~telemetryczne wę
 (tabela~\ref{tab:meshnodeinfo}).
 
 \begin{table}[!h]
-    \caption{Pola klasy \texttt{MeshNodeInfo}}
     \label{tab:meshnodeinfo}
     \centering
     \begin{tabular}{|l|l|p{6.5cm}|}
@@ -126,13 +125,13 @@ Klasa \texttt{MeshNodeInfo} przechowuje dane identyfikacyjne i~telemetryczne wę
         \texttt{hopsAway}     & \texttt{Int}           & Liczba przeskoków do węzła w sieci mesh \\
         \hline
     \end{tabular}
+    \caption{Pola klasy \texttt{MeshNodeInfo}}
 \end{table}
 
 Klasa \texttt{MeshUserInfo} zawiera dane konfiguracyjne przypisane do węzła przez jego
 właściciela (tabela~\ref{tab:meshuserinfo}).
 
 \begin{table}[!h]
-    \caption{Pola klasy \texttt{MeshUserInfo}}
     \label{tab:meshuserinfo}
     \centering
     \begin{tabular}{|l|l|p{6.5cm}|}
@@ -147,16 +146,17 @@ właściciela (tabela~\ref{tab:meshuserinfo}).
         \texttt{role}          & \texttt{Int}     & Rola węzła w sieci (CLIENT, ROUTER, TRACKER itp.) \\
         \hline
     \end{tabular}
+    \caption{Pola klasy \texttt{MeshUserInfo}}
 \end{table}
 
 Klasa \texttt{MeshPosition} przechowuje dane lokalizacyjne węzła
 (tabela~\ref{tab:meshposition}). Warto zwrócić uwagę na dwie nieoczywiste konwencje
 kodowania stosowane przez Meshtastic: współrzędne geograficzne przechowywane są jako liczby
-całkowite (w formacie stopni pomnożonych przez $10^7$) \footnote{Źródło w repo: \url{https://github.com/meshtastic/Meshtastic-Android/blob/19ea164f93bd48dd556d5232d66869b5cb0b2f40/core/model/src/commonMain/kotlin/org/meshtastic/core/model/Node.kt#L110}}, 
+całkowite (w formacie stopni pomnożonych przez $10^7$) 
+\footnote{\url{https://github.com/meshtastic/Meshtastic-Android/blob/19ea164f93bd48dd556d5232d66869b5cb0b2f40/core/model/src/commonMain/kotlin/org/meshtastic/core/model/Node.kt\#L110}} ,
 co pozwala na precyzję nawet do około 1 metra bez użycia typów zmiennoprzecinkowych. Natomiast kierunek ruchu (\texttt{groundTrack}) wyrażony jest, z podobnej przyczyny, w setnych stopniach (pomnożonych przez $10^5$).
 
 \begin{table}[!h]
-    \caption{Pola klasy \texttt{MeshPosition}}
     \label{tab:meshposition}
     \centering
     \begin{tabular}{|l|l|p{6.5cm}|}
@@ -173,6 +173,7 @@ co pozwala na precyzję nawet do około 1 metra bez użycia typów zmiennoprzeci
         \texttt{precisionBits}   & \texttt{Int}    & Precyzja pozycji (liczba bitów, max 32\,$\approx$\,1\,m) \\
         \hline
     \end{tabular}
+    \caption{Pola klasy \texttt{MeshPosition}}
 \end{table}
 
 Dostępność poszczególnych pól pozycji zależy od konfiguracji węzła nadającego - konkretnie
@@ -181,7 +182,6 @@ radia Meshtastic.\footnote{\url{https://meshtastic.org/docs/configuration/radio/
 Tabela~\ref{tab:position-flags} zestawia dostępne flagi.
 
 \begin{table}[!h]
-    \caption{Flagi \textit{Position Flags} - pola opcjonalne pakietu pozycji}
     \label{tab:position-flags}
     \centering
     \begin{tabular}{|l|p{9cm}|}
@@ -200,6 +200,7 @@ Tabela~\ref{tab:position-flags} zestawia dostępne flagi.
         \texttt{SPEED}              & Dołącza prędkość naziemną z rozwiązania GPS \\
         \hline
     \end{tabular}
+    \caption{Flagi \textit{Position Flags} - pola opcjonalne pakietu pozycji}
 \end{table}
 
 W konfiguracji przyjętej w projekcie włączone są flagi \texttt{ALTITUDE}, \texttt{SATINVIEW},

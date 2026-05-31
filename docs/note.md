@@ -3,3 +3,4 @@
 3. Wysył wiadomości kiedy poza strefa przekroczona
 4. Możliwość ustawienia Smart positioning z aplikacji
 5. Możemy wystawić algorytm przekracznia strefy w oddzielne moduły do testowania? Możemy storzyć oddzielne profile i sprawdzać ich działanie przy użyciu drona
+6. Wykorzystanie symulatora: https://site.meshtastic.org/

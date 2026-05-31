@@ -1,52 +1,101 @@
-\subsubsection{Przegląd ekranów aplikacji}
+\section{Aplikacja mobilna MeshTracker}
 
-Interfejs użytkownika znajduje się w folderze \texttt{ui}, a jego struktura przedstawia się
-następująco:
+\subsection*{Architektura}
 
-\begin{verbatim}
-ui/
-├── MainScreen.kt
-├── components/
-│   └── ConnectionStatusBar.kt
-├── map/
-│   ├── MapScreen.kt
-│   └── MapViewModel.kt
-├── nodes/
-│   ├── NodeDetailScreen.kt
-│   ├── NodeFilterState.kt
-│   ├── NodeItem.kt
-│   └── NodeListScreen.kt
-├── settings/
-│   ├── SettingsScreen.kt
-│   └── SettingsViewModel.kt
-├── theme/
-│   ├── Color.kt
-│   ├── Theme.kt
-│   └── Type.kt
-└── zones/
-    ├── ZoneBottomSheet.kt
-    ├── ZoneConfirmDialog.kt
-    ├── ZoneDetailScreen.kt
-    └── ZoneViewModel.kt
-\end{verbatim}
+Aplikacja wykorzystuje architekturę opartą na wzorcu \textbf{MVVM
+(Model-View-ViewModel)}\footnote{\url{https://learn.microsoft.com/pl-pl/dotnet/architecture/maui/mvvm}}
+z osobnymi, dodatkowymi warstwami odpowiedzialnymi za komunikację zewnętrzną z aplikacją Meshtastic.
+Jest to standardowo wykorzystywany wzorzec, który oddziela logikę działania aplikacji od interfejsu
+użytkownika. Warstwa \textit{View} odpowiada za renderowanie interfejsu i reagowanie na zdarzenia
+użytkownika, warstwa \textit{ViewModel} przechowuje stan ekranu i przetwarza dane z modelu,
+natomiast warstwa \textit{Model} reprezentuje dane domenowe - węzły, strefy geofencingu
+i zdarzenia przekroczenia granic. Komunikacja z siecią Meshtastic odbywa się przez dedykowaną
+warstwę serwisową, która izoluje resztę aplikacji od szczegółów protokołu AIDL.
 
-W dolnej części ekranu znajduje się pasek nawigacyjny z trzema zakładkami:
-\textbf{Mapy}, \textbf{Węzły} i \textbf{Ustawienia}.
+\begin{figure}[H]
+    \label{fig:architektura}
+    \centering
+    \includegraphics[width=0.8\linewidth]{ArchitectureWhiteBackground.png}
+    \caption{Architektura aplikacji MeshTracker}
+\end{figure}
+
+\subsection*{Przegląd ekranów aplikacji}
+
+Interfejs użytkownika aplikacji MeshTracker zorganizowany jest wokół trzech głównych ekranów. Wszystkie
+dostępne są przez pasek nawigacyjny w dolnej części ekranu: \textbf{mapy}, \textbf{listy węzłów} oraz
+\textbf{ustawień}. 
+
+\noindent
+\begin{minipage}[t]{0.45\linewidth}
+\vspace{0pt}
+\captionsetup{type=figure}
+\footnotesize
+\dirtree{%
+    .1 ui/.
+    .2 MainScreen.kt.
+    .2 components/.
+    .3 ConnectionStatusBar.kt.
+    .2 map/.
+    .3 MapScreen.kt.
+    .3 MapViewModel.kt.
+    .2 nodes/.
+    .3 NodeDetailScreen.kt.
+    .3 NodeFilterState.kt.
+    .3 NodeItem.kt.
+    .3 NodeListScreen.kt.
+    .2 settings/.
+    .3 SettingsScreen.kt.
+    .3 SettingsViewModel.kt.
+    .2 theme/.
+    .3 Color.kt.
+    .3 Theme.kt.
+    .3 Type.kt.
+    .2 zones/.
+    .3 ZoneBottomSheet.kt.
+    .3 ZoneConfirmDialog.kt.
+    .3 ZoneDetailScreen.kt.
+    .3 ZoneViewModel.kt.
+}
+\captionof{figure}{Struktura pakietu \texttt{ui}}
+\label{fig:ui-structure}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.5\linewidth}
+\vspace{0pt}
+\normalsize
+
+Każdy ekran posiada dedykowany ViewModel odpowiedzialny
+za logikę prezentacji, zgodnie z przyjętym wzorcem MVVM. Komponenty współdzielone między
+ekranami, takie jak pasek stanu połączenia, wydzielono do osobnego pakietu \texttt{components}.
+Wygląd aplikacji definiowany jest przez pakiet \texttt{theme}, zawierający paletę kolorów,
+typografię oraz motyw Material Design 3.
+Struktura pakietu \texttt{ui} przedstawia się rysunekem~\ref{fig:ui-structure}.
 
 \paragraph{Mapy.}
-
 \texttt{MapScreen} jest głównym ekranem aplikacji. Wyświetla mapę Google Maps,
 na której prezentowane są markery węzłów oraz pozycja użytkownika. Każdy marker renderowany
 jest jako bitmapa z inicjałami węzła. Kolor markera zależy od roli węzła oraz stanu połączenia.
 W prawym górnym rogu markera znajduje się znacznik jakości sygnału. W lewym dolnym rogu ekranu
 umieszczono \textit{floating button} otwierający menu geofencingu.
+\end{minipage}
 
 \begin{figure}[!h]
-    \caption{Ekran mapy aplikacji MeshTracker}
-    \label{fig:map-screen}
     \centering
-    \includegraphics[width=0.45\linewidth]{mapaZblizenie.jpg}
+    \begin{minipage}{0.48\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{mapaZblizenie.jpg}
+        \captionof{figure}{Ekran mapy aplikacji MeshTracker}
+        \label{fig:map-screen}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.48\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{wezlyLista.jpg}
+        \captionof{figure}{Ekran listy węzłów}
+        \label{fig:wezly-lista}
+    \end{minipage}
 \end{figure}
+
 
 \paragraph{Markery.}
 
@@ -76,8 +125,9 @@ a dodatkowa warstwa kolorów reprezentuje stan połączenia węzła z siecią Me
 
 Węzeł lokalny - czyli ten połączony z telefonem użytkownika bezpośrednio przez Bluetooth -
 ma małą ikonkę telefonu w prawym górnym rogu. Pozostałe węzły mają w tym miejscu kropkę,
-której kolor odpowiada jakości połączenia z siecią (zakres SNR - stosunek mocy użytecznego
-sygnału do mocy szumu, wyrażony w~dB). Strzałka wewnątrz markera wskazuje kierunek
+której kolor odpowiada jakości połączenia z siecią (zakres SNR\footnote{SNR (ang.\
+\textit{Signal-to-Noise Ratio}) - stosunek mocy użytecznego sygnału do mocy szumu,
+wyrażony w~dB. Im wyższa wartość, tym lepsze połączenie.} wyrażony w~dB). Strzałka wewnątrz markera wskazuje kierunek
 poruszania się węzła (rysunek~\ref{fig:markery-szczegoly}).
 
 \begin{figure}[!h]
@@ -95,7 +145,7 @@ poruszania się węzła (rysunek~\ref{fig:markery-szczegoly}).
         \caption{Kierunek poruszania się węzła}
         \label{fig:markery-kierunek}
     \end{subfigure}
-    \caption{Szczegóły wizualizacji markerów}
+    \caption{Wizualizacji markerów}
     \label{fig:markery-szczegoly}
 \end{figure}
 
@@ -148,3 +198,24 @@ z poziomu listy (rysunek~\ref{fig:geofencing-zarzadzanie}).
     \caption{Zarządzanie strefami geofencingu}
     \label{fig:geofencing-zarzadzanie}
 \end{figure}
+
+\paragraph{Węzły.}
+
+Ekran listy węzłów (\texttt{NodeListScreen}) prezentuje wszystkie aktywne węzły wykryte
+w sieci Meshtastic. Dla każdego węzła wyświetlane są jego nazwa, rola, czas ostatniej
+aktywności oraz wskaźnik jakości sygnału (SNR) i RSSI\footnote{RSSI (ang.\
+\textit{Received Signal Strength Indicator}) - bezwzględna moc odebranego sygnału,
+wyrażona w~dBm. W odróżnieniu od SNR nie uwzględnia poziomu szumu, lecz informuje
+o sile sygnału w punkcie odbioru.}. Lista może być filtrowana i sortowana,
+co ułatwia odnalezienie konkretnego urządzenia w większej sieci. Dotknięcie węzła
+otwiera ekran szczegółów (\texttt{NodeDetailScreen}), prezentujący pełne dane
+telemetryczne - w tym poziom naładowania baterii, dokładne współrzędne GPS
+oraz historię pozycji z bieżącej sesji w uproszczonej formie graficznej (rysunek~\ref{fig:wezly-lista}).
+
+\paragraph{Ustawienia.}
+
+Ekran ustawień (\texttt{SettingsScreen}) umożliwia konfigurację połączenia z aplikacją
+Meshtastic. Użytkownik może tu wybrać urządzenie Bluetooth, z którym aplikacja ma się
+połączyć, oraz monitorować aktualny stan połączenia. Ekran jest celowo minimalistyczny ---
+zgodnie z założeniem projektowym, konfiguracja powinna być jednorazowa i nie wymagać
+powracania do ustawień podczas normalnej eksploatacji systemu.

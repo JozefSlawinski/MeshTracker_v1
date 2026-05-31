@@ -5,7 +5,7 @@ Cel pracy możemy sformułować jako rozwiązanie następujących problemów:
 \begin{enumerate}
     \item \textbf{Problem transmisji danych na duże odległości bez infrastruktury zewnętrznej.}
           Czyli jak zapewnić niezawodną wymianę krótkich pakietów między ruchomymi węzłami
-          w obszarach bez zasięgu sieci komórkowej, przy skromnym budżecie.
+          w obszarach bez zasięgu sieci komórkowej, przy ograniczonym budżecie.
     \item \textbf{Problem optymalizacji zajętości pasma,} co sprowadza się do minimalizacji liczby
           wysyłanych pakietów. Oznacza to opracowanie metod oszczędzania wysyłki lokalizacji GPS,
           np.\ w sytuacjach kiedy węzły są w bezruchu albo daleko od granicy strefy. Warto zauważyć,
@@ -15,91 +15,92 @@ Cel pracy możemy sformułować jako rozwiązanie następujących problemów:
           w smartfonie, konieczne będzie stworzenie integracji aplikacji mobilnej z siecią radiową.
 \end{enumerate}
 
-\subsection{Przeznaczenie systemu i charakterystyka użytkownika}
+\subsection*{Przeznaczenie systemu i charakterystyka użytkownika}
 
-System ma służyć do monitorowania położenia psa myśliwskiego w czasie rzeczywistym w obszarach
-pozbawionych pokrycia sieci komórkowej. Użytkownikiem docelowym jest właściciel psa myśliwskiego
+System ma służyć do monitorowania położenia zwierzęcia w czasie rzeczywistym w obszarach
+pozbawionych pokrycia sieci komórkowej. Użytkownikiem docelowym jest właściciel zwierzęcia,
 przebywający na działce lub w terenie otwartym - osoba niekoniecznie posiadająca wiedzę techniczną
 z zakresu sieci radiowych czy programowania. Z charakterystyki użytkownika wynikają następujące
 założenia projektowe:
 \begin{itemize}
     \item interfejs aplikacji mobilnej musi być przejrzysty i niewymagający konfiguracji
           przy każdym uruchomieniu,
-    \item konfiguracja sprzętu radiowego powinna być jednorazowa lub niewymagana oraz nie powinna
+    \item konfiguracja sprzętu radiowego powinna być maksymalnie jednorazowa oraz nie powinna
           wymagać interwencji użytkownika w trakcie normalnej eksploatacji,
     \item powiadomienia o przekroczeniu strefy muszą być jednoznaczne i natychmiastowe, również
           gdy aplikacja jest zminimalizowana albo telefon ma wygaszony ekran.
 \end{itemize}
 
-Typowy scenariusz użycia wygląda następująco: właściciel przebywa na działce, pies porusza się
-swobodnie po terenie. Właściciel uruchamia aplikację, obserwuje pozycję psa na mapie i otrzymuje
-alarm wibracyjny lub dźwiękowy w momencie, gdy pies oddali się poza zdefiniowaną strefę
+Typowy scenariusz użycia wygląda następująco: właściciel przebywa na działce, zwierzę porusza się
+swobodnie po terenie. Właściciel uruchamia aplikację, obserwuje pozycję zwierzęcia na mapie i otrzymuje
+alarm wibracyjny lub dźwiękowy w momencie, gdy zwierzę oddali się poza zdefiniowaną strefę
 bezpieczeństwa.
 
-\subsection{Wymagania funkcjonalne}
 
-Zdefiniowałem wymagania funkcjonalne z podziałem na fazy projektu.
+Tak zdefiniowany problem i charakterystyka użytkownika prowadzą do następujących wymagań funkcjonalnych, które muszą być spełnione przez system:
+System musi odbierać dane o pozycji GPS węzła mobilnego i wyświetlać pozycję wszystkich
+aktywnych węzłów na mapie w czasie rzeczywistym, przechowując historię pozycji z bieżącej sesji.
+Użytkownik musi mieć możliwość zdefiniowania jednej lub więcej stref bezpieczeństwa w postaci
+wielokątów na mapie. System musi wykrywać przekroczenie granicy strefy przez węzeł mobilny
+i powiadamiać użytkownika - również gdy aplikacja działa w tle lub telefon ma wygaszony ekran
+- przy czym zdefiniowane strefy muszą być przechowywane między sesjami aplikacji.
+Dodatkowo system powinien różnicować częstotliwość wysyłania pozycji w zależności od stanu ruchu
+węzła, co pozwoli na oszczędzanie pasma i baterii węzłów, oraz umożliwiać przypisanie nazwy
+i ikony do każdego węzła.
 
-\subsubsection{Faza 1 - Wizualizacja pozycji}
-\begin{itemize}
-    \item System musi odbierać dane o pozycji GPS węzła mobilnego.
-    \item Aplikacja musi wyświetlać pozycję wszystkich aktywnych węzłów na mapie w czasie
-          rzeczywistym.
-    \item Aplikacja powinna przechowywać historię pozycji węzłów z bieżącej sesji.
-\end{itemize}
+Dodatkowo zebrano wymagania parametryczne opisujące mierzalne cechy części składowych systemu.
 
-\subsubsection{Faza 2 - Geofencing}
-\begin{itemize}
-    \item Użytkownik musi mieć możliwość zdefiniowania strefy bezpieczeństwa w postaci wielokąta
-          na mapie.
-    \item System musi wykrywać przekroczenie granicy strefy przez węzeł mobilny.
-    \item Aplikacja musi powiadamiać użytkownika o przekroczeniu strefy również gdy działa w tle.
-    \item Zdefiniowane strefy muszą być przechowywane między sesjami aplikacji.
-    \item Użytkownik powinien mieć możliwość definiowania wielu stref jednocześnie.
-\end{itemize}
+\paragraph{Parametry sieci radiowej}
+Węzły powinny komunikować się na minimalną odległość 2 kilometrów w terenie polnym i częściowo zalesionym.
+Wymaganie to wynika z analizy szczególnego scenariusza użytkowania: Mały Gończy Gaskoński jest rasą
+gończą hodowaną do długodystansowych pogoni, zdolną do utrzymania biegu z prędkością
+około 30~km/h~$\approx$~8,3~m/s. Przyjmując typowy czas od zauważenia ucieczki psa
+do podjęcia reakcji przez właściciela $t = 3~\text{min} = 180~\text{s}$, pies może
+oddalić się na odległość:
+\begin{equation}
+     d = v \cdot t = 8{,}3~\text{m/s} \cdot 180~\text{s} \approx 1500~\text{m}
+\end{equation}
+Wartość 2~km stanowi zatem dolne ograniczenie wymaganego zasięgu komunikacji,
+zapewniające ciągłość monitorowania.
+Dla porównania, komercyjne systemy śledzenia psów myśliwskich opisane w sekcji
+przeglądu istniejących rozwiązań osiągają zasięgi od 14~km (Dogtra Pathfinder~2)
+do 20~km (Dogtrace DOG GPS X25), co potwierdza zasadność przyjętego wymagania
+jako wartości minimalnej, realistycznej do osiągnięcia w sieci mesh opartej na LoRa.
 
-\subsubsection{Faza 3 - Rozszerzenia}
-\begin{itemize}
-    \item System powinien różnicować częstotliwość wysyłania pozycji w zależności od stanu ruchu
-          węzła.
-    \item Aplikacja powinna umożliwiać przypisanie nazwy i ikony do każdego węzła.
-\end{itemize}
+ Opóźnienie dostarczania pakietów w sieci nie powinno przekraczać 3 sekund.
+Wymaganie to wynika z analizy dopuszczalnego błędu pozycji w momencie wyzwolenia alarmu
+geofencingu. Przy prędkości poruszania się psa $v \approx 8{,}3$~m/s, opóźnienie
+$\Delta t = 3$~s oznacza, że w chwili odebrania alarmu pies może znajdować się już
+w odległości:
+\begin{equation}
+d = v \cdot \Delta t = 8{,}3~\text{m/s} \cdot 3~\text{s} \approx 25~\text{m}
+\end{equation}
+poza granicą zdefiniowanej strefy. Wartość ta jest akceptowalna, zakładając że strefy
+bezpieczeństwa definiowane są z pewnym marginesem. Dla porównania, system Dogtra
+Pathfinder~2 dostarcza aktualizacje pozycji co 2 sekundy, co stanowi wiarygodny punkt odniesienia
 
-\subsection{Wymagania parametryczne}
 
-Dodatkowo zebrałem wymagania parametryczne opisujące mierzalne cechy części składowych systemu.
+\paragraph{Parametry węzła mobilnego (obroża)}
 
-\subsubsection{Parametry sieci radiowej}
-\begin{itemize}
-    \item Węzły powinny komunikować się na minimalną odległość 2 kilometrów w terenie polnym
-          i częściowo zalesionym, z dostarczalnością pakietów na poziomie minimum 90\%.
-          Zadany zasięg pracy wynika z praktyki, która wskazuje, że mniej więcej taka odległość
-          jest wystarczająca do prowadzenia poszukiwania psa w wypadku ucieczki/pogoni za zwierzyną.
-    \item Opóźnienie dostarczania pakietów w sieci nie powinno przekraczać 3 sekund. Ta wartość
-          podyktowana jest koniecznością reakcji w przypadku opuszczenia strefy przez psa.
-          Zbyt duże opóźnienie mogłoby spowodować utratę cennego czasu reakcji.
-\end{itemize}
+Węzeł mobilny powinien być możliwie mały i lekki, aby zapewnić możliwość przymocowania
+do obroży średniej wielkości psa (ok.\ 20~kg), w taki sposób, aby nie powodował dyskomfortu ani ograniczeń ruchowych.
+Waga węzła mobilnego nie powinna przekraczać 50~g, a wymiary powinny być zbliżone do 
+standardowych urządzeń umieszczanych na obrożach dla psów (np. lampki, czujniki aktywności),\ około 10~cm x 5~cm x 3~cm.
 
-\subsubsection{Parametry węzła mobilnego (obroża)}
-\begin{itemize}
-    \item Węzeł mobilny powinien być możliwie mały i lekki, aby zapewnić możliwość przymocowania
-          do obroży średniej wielkości psa (ok.\ 20~kg).
-    \item Powinien być odporny na warunki atmosferyczne, zachlapania wodą oraz uszkodzenia
-          mechaniczne.
-\end{itemize}
+Ponadto węzeł powinien spełniać wymagania ochrony na poziomie co najmniej IP65
+zgodnie z normą IEC~60529, co oznacza pełną szczelność pyłową oraz odporność
+na strugi wody padające z dowolnego kierunku. Poziom ten jest wystarczający
+dla warunków terenowych, w których urządzenie narażone jest na deszcz,
+wilgotną roślinność oraz błoto, lecz nie na zanurzenie w wodzie.
 
-\subsubsection{Parametry aplikacji mobilnej}
-\begin{itemize}
-    \item Aplikacja powinna działać na platformie Android w wersji 8.0 lub nowszej.
-    \item Aplikacja musi mieć możliwość działania w tle.
-\end{itemize}
 
-\subsection{Przegląd istniejących rozwiązań}
+
+\section{Przegląd istniejących rozwiązań}
 
 Środowisko myśliwskie zna wiele rozwiązań na utrzymywanie psów w ściśle zdefiniowanych obszarach.
-Rozważając jedynie elektroniczne rozwiązania, przedstawię tutaj jedynie te najlepiej dopracowane.
+Rozważając jedynie elektroniczne rozwiązania, przedstawiono tutaj jedynie te najlepiej dopracowane.
 
-\subsubsection{Dogtra Pathfinder 2}
+\subsection*{Dogtra Pathfinder 2}
 
 Jest to jeden z najbardziej zaawansowanych produktów z tej dziedziny. Zestaw składa się
 z odbiornika, który łączy się z telefonem przez Bluetooth, oraz jednego lub więcej (maksymalnie 21)
@@ -135,20 +136,25 @@ Producent deklaruje następujące parametry pracy:
 % TODO: Skopiuj pliki dogtra.jpg oraz dogtraremote.png do katalogu img/
 %       Plik dogtraremote.webp wymaga konwersji do formatu PNG przed użyciem.
 \begin{figure}[!h]
-    \caption{Dogtra Pathfinder 2 - odbiornik}
-    \label{fig:dogtra-receiver}
     \centering
-    \includegraphics[width=0.5\linewidth]{dogtra.jpg}
+    \begin{subfigure}{0.48\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{dogtra.jpg}
+        \caption{Odbiornik}
+        \label{fig:dogtra-receiver}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.48\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{dogtraremote.png}
+        \caption{Pilot zdalnego sterowania}
+        \label{fig:dogtra-remote}
+    \end{subfigure}
+    \caption{Dogtra Pathfinder 2}
+    \label{fig:dogtra}
 \end{figure}
 
-\begin{figure}[!h]
-    \caption{Dogtra Pathfinder 2 - pilot zdalnego sterowania}
-    \label{fig:dogtra-remote}
-    \centering
-    \includegraphics[width=0.5\linewidth]{dogtraremote.png}
-\end{figure}
-
-\subsubsection{Dogtrace DOG GPS X25}
+\subsection*{Dogtrace DOG GPS X25}
 
 Jedynie nieznacznie różnym podejściem wykazała się firma Dogtrace, która w swoim rozwiązaniu
 zdecydowała się zrezygnować z konieczności użycia smartfona. X25 składa się z identycznego
@@ -175,8 +181,51 @@ dźwiękowy zastępujący gwizdek (3 różne dźwięki do wyboru).
 
 % TODO: Skopiuj plik Dogtrace.png do katalogu img/
 \begin{figure}[!h]
-    \caption{Dogtrace DOG GPS X25}
     \label{fig:dogtrace-x25}
     \centering
     \includegraphics[width=0.5\linewidth]{Dogtrace.png}
+    \caption{Dogtrace DOG GPS X25}
 \end{figure}
+
+\subsection*{Porównanie z proponowanym rozwiązaniem}
+
+Oba opisane systemy reprezentują podejście typowe dla komercyjnych rozwiązań myśliwskich:
+dedykowany sprzęt, bezpośrednia komunikacja nadajnik-odbiornik oraz wysoka cena zakupu.
+Proponowany w niniejszej pracy system różni się od nich pod trzema istotnymi względami.
+
+Po pierwsze, komunikacja opiera się na sieci typu mesh, w której każdy węzeł może pełnić
+rolę przekaźnika. Oznacza to, że zasięg systemu nie jest ograniczony odległością między
+nadajnikiem a odbiornikiem, lecz może być rozszerzany przez dodawanie kolejnych węzłów
+pośredniczących - co jest niemożliwe w architekturze punkt-punkt stosowanej przez Dogtrę
+i Dogtrace.
+
+Po drugie, system zbudowany jest z ogólnodostępnych komponentów elektronicznych, co 
+przekłada się na znacząco niższy koszt w porównaniu z dedykowanym sprzętem komercyjnym.
+
+Po trzecie, liczba węzłów sieci jest nieograniczona przez architekturę systemu, podczas gdy
+rozwiązania komercyjne narzucają sztywny limit (21 węzłów dla Dogtra, 19 dla Dogtrace).
+
+Zestawienie kluczowych cech wszystkich trzech rozwiązań przedstawia tabela~\ref{tab:porownanie}.
+
+\begin{table}[!h]
+    \label{tab:porownanie}
+    \centering
+    \begin{tabular}{|l|c|c|c|}
+        \hline
+        \textbf{Cecha} & \textbf{Dogtra Pathfinder 2} & \textbf{Dogtrace X25} & \textbf{Proponowany system} \\
+        \hline
+        Architektura sieci      & punkt-punkt & punkt-punkt & mesh \\
+        Zasięg                  & $\sim$14~km & $\sim$20~km & $\geq$2~km\footnotemark[1] \\
+        Maks. liczba węzłów     & 21          & 19          & nieograniczona\footnotemark[2] \\
+        Aktualizacja pozycji    & co 2~s      & co 3~s      & $\leq$3~s \\
+        Geofencing              & tak         & tak         & tak \\
+        Kształt strefy          & dowolny wielokąt & okrąg  & dowolny wielokąt \\
+        Ochrona                 & IPX9K       & IP68        & IP65 \\
+        Koszt                   & 2500 PLN    & 2300 PLN    & 400 PLN\footnotemark[3] \\
+        \hline
+    \end{tabular}
+    \caption{Porównanie systemów śledzenia psów myśliwskich}
+\end{table}
+\footnotetext[1]{Topologia mesh pozwala na rozszerzanie zasięgu przez rozmieszczenie dodatkowych węzłów pośredniczących - podana wartość dotyczy komunikacji między sąsiednimi węzłami sieci.}
+\footnotetext[2]{Nieograniczona z punktu widzenia architektury systemu - w praktyce ogranicza ją przepustowość współdzielonego kanału radiowego: wraz ze wzrostem liczby węzłów rośnie ruch w sieci, co może prowadzić do wzrostu zajętości kanału (ograniczonej prawnie).}
+\footnotetext[3]{+ 200~PLN za każdy kolejny węzeł.}

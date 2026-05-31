@@ -1,12 +1,16 @@
 \newpage
 \section{Projekt}
 
-\subsection{Wybór technologii}
+Niniejszy rozdział opisuje decyzje projektowe podjęte w trakcie realizacji systemu,
+obejmując wybór technologii komunikacji radiowej i platformy sprzętowej, konfigurację
+sieci mesh oraz architekturę aplikacji mobilnej.
 
-Dobór platformy sprzętowej rozpocząłem od zdecydowania się na korzystanie z techniki modulacji
-LoRa. Poniżej przedstawiam krótki opis teoretyczny oraz uzasadnienie wyboru.
+\subsection*{Wybór technologii}
 
-\subsubsection{Modulacja LoRa i technika Chirp Spread Spectrum}
+Dobór platformy sprzętowej poprzedzono wyborem techniki modulacji. W projekcie wykorzystano technologię
+LoRa. Poniżej przedstawiono krótki opis teoretyczny oraz uzasadnienie wyboru.
+
+\subsection*{Modulacja LoRa i technika Chirp Spread Spectrum}
 
 LoRa (ang.\ \textit{Long Range}) to technika modulacji radiowej, która pozwala na przesyłanie
 niewielkich pakietów danych na bardzo duże odległości - nawet kilkanaście kilometrów - przy
@@ -45,52 +49,72 @@ Wynika to z tego, że odczyt symbolu polega w skrócie na mnożeniu odebranego s
 bazowy i wykonaniu FFT (ang.\ \textit{Fast Fourier Transform}). Powstały w wyniku pik widmowy jest
 jedynie przesunięty i przy prędkościach spotykanych w praktyce nie spowoduje błędu dekodowania.
 
-Zazwyczaj do konfiguracji sieci Meshtastic używa się następujących parametrów: $SF=12$,
-$BW=125$~kHz oraz $CR=4/8$. Podstawiając do wzoru~\ref{eq:lora-bitrate} osiągamy przepustowość
-na poziomie 250~bps. Jest ona w zupełności wystarczająca do przesyłania krótkich pakietów
-zawierających współrzędne GPS.
+\subsection*{Wybór platformy sprzętowej}
 
-\subsubsection{Wybór platformy sprzętowej}
-
-Rozważyłem możliwość wykorzystania różnych platform sprzętowych z modułami radiowymi LoRa:
+W projekcie rozważono możliwość wykorzystania różnych platform sprzętowych z modułami radiowymi LoRa:
 \begin{enumerate}
     \item \textbf{Raspberry Pi z modułami LoRa} - mimo licznych zalet, takich jak bogate wsparcie,
           względnie wysoka moc obliczeniowa oraz elastyczność, przeważyły wady, które wykluczyły to
           rozwiązanie: zbyt duże zużycie energii, duże rozmiary, brak wodoszczelności. Podobne
           argumenty zdecydowały o wyeliminowaniu platformy \textit{Arduino~Uno/Nano z modułem LoRa}.
-    \item \textbf{ESP32 z modułami LoRa} - w szczególności rozważałem \textit{Heltec ESP32 LoRa},
+    \item \textbf{ESP32 z modułami LoRa} - w szczególności rozważono \textit{Heltec ESP32 LoRa},
           czyli płytkę z wbudowanym modułem LoRa i wyświetlaczem OLED. Produkt ten posiada wiele
           cech wypełniających wymagania projektu (wbudowany moduł Bluetooth i LoRa, niskie zużycie
-          energii, niski koszt), jednak nie są dostępne obudowy z zadowalającą wodoszczelnością
-          i odpornością na uszkodzenia mechaniczne.
+          energii, niski koszt), jednak o odrzuceniu tej platformy zadecydowały pragmatyczne względy: 
+          brak wodoszczelności - ewentualna konieczność druku 3D obudowy, a osiądnięcie IP65 w drukowanej 
+          obudowie wymaga m.in. dedykowanych złączy kablowych, co znacznąco podnosi poziom skomplikowania projektu.
+    \item \textbf{Meshtastic na dedykowanym sprzęcie LoRa} - otwartoźródłowa platforma łącząca
+          firmware dla modułów radiowych LoRa z ekosystemem aplikacji klienckich. Tworzy
+          zdecentralizowaną sieć mesh w paśmie ISM bez infrastruktury zewnętrznej, każdy węzeł
+          automatycznie retransmituje pakiety pozostałych, rozszerzając zasięg sieci wraz
+          z liczbą urządzeń. Platforma udostępnia publiczne API w postaci aplikacji Android
+          \texttt{com.geeksville.mesh}\footnote{Repozytorium aplikacji Meshtastic na Android:
+          \url{https://github.com/meshtastic/Meshtastic-Android}. Dokumentacja API:
+          \url{https://meshtastic.org/docs/development/firmware/build/}.} oraz eksportuje 
+          interfejs AIDL\footnote{AIDL (ang.\ \textit{Android Interface Definition Language}) to mechanizm
+          systemu Android umożliwiający komunikację między procesami.} umożliwiający aplikacjom
+          trzecim odczyt danych telemetrycznych - w tym pozycji GPS węzłów.
+          Sprzęt kompatybilny z Meshtastic jest ogólnodostępny i tani, a samo oprogramowanie
+          bezpłatne. Spośród rozważanych opcji platforma ta najlepiej spełnia wymagania projektu.
 \end{enumerate}
 
-Prowadząc badanie rynku modułów wykorzystujących LoRa do komunikacji, natknąłem się na platformę
-Meshtastic. Jest to projekt OpenSource, który łączy firmware dla modułów radiowych LoRa
-z ekosystemem aplikacji klienckich, tworząc zdecentralizowaną sieć mesh działającą w paśmie ISM
-bez konieczności jakiejkolwiek infrastruktury zewnętrznej. Każdy węzeł sieci automatycznie
-retransmituje pakiety innych węzłów, rozszerzając zasięg sieci wraz z liczbą urządzeń. Dodatkowo
-projekt udostępnia publiczne API w postaci aplikacji Android
-\texttt{com.geeksville.mesh}, eksportującej interfejs AIDL umożliwiający aplikacjom trzecim odczyt
-danych telemetrycznych - w tym pozycji GPS węzłów.\footnote{\url{https://meshtastic.org/docs/development/firmware/build/}}
-Sprzęt kompatybilny z Meshtastic jest ogólnodostępny i tani, a samo oprogramowanie bezpłatne.
-Wybór padł na:
+Wybór platformy Meshtastic podyktowany był przede wszystkim dostępnością dedykowanego sprzętu
+spełniającego wymagania wodoszczelności oraz możliwością integracji z aplikacją mobilną przez
+publiczne API. W ramach platformy wybór padł na:
 \begin{itemize}
     \item \textit{T-Beam} - popularna platforma oparta na ESP32 z wbudowanym modułem GPS, anteną
           LoRa oraz akumulatorem. Posiada duży akumulator oraz otwarte piny, które zostawiają
           szerokie pole manewru do rozwoju tego węzła w roli stacji bazowej.
-    \item \textit{T-2000-E} - kompaktowe urządzenie oferujące wodoszczelność (IP67), wbudowany GPS
-          oraz zoptymalizowaną żywotność baterii. Wymiary i kształt są najodpowiedniejsze do
-          umieszczenia na obroży.
+    \item \textit{T-2000-E} - kompaktowe urządzenie oferujące wodoszczelność (IP65), wbudowany GPS
+          oraz zoptymalizowaną żywotność baterii. Wymiary i kształt są spełniają wymagania projektu, bo
+          urządzenie ma wymiary dwóch złożonych kart bankowych - 6,5x85x55mm i waży 32 g.
 \end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{0.48\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{tbeam.png}
+        \caption{T-Beam - węzeł stacji bazowej}
+        \label{fig:tbeam}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.48\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{tracker-t1000-e.png}
+        \caption{T1000-E - węzeł obroży}
+        \label{fig:t1000e}
+    \end{subfigure}
+    \caption{Wybrane platformy sprzętowe Meshtastic}
+    \label{fig:platformy}
+\end{figure}
 
 Otwartoźródłowy charakter projektu stwarza możliwość implementacji rozszerzeń dla węzłów sieci
 w postaci modułów. Dzięki temu wybór Meshtastic jako platformy sprzętowej nie ograniczy projektu
-do domyślnie dostępnych funkcji. Sporód dostępnych konfiguracji radiowych możemy wybrać parametry
+do domyślnie dostępnych funkcji. Spośród dostępnych konfiguracji radiowych można wybrać parametry
 dla modulacji LoRa. Są one zestawione w tabeli~\ref{tab:lora-presets}.\footnote{\url{https://meshtastic.org/docs/software/site-planner/}}
 
 \begin{table}[!h]
-    \caption{Predefiniowane ustawienia kanałów LoRa w Meshtastic}
     \label{tab:lora-presets}
     \centering
     \begin{tabular}{|l|c|c|c|}
@@ -107,33 +131,41 @@ dla modulacji LoRa. Są one zestawione w tabeli~\ref{tab:lora-presets}.\footnote
         LongSlow     & 125 & 12 & 4/8 \\
         \hline
     \end{tabular}
+    \caption{Predefiniowane ustawienia kanałów LoRa w Meshtastic}
 \end{table}
 
-Zwiększa to elastyczność projektu pod względem testów zajętości pasma w technice LoRa.
 
-\subsubsection{Konfiguracja sieci Meshtastic}
+Zazwyczaj do konfiguracji sieci Meshtastic używa się następujących parametrów: $SF=12$,
+$BW=125$~kHz oraz $CR=4/8$. Podstawiając do wzoru~\ref{eq:lora-bitrate} otrzymuje się przepustowość
+na poziomie 250~bps. Jest ona w zupełności wystarczająca do przesyłania krótkich pakietów
+zawierających współrzędne GPS.
 
-Skonfigurowałem sieć Meshtastic, aby wszystkie węzły mogły przesyłać między sobą informacje
-o swoim położeniu GPS.
+\subsection*{Konfiguracja sieci Meshtastic}
 
-\paragraph{Jak działa przesyłanie pozycji w Meshtastic.}
-
-W sieci Meshtastic informacje o pozycji GPS są przesyłane jako część telemetrii węzła. Telemetria
+Sieć Meshtastic skonfigurowano tak, aby wszystkie węzły mogły przesyłać między sobą informacje
+o swoim położeniu GPS. W sieci Meshtastic informacje o pozycji GPS są przesyłane jako część telemetrii węzła. Telemetria
 jest automatycznie udostępniana wszystkim węzłom w sieci, które używają tego samego kanału PRIMARY
 (lub kanału wtórnego z włączoną pozycją), mają zgodne ustawienia LoRa (częstotliwość, modem preset)
 oraz są w zasięgu (bezpośrednio lub przez pośrednie węzły).
 
+\begin{figure}[H]
+    \label{fig:schematSieci}
+    \centering
+    \includegraphics[width=0.9\linewidth]{schematSieci.png}
+    \caption{Schemat sieci Meshtastic z pięcioma węzłami}
+\end{figure}
+
 \paragraph{Konfiguracja - prywatne kanały.}
 
-Ponieważ chciałem udostępniać pozycję tylko wybranym węzłom (tylko w mojej sieci), musiałem użyć
+Aby udostępniać pozycję wyłącznie węzłom należącym do sieci prywatnej, konieczne było zastosowanie
 prywatnego kanału. Konfiguracja przebiegła następująco:
 
 \begin{enumerate}
-    \item \textbf{Wyłączyłem pozycję na kanale PRIMARY}:
+    \item \textbf{Wyłączono pozycję na kanale PRIMARY}:
           Settings $\rightarrow$ Radio Config $\rightarrow$ Channels $\rightarrow$ Channel 0 (PRIMARY)
           $\rightarrow$ Position Sharing: \textbf{WYŁĄCZONE}.
 
-    \item \textbf{Utworzyłem prywatny kanał}:
+    \item \textbf{Utworzono prywatny kanał}:
           Settings $\rightarrow$ Radio Config $\rightarrow$ Channels $\rightarrow$ \textbf{Add Channel},
           z następującymi parametrami:
           \begin{itemize}
@@ -144,23 +176,8 @@ prywatnego kanału. Konfiguracja przebiegła następująco:
                     (deklaruje dokładność co do metra)
           \end{itemize}
 
-    \item \textbf{Dodałem ten sam kanał do wszystkich węzłów w grupie}: wszystkie węzły mają
+    \item \textbf{Dodano ten sam kanał do wszystkich węzłów w grupie}: wszystkie węzły mają
           identyczną nazwę kanału \texttt{Reja} oraz identyczny klucz PSK.
 \end{enumerate}
 
-\subsection{Aplikacja mobilna MeshTracker}
 
-\subsubsection{Architektura}
-
-Aplikacja wykorzystuje architekturę opartą na wzorcu \textbf{MVVM
-(Model-View-ViewModel)}\footnote{\url{https://learn.microsoft.com/pl-pl/dotnet/architecture/maui/mvvm}}
-z osobnymi, dodatkowymi warstwami odpowiedzialnymi za komunikację zewnętrzną z aplikacją Meshtastic.
-Jest to standardowo wykorzystywany wzorzec, który oddziela logikę działania aplikacji od interfejsu
-użytkownika.
-
-\begin{figure}[!h]
-    \caption{Architektura aplikacji MeshTracker}
-    \label{fig:architektura}
-    \centering
-    \includegraphics[width=0.9\linewidth]{ArchitectureWhiteBackground.png}
-\end{figure}
