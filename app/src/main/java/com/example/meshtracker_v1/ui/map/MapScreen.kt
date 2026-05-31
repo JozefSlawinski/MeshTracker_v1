@@ -328,7 +328,7 @@ fun MapScreen(
                 tonalElevation = 6.dp
             ) {
                 Text(
-                    text = "Dodano ${drawing.vertices.size} wierzchołków • " +
+                    text = "Dodano ${drawing.vertices.size} wierzchołki • " +
                            "Przytrzymaj mapę, aby dodać kolejny",
                     modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
                     style    = MaterialTheme.typography.labelMedium
