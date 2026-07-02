@@ -1,0 +1,14 @@
+# Fdb version 3
+["pdflatex"] 1781951943 "main.tex" "build/main.pdf" "main" 1781951943
+  "/etc/texmf/web2c/texmf.cnf" 1774892413 475 c0e671620eb5563b2130f56340a5fde8 ""
+  "/usr/share/texlive/texmf-dist/web2c/texmf.cnf" 1644012257 39432 7155514e09a3d69036fac785183a21c2 ""
+  "/usr/share/texmf/web2c/texmf.cnf" 1644012257 39432 7155514e09a3d69036fac785183a21c2 ""
+  "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1774892427 1405645 b1b997aa3ff39487eb113cf56eb4a426 ""
+  "build/main.aux" 1781951943 32 3985256e7290058c681f74d7a3565a19 ""
+  "build/mwart.cls" 0 -1 0 ""
+  "eiti/eiti-thesis.cls" 1779533152 15145 ad9db80d3bd8c410f0e6c153f292e8bc ""
+  "main.tex" 1780846438 4250 3ec22ae81655a991fe24c68b82addb82 ""
+  "mwart.cls" 0 -1 0 ""
+  (generated)
+  "build/main.log"
+  "build/main.pdf"

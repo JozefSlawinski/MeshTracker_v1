@@ -90,6 +90,8 @@ publiczne API. W ramach platformy wybór padł na:
           urządzenie ma wymiary dwóch złożonych kart bankowych - 6,5x85x55mm i waży 32 g.
 \end{itemize}
 
+Obie platformy przedstawia rysunek~\ref{fig:platformy}.
+
 \begin{figure}[H]
     \centering
     \begin{subfigure}{0.48\linewidth}
@@ -112,9 +114,10 @@ publiczne API. W ramach platformy wybór padł na:
 Otwartoźródłowy charakter projektu stwarza możliwość implementacji rozszerzeń dla węzłów sieci
 w postaci modułów. Dzięki temu wybór Meshtastic jako platformy sprzętowej nie ograniczy projektu
 do domyślnie dostępnych funkcji. Spośród dostępnych konfiguracji radiowych można wybrać parametry
-dla modulacji LoRa. Są one zestawione w tabeli~\ref{tab:lora-presets}.\footnote{\url{https://meshtastic.org/docs/software/site-planner/}}
+dla modulacji LoRa. Zostały one zestawione w tabeli~\ref{tab:lora-presets}.\footnote{\url{https://meshtastic.org/docs/software/site-planner/}}
 
 \begin{table}[!h]
+    \caption{Predefiniowane ustawienia kanałów LoRa w Meshtastic}
     \label{tab:lora-presets}
     \centering
     \begin{tabular}{|l|c|c|c|}
@@ -131,12 +134,11 @@ dla modulacji LoRa. Są one zestawione w tabeli~\ref{tab:lora-presets}.\footnote
         LongSlow     & 125 & 12 & 4/8 \\
         \hline
     \end{tabular}
-    \caption{Predefiniowane ustawienia kanałów LoRa w Meshtastic}
 \end{table}
 
 
 Zazwyczaj do konfiguracji sieci Meshtastic używa się następujących parametrów: $SF=12$,
-$BW=125$~kHz oraz $CR=4/8$. Podstawiając do wzoru~\ref{eq:lora-bitrate} otrzymuje się przepustowość
+$BW=125$~kHz oraz $CR=4/8$. Podstawiając je do wzoru~(\ref{eq:lora-bitrate}) otrzymuje się przepustowość
 na poziomie 250~bps. Jest ona w zupełności wystarczająca do przesyłania krótkich pakietów
 zawierających współrzędne GPS.
 
@@ -146,7 +148,7 @@ Sieć Meshtastic skonfigurowano tak, aby wszystkie węzły mogły przesyłać mi
 o swoim położeniu GPS. W sieci Meshtastic informacje o pozycji GPS są przesyłane jako część telemetrii węzła. Telemetria
 jest automatycznie udostępniana wszystkim węzłom w sieci, które używają tego samego kanału PRIMARY
 (lub kanału wtórnego z włączoną pozycją), mają zgodne ustawienia LoRa (częstotliwość, modem preset)
-oraz są w zasięgu (bezpośrednio lub przez pośrednie węzły).
+oraz są w zasięgu (bezpośrednio lub przez pośrednie węzły). Schemat sieci przedstawia rysunek~\ref{fig:schematSieci}.
 
 \begin{figure}[H]
     \label{fig:schematSieci}

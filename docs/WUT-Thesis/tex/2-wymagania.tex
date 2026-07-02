@@ -4,7 +4,7 @@
 Cel pracy możemy sformułować jako rozwiązanie następujących problemów:
 \begin{enumerate}
     \item \textbf{Problem transmisji danych na duże odległości bez infrastruktury zewnętrznej.}
-          Czyli jak zapewnić niezawodną wymianę krótkich pakietów między ruchomymi węzłami
+          Zapewnienie niezawodnej wymiany krótkich pakietów między ruchomymi węzłami
           w obszarach bez zasięgu sieci komórkowej, przy ograniczonym budżecie.
     \item \textbf{Problem optymalizacji zajętości pasma,} co sprowadza się do minimalizacji liczby
           wysyłanych pakietów. Oznacza to opracowanie metod oszczędzania wysyłki lokalizacji GPS,
@@ -37,23 +37,22 @@ alarm wibracyjny lub dźwiękowy w momencie, gdy zwierzę oddali się poza zdefi
 bezpieczeństwa.
 
 
-Tak zdefiniowany problem i charakterystyka użytkownika prowadzą do następujących wymagań funkcjonalnych, które muszą być spełnione przez system:
-System musi odbierać dane o pozycji GPS węzła mobilnego i wyświetlać pozycję wszystkich
-aktywnych węzłów na mapie w czasie rzeczywistym, przechowując historię pozycji z bieżącej sesji.
-Użytkownik musi mieć możliwość zdefiniowania jednej lub więcej stref bezpieczeństwa w postaci
-wielokątów na mapie. System musi wykrywać przekroczenie granicy strefy przez węzeł mobilny
-i powiadamiać użytkownika - również gdy aplikacja działa w tle lub telefon ma wygaszony ekran
-- przy czym zdefiniowane strefy muszą być przechowywane między sesjami aplikacji.
-Dodatkowo system powinien różnicować częstotliwość wysyłania pozycji w zależności od stanu ruchu
-węzła, co pozwoli na oszczędzanie pasma i baterii węzłów, oraz umożliwiać przypisanie nazwy
-i ikony do każdego węzła.
+Tak zdefiniowany problem i charakterystyka użytkownika prowadzą do następujących wymagań funkcjonalnych:
+\begin{itemize}
+    \item wyświetlanie pozycji wszystkich aktywnych węzłów na mapie w czasie rzeczywistym
+          z historią z bieżącej sesji,
+    \item definiowanie jednej lub więcej stref bezpieczeństwa w postaci wielokątów,
+          przechowywanych między sesjami,
+    \item wykrywanie przekroczenia granicy strefy i powiadamianie użytkownika,
+    \item adaptacyjna częstotliwość wysyłania pozycji zależna od stanu ruchu węzła,
+    \item przypisanie nazwy i ikony do każdego węzła.
+\end{itemize}
 
 Dodatkowo zebrano wymagania parametryczne opisujące mierzalne cechy części składowych systemu.
 
 \paragraph{Parametry sieci radiowej}
 Węzły powinny komunikować się na minimalną odległość 2 kilometrów w terenie polnym i częściowo zalesionym.
-Wymaganie to wynika z analizy szczególnego scenariusza użytkowania: Mały Gończy Gaskoński jest rasą
-gończą hodowaną do długodystansowych pogoni, zdolną do utrzymania biegu z prędkością
+Wymaganie to wynika z analizy scenariusza użytkowania: pies myśliwski może biec z prędkością
 około 30~km/h~$\approx$~8,3~m/s. Przyjmując typowy czas od zauważenia ucieczki psa
 do podjęcia reakcji przez właściciela $t = 3~\text{min} = 180~\text{s}$, pies może
 oddalić się na odległość:
@@ -102,7 +101,7 @@ Rozważając jedynie elektroniczne rozwiązania, przedstawiono tutaj jedynie te 
 
 \subsection*{Dogtra Pathfinder 2}
 
-Jest to jeden z najbardziej zaawansowanych produktów z tej dziedziny. Zestaw składa się
+Jest to jeden z najbardziej zaawansowanych produktów z tej dziedziny (rysunek~\ref{fig:dogtra}). Zestaw składa się
 z odbiornika, który łączy się z telefonem przez Bluetooth, oraz jednego lub więcej (maksymalnie 21)
 nadajników umieszczonych na obrożach elektronicznych. Urządzenia łączą się ze sobą po falach
 radiowych. Odbiornik zarówno przekazuje dane z nadajników, jak też daje możliwość użycia przycisku,
@@ -159,7 +158,7 @@ Producent deklaruje następujące parametry pracy:
 Jedynie nieznacznie różnym podejściem wykazała się firma Dogtrace, która w swoim rozwiązaniu
 zdecydowała się zrezygnować z konieczności użycia smartfona. X25 składa się z identycznego
 funkcjonalnie nadajnika oraz znacznie rozbudowanego odbiornika - wielkości mniejszego smartfona -
-który na wbudowanym wyświetlaczu LCD pokazuje kierunek i odległość do nadajnika. Czeska firma
+który na wbudowanym wyświetlaczu LCD pokazuje kierunek i odległość do nadajnika (rysunek~\ref{fig:dogtrace-x25}). Czeska firma
 udostępniła lepszej jakości informacje o funkcjonowaniu swojego produktu. Z oferty na stronie
 internetowej\footnote{\url{https://www.obroza-elektryczna.pl/dogtrace-dog-gps-x25}} dowiadujemy
 się, że:
@@ -196,7 +195,7 @@ Proponowany w niniejszej pracy system różni się od nich pod trzema istotnymi 
 Po pierwsze, komunikacja opiera się na sieci typu mesh, w której każdy węzeł może pełnić
 rolę przekaźnika. Oznacza to, że zasięg systemu nie jest ograniczony odległością między
 nadajnikiem a odbiornikiem, lecz może być rozszerzany przez dodawanie kolejnych węzłów
-pośredniczących - co jest niemożliwe w architekturze punkt-punkt stosowanej przez Dogtrę
+pośredniczących - co nie jest możliwe w architekturze punkt-punkt stosowanej przez Dogtrę
 i Dogtrace.
 
 Po drugie, system zbudowany jest z ogólnodostępnych komponentów elektronicznych, co 
@@ -208,6 +207,7 @@ rozwiązania komercyjne narzucają sztywny limit (21 węzłów dla Dogtra, 19 dl
 Zestawienie kluczowych cech wszystkich trzech rozwiązań przedstawia tabela~\ref{tab:porownanie}.
 
 \begin{table}[!h]
+    \caption{Porównanie systemów śledzenia psów myśliwskich}
     \label{tab:porownanie}
     \centering
     \begin{tabular}{|l|c|c|c|}
@@ -224,7 +224,6 @@ Zestawienie kluczowych cech wszystkich trzech rozwiązań przedstawia tabela~\re
         Koszt                   & 2500 PLN    & 2300 PLN    & 400 PLN\footnotemark[3] \\
         \hline
     \end{tabular}
-    \caption{Porównanie systemów śledzenia psów myśliwskich}
 \end{table}
 \footnotetext[1]{Topologia mesh pozwala na rozszerzanie zasięgu przez rozmieszczenie dodatkowych węzłów pośredniczących - podana wartość dotyczy komunikacji między sąsiednimi węzłami sieci.}
 \footnotetext[2]{Nieograniczona z punktu widzenia architektury systemu - w praktyce ogranicza ją przepustowość współdzielonego kanału radiowego: wraz ze wzrostem liczby węzłów rośnie ruch w sieci, co może prowadzić do wzrostu zajętości kanału (ograniczonej prawnie).}

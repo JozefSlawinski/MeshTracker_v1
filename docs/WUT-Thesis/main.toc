@@ -6,8 +6,8 @@
 \contentsline {subsection}{Przeznaczenie systemu i charakterystyka użytkownika}{10}{subsection*.4}%
 \contentsline {section}{\numberline {3\relax .\enspace }Przegląd istniejących rozwiązań}{12}{section.3}%
 \contentsline {subsection}{Dogtra Pathfinder 2}{12}{subsection*.7}%
-\contentsline {subsection}{Dogtrace DOG GPS X25}{13}{subsection*.9}%
-\contentsline {subsection}{Porównanie z proponowanym rozwiązaniem}{14}{subsection*.11}%
+\contentsline {subsection}{Dogtrace DOG GPS X25}{12}{subsection*.9}%
+\contentsline {subsection}{Porównanie z proponowanym rozwiązaniem}{13}{subsection*.11}%
 \contentsline {section}{\numberline {4\relax .\enspace }Projekt}{15}{section.4}%
 \contentsline {subsection}{Wybór technologii}{15}{subsection*.13}%
 \contentsline {subsection}{Modulacja LoRa i technika Chirp Spread Spectrum}{15}{subsection*.14}%
@@ -16,12 +16,16 @@
 \contentsline {section}{\numberline {5\relax .\enspace }Aplikacja mobilna MeshTracker}{19}{section.5}%
 \contentsline {subsection}{Architektura}{19}{subsection*.21}%
 \contentsline {subsection}{Przegląd ekranów aplikacji}{20}{subsection*.23}%
-\contentsline {subsection}{Integracja z aplikacją Meshtastic}{23}{subsection*.35}%
+\contentsline {subsection}{Integracja z aplikacją Meshtastic}{24}{subsection*.35}%
 \contentsline {subsection}{Schemat nawiązywania połączenia.}{26}{subsection*.37}%
-\contentsline {subsubsection}{\numberline {5.0.1\relax .\enspace }Geofencing}{30}{subsubsection.5.0.1}%
-\contentsline {subsection}{Model danych.}{30}{subsection*.47}%
-\contentsline {subsection}{Wykrywanie zdarzeń wejścia i wyjścia.}{32}{subsection*.52}%
-\contentsline {subsection}{Powiadomienia o przekroczeniu strefy.}{33}{subsection*.54}%
-\contentsline {section}{Bibliografia}{37}{section*.57}%
-\contentsline {section}{Spis rysunków}{38}{section*.57}%
-\contentsline {section}{Spis tabel}{38}{section*.57}%
+\contentsline {subsection}{Geofencing}{31}{subsection*.48}%
+\contentsline {subsection}{Model danych.}{31}{subsection*.49}%
+\contentsline {subsection}{Wykrywanie zdarzeń wejścia i wyjścia.}{34}{subsection*.54}%
+\contentsline {subsection}{Powiadomienia o przekroczeniu strefy.}{35}{subsection*.56}%
+\contentsline {section}{\numberline {6\relax .\enspace }Przechowywanie i eksport historii pozycji}{37}{section.6}%
+\contentsline {subsection}{Przechowywanie historii pozycji}{37}{subsection*.59}%
+\contentsline {subsection}{Eksport danych sesji do CSV}{37}{subsection*.61}%
+\contentsline {subsection}{Eksport zdarzeń geofencingu do CSV}{38}{subsection*.66}%
+\contentsline {section}{Bibliografia}{41}{section*.71}%
+\contentsline {section}{Spis rysunków}{42}{section*.71}%
+\contentsline {section}{Spis tabel}{42}{section*.71}%

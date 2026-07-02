@@ -12,7 +12,9 @@
 \contentsline {figure}{\numberline {5.7}{\ignorespaces Tworzenie strefy geofencingu}}{24}{figure.caption.31}%
 \contentsline {figure}{\numberline {5.8}{\ignorespaces Zarządzanie strefami geofencingu}}{25}{figure.caption.32}%
 \contentsline {figure}{\numberline {5.9}{\ignorespaces Sekwencja nawiązywania połączenia i przepływ danych}}{26}{figure.caption.38}%
-\contentsline {figure}{\numberline {5.10}{\ignorespaces Pasek stanu połączenia - \textit {Ponów}}}{27}{figure.caption.41}%
-\contentsline {figure}{\numberline {5.11}{\ignorespaces Wizualizacja algorytmu ray casting - liczba punktów przecięcia z krawędziami jednoznacznie wskazuje, czy punkt leży wewnątrz czy na zewnątrz wielokąta}}{31}{figure.caption.51}%
-\contentsline {figure}{\numberline {5.12}{\ignorespaces Prośba o uprawnienie - \texttt {POST\_NOTIFICATIONS}}}{34}{figure.caption.55}%
-\contentsline {figure}{\numberline {5.13}{\ignorespaces Powiadomienie o wejściu w strefę}}{34}{figure.caption.55}%
+\contentsline {figure}{\numberline {5.10}{\ignorespaces Procedura automatycznego ponownego połączenia}}{28}{figure.caption.41}%
+\contentsline {figure}{\numberline {5.11}{\ignorespaces Pasek stanu połączenia - \textit {Ponów}}}{28}{figure.caption.42}%
+\contentsline {figure}{\numberline {5.12}{\ignorespaces Wizualizacja algorytmu ray casting - liczba punktów przecięcia z krawędziami jednoznacznie wskazuje, czy punkt leży wewnątrz czy na zewnątrz wielokąta}}{33}{figure.caption.53}%
+\contentsline {figure}{\numberline {5.13}{\ignorespaces Prośba o uprawnienie - \texttt {POST\_NOTIFICATIONS}}}{36}{figure.caption.57}%
+\contentsline {figure}{\numberline {5.14}{\ignorespaces Powiadomienie o wejściu w strefę}}{36}{figure.caption.57}%
+\contentsline {figure}{\numberline {6.1}{\ignorespaces Sekcja ,,Dane testowe'' w~ekranie ustawień aplikacji}}{39}{figure.caption.65}%

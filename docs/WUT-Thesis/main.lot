@@ -1,9 +1,11 @@
 \babel@toc {polish}{}\relax 
-\contentsline {table}{\numberline {3.1}{\ignorespaces Porównanie systemów śledzenia psów myśliwskich}}{15}{table.caption.12}%
+\contentsline {table}{\numberline {3.1}{\ignorespaces Porównanie systemów śledzenia psów myśliwskich}}{14}{table.caption.12}%
 \contentsline {table}{\numberline {4.1}{\ignorespaces Predefiniowane ustawienia kanałów LoRa w Meshtastic}}{18}{table.caption.17}%
-\contentsline {table}{\numberline {5.1}{\ignorespaces Pola klasy \texttt {MeshNodeInfo}}}{28}{table.caption.43}%
-\contentsline {table}{\numberline {5.2}{\ignorespaces Pola klasy \texttt {MeshUserInfo}}}{28}{table.caption.44}%
-\contentsline {table}{\numberline {5.3}{\ignorespaces Pola klasy \texttt {MeshPosition}}}{29}{table.caption.45}%
-\contentsline {table}{\numberline {5.4}{\ignorespaces Flagi \textit {Position Flags} - pola opcjonalne pakietu pozycji}}{29}{table.caption.46}%
-\contentsline {table}{\numberline {5.5}{\ignorespaces Encja \texttt {Zone} - strefa geofencingu}}{30}{table.caption.48}%
-\contentsline {table}{\numberline {5.6}{\ignorespaces Encja \texttt {ZoneEvent} - zdarzenie wejścia/wyjścia ze strefy}}{30}{table.caption.49}%
+\contentsline {table}{\numberline {5.1}{\ignorespaces Pola klasy \texttt {MeshNodeInfo}}}{29}{table.caption.44}%
+\contentsline {table}{\numberline {5.2}{\ignorespaces Pola klasy \texttt {MeshUserInfo}}}{29}{table.caption.45}%
+\contentsline {table}{\numberline {5.3}{\ignorespaces Pola klasy \texttt {MeshPosition}}}{30}{table.caption.46}%
+\contentsline {table}{\numberline {5.4}{\ignorespaces Flagi \textit {Position Flags} - pola opcjonalne pakietu pozycji}}{30}{table.caption.47}%
+\contentsline {table}{\numberline {5.5}{\ignorespaces Encja \texttt {Zone} - strefa geofencingu}}{31}{table.caption.50}%
+\contentsline {table}{\numberline {5.6}{\ignorespaces Encja \texttt {ZoneEvent} - zdarzenie wejścia/wyjścia ze strefy}}{32}{table.caption.51}%
+\contentsline {table}{\numberline {6.1}{\ignorespaces Kolumny pliku CSV}}{38}{table.caption.63}%
+\contentsline {table}{\numberline {6.2}{\ignorespaces Kolumny pliku CSV zdarzeń stref}}{39}{table.caption.68}%

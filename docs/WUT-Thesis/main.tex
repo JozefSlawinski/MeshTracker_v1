@@ -15,10 +15,15 @@
 ]{eiti/eiti-thesis}
 
 \langpol % Dla języka angielskiego mamy \langeng
+\usepackage{microtype}   % Protrusion i expansion — zmniejsza overfull hboxy
+\usepackage{xurl}        % Pozwala \url{} łamać linię w dowolnym miejscu (/, -, .)
+\usepackage{seqsplit}    % Łamanie długich ciągów bez spacji (np. nazwy plików w \texttt{})
 \usepackage{subcaption}  % Subfigures z podpisami (a), (b)
 \usepackage{dirtree}     % Drzewa katalogów
 \usepackage{float}       % Wymuszanie pozycji figur przez [H]
 \usepackage{wrapfig}     % Tekst opływający grafikę
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, calc}
 \graphicspath{{img/}{../img/}}    % Katalog z obrazkami.
 \addbibresource{bibliografia.bib} % Plik .bib z bibliografią
 
@@ -114,6 +119,7 @@ Tytuł na końcu}
 \input{tex/4-przeglad-ekranow}
 \input{tex/5-integracja}
 \input{tex/6-geofencing}
+\input{tex/7-testy}
 
 
 %--------------------------------------------

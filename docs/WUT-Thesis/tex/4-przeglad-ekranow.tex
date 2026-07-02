@@ -10,7 +10,7 @@ użytkownika. Warstwa \textit{View} odpowiada za renderowanie interfejsu i reago
 użytkownika, warstwa \textit{ViewModel} przechowuje stan ekranu i przetwarza dane z modelu,
 natomiast warstwa \textit{Model} reprezentuje dane domenowe - węzły, strefy geofencingu
 i zdarzenia przekroczenia granic. Komunikacja z siecią Meshtastic odbywa się przez dedykowaną
-warstwę serwisową, która izoluje resztę aplikacji od szczegółów protokołu AIDL.
+warstwę serwisową, która izoluje resztę aplikacji od szczegółów protokołu AIDL (rysunek~\ref{fig:architektura}).
 
 \begin{figure}[H]
     \label{fig:architektura}
@@ -25,59 +25,51 @@ Interfejs użytkownika aplikacji MeshTracker zorganizowany jest wokół trzech g
 dostępne są przez pasek nawigacyjny w dolnej części ekranu: \textbf{mapy}, \textbf{listy węzłów} oraz
 \textbf{ustawień}. 
 
-\noindent
-\begin{minipage}[t]{0.45\linewidth}
-\vspace{0pt}
-\captionsetup{type=figure}
-\footnotesize
-\dirtree{%
-    .1 ui/.
-    .2 MainScreen.kt.
-    .2 components/.
-    .3 ConnectionStatusBar.kt.
-    .2 map/.
-    .3 MapScreen.kt.
-    .3 MapViewModel.kt.
-    .2 nodes/.
-    .3 NodeDetailScreen.kt.
-    .3 NodeFilterState.kt.
-    .3 NodeItem.kt.
-    .3 NodeListScreen.kt.
-    .2 settings/.
-    .3 SettingsScreen.kt.
-    .3 SettingsViewModel.kt.
-    .2 theme/.
-    .3 Color.kt.
-    .3 Theme.kt.
-    .3 Type.kt.
-    .2 zones/.
-    .3 ZoneBottomSheet.kt.
-    .3 ZoneConfirmDialog.kt.
-    .3 ZoneDetailScreen.kt.
-    .3 ZoneViewModel.kt.
-}
-\captionof{figure}{Struktura pakietu \texttt{ui}}
-\label{fig:ui-structure}
-\end{minipage}
-\hfill
-\begin{minipage}[t]{0.5\linewidth}
-\vspace{0pt}
-\normalsize
-
 Każdy ekran posiada dedykowany ViewModel odpowiedzialny
 za logikę prezentacji, zgodnie z przyjętym wzorcem MVVM. Komponenty współdzielone między
 ekranami, takie jak pasek stanu połączenia, wydzielono do osobnego pakietu \texttt{components}.
 Wygląd aplikacji definiowany jest przez pakiet \texttt{theme}, zawierający paletę kolorów,
-typografię oraz motyw Material Design 3.
-Struktura pakietu \texttt{ui} przedstawia się rysunekem~\ref{fig:ui-structure}.
+typografię oraz motyw Material Design 3. Strukturę pakietu \texttt{ui} ilustruje rysunek~\ref{fig:ui-structure}.
+
+\begin{figure}[H]
+    \centering
+    \scriptsize
+    \dirtree{%
+        .1 ui/.
+        .2 MainScreen.kt.
+        .2 components/.
+        .3 ConnectionStatusBar.kt.
+        .2 map/.
+        .3 MapScreen.kt.
+        .3 MapViewModel.kt.
+        .2 nodes/.
+        .3 NodeDetailScreen.kt.
+        .3 NodeFilterState.kt.
+        .3 NodeItem.kt.
+        .3 NodeListScreen.kt.
+        .2 settings/.
+        .3 SettingsScreen.kt.
+        .3 SettingsViewModel.kt.
+        .2 theme/.
+        .3 Color.kt.
+        .3 Theme.kt.
+        .3 Type.kt.
+        .2 zones/.
+        .3 ZoneBottomSheet.kt.
+        .3 ZoneConfirmDialog.kt.
+        .3 ZoneDetailScreen.kt.
+        .3 ZoneViewModel.kt.
+    }
+    \caption{Struktura pakietu \texttt{ui}}
+    \label{fig:ui-structure}
+\end{figure}
 
 \paragraph{Mapy.}
 \texttt{MapScreen} jest głównym ekranem aplikacji. Wyświetla mapę Google Maps,
 na której prezentowane są markery węzłów oraz pozycja użytkownika. Każdy marker renderowany
 jest jako bitmapa z inicjałami węzła. Kolor markera zależy od roli węzła oraz stanu połączenia.
 W prawym górnym rogu markera znajduje się znacznik jakości sygnału. W lewym dolnym rogu ekranu
-umieszczono \textit{floating button} otwierający menu geofencingu.
-\end{minipage}
+umieszczono \textit{floating button} otwierający menu geofencingu (rysunek~\ref{fig:map-screen}).
 
 \begin{figure}[!h]
     \centering
@@ -124,7 +116,7 @@ a dodatkowa warstwa kolorów reprezentuje stan połączenia węzła z siecią Me
 \end{figure}
 
 Węzeł lokalny - czyli ten połączony z telefonem użytkownika bezpośrednio przez Bluetooth -
-ma małą ikonkę telefonu w prawym górnym rogu. Pozostałe węzły mają w tym miejscu kropkę,
+posiada małą ikonkę telefonu w prawym górnym rogu. Pozostałe węzły mają w tym miejscu kropkę,
 której kolor odpowiada jakości połączenia z siecią (zakres SNR\footnote{SNR (ang.\
 \textit{Signal-to-Noise Ratio}) - stosunek mocy użytecznego sygnału do mocy szumu,
 wyrażony w~dB. Im wyższa wartość, tym lepsze połączenie.} wyrażony w~dB). Strzałka wewnątrz markera wskazuje kierunek
@@ -216,6 +208,6 @@ oraz historię pozycji z bieżącej sesji w uproszczonej formie graficznej (rysu
 
 Ekran ustawień (\texttt{SettingsScreen}) umożliwia konfigurację połączenia z aplikacją
 Meshtastic. Użytkownik może tu wybrać urządzenie Bluetooth, z którym aplikacja ma się
-połączyć, oraz monitorować aktualny stan połączenia. Ekran jest celowo minimalistyczny ---
+połączyć, oraz monitorować aktualny stan połączenia. Ekran jest celowo minimalistyczny -
 zgodnie z założeniem projektowym, konfiguracja powinna być jednorazowa i nie wymagać
 powracania do ustawień podczas normalnej eksploatacji systemu.
