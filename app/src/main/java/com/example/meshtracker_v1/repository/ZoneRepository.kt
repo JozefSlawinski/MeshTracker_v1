@@ -106,4 +106,10 @@ class ZoneRepository @Inject constructor(
 
     suspend fun countEventsForZone(zoneId: String): Int =
         dao.countEventsForZone(zoneId)
+
+    /** Jednorazowe pobranie wszystkich stref (bez obserwacji). */
+    suspend fun getAllZonesOnce(): List<Zone> = dao.getAllZonesOnce()
+
+    /** Jednorazowe pobranie zdarzeń dla strefy (bez obserwacji), posortowane rosnąco po czasie. */
+    suspend fun getEventsOnce(zoneId: String): List<ZoneEvent> = dao.getEventsOnce(zoneId)
 }

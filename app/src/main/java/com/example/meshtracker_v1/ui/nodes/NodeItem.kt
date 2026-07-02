@@ -168,7 +168,15 @@ fun NodeItem(
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
-                
+
+                val satellites = node.position?.satellitesInView ?: 0
+                if (satellites > 0) {
+                    Text(
+                        text = "🛰 $satellites",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+
                 if (node.snr != Float.MAX_VALUE) {
                     Text(
                         text = "📡 SNR: ${String.format("%.1f", node.snr)} dB",

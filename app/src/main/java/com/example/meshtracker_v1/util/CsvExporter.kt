@@ -9,6 +9,7 @@ import android.provider.MediaStore
 import com.example.meshtracker_v1.model.MeshNodeInfo
 import com.example.meshtracker_v1.repository.PacketStatsRepository
 import com.example.meshtracker_v1.repository.PositionHistoryRepository
+import com.example.meshtracker_v1.repository.ZoneRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -24,7 +25,8 @@ import javax.inject.Singleton
 class CsvExporter @Inject constructor(
     @ApplicationContext private val context: Context,
     private val historyRepository: PositionHistoryRepository,
-    private val statsRepository: PacketStatsRepository
+    private val statsRepository: PacketStatsRepository,
+    private val zoneRepository: ZoneRepository
 ) {
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US)
     private val fileNameFormat = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US)
@@ -185,10 +187,62 @@ class CsvExporter @Inject constructor(
         else -> "UNKNOWN"
     }
 
+    // ---------------------------------------------------------------- Zone events export
+
+    suspend fun exportZoneEvents(): Result<Uri> = withContext(Dispatchers.IO) {
+        runCatching {
+            val zones = zoneRepository.getAllZonesOnce()
+            val allEvents = zones.flatMap { zone ->
+                zoneRepository.getEventsOnce(zone.id).map { event ->
+                    buildZoneEventRow(
+                        timestampUnix = event.timestampSeconds,
+                        zoneId = event.zoneId,
+                        zoneName = zone.name,
+                        nodeId = event.nodeId,
+                        nodeName = event.nodeName,
+                        eventType = event.eventType
+                    )
+                }
+            }.sortedBy { it.substringBefore(",").toIntOrNull() ?: 0 }
+
+            if (allEvents.isEmpty()) throw IllegalStateException("empty")
+
+            val fileName = "meshtracker_zones_${fileNameFormat.format(Date())}.csv"
+            val csvContent = buildString {
+                appendLine(ZONE_CSV_HEADER)
+                allEvents.forEach { appendLine(it) }
+            }
+            writeCsvFile(fileName, csvContent)
+        }
+    }
+
+    private fun buildZoneEventRow(
+        timestampUnix: Int,
+        zoneId: String,
+        zoneName: String,
+        nodeId: String,
+        nodeName: String,
+        eventType: String
+    ): String {
+        val readable = if (timestampUnix > 0) dateFormat.format(Date(timestampUnix.toLong() * 1000)) else ""
+        return listOf(
+            timestampUnix.toString(),
+            "\"$readable\"",
+            "\"$zoneId\"",
+            "\"$zoneName\"",
+            "\"$nodeId\"",
+            "\"$nodeName\"",
+            "\"$eventType\""
+        ).joinToString(",")
+    }
+
     companion object {
         private const val CSV_HEADER =
             "timestamp_unix,timestamp_readable,node_id,node_name,role," +
             "lat,lng,altitude_m,snr_db,rssi_dbm,hops_away,delta_t_s," +
             "battery_pct,speed_ms,heading_deg,satellites"
+
+        private const val ZONE_CSV_HEADER =
+            "timestamp_unix,timestamp_readable,zone_id,zone_name,node_id,node_name,event_type"
     }
 }

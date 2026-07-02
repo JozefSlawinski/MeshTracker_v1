@@ -126,6 +126,85 @@ data class MeshNodeInfo(
         }
 
         /**
+         * Odczytuje poziom baterii z obiektu NodeInfo Meshtastic.
+         * NodeInfo.batteryLevel to computed property delegująca do deviceMetrics?.batteryLevel.
+         * Próbujemy kolejno:
+         *  1. getBatteryLevel() na samym NodeInfo (Kotlin computed property)
+         *  2. getDeviceMetrics() → getBatteryLevel() (zagnieżdżony obiekt)
+         *  3. pole 'deviceMetrics' → getBatteryLevel()
+         *  4. pole 'batteryLevel' bezpośrednio
+         */
+        private fun readBatteryLevel(nodeInfo: Any): Int {
+            // 1. Computed property getBatteryLevel() bezpośrednio na NodeInfo
+            try {
+                val v = nodeInfo.javaClass.getMethod("getBatteryLevel").invoke(nodeInfo)
+                android.util.Log.d(TAG, "batteryLevel via getBatteryLevel(): $v (type=${v?.javaClass?.name})")
+                val result = (v as? Number)?.toInt()
+                if (result != null && result > 0) return result
+            } catch (e: Exception) {
+                android.util.Log.d(TAG, "getBatteryLevel() on NodeInfo failed: ${e.message}")
+            }
+
+            // 2. getDeviceMetrics() → getBatteryLevel()
+            try {
+                val dm = nodeInfo.javaClass.getMethod("getDeviceMetrics").invoke(nodeInfo)
+                android.util.Log.d(TAG, "getDeviceMetrics() = $dm (type=${dm?.javaClass?.name})")
+                if (dm != null) {
+                    val v = dm.javaClass.getMethod("getBatteryLevel").invoke(dm)
+                    android.util.Log.d(TAG, "deviceMetrics.getBatteryLevel() = $v")
+                    val result = (v as? Number)?.toInt()
+                    if (result != null && result > 0) return result
+                }
+            } catch (e: Exception) {
+                android.util.Log.d(TAG, "getDeviceMetrics().getBatteryLevel() failed: ${e.message}")
+            }
+
+            // 3. pole 'deviceMetrics' → getBatteryLevel()
+            try {
+                val f = nodeInfo.javaClass.getDeclaredField("deviceMetrics")
+                f.isAccessible = true
+                val dm = f.get(nodeInfo)
+                android.util.Log.d(TAG, "field deviceMetrics = $dm (type=${dm?.javaClass?.name})")
+                if (dm != null) {
+                    // Próbuj getter i pole
+                    val v = try {
+                        dm.javaClass.getMethod("getBatteryLevel").invoke(dm)
+                    } catch (e2: Exception) {
+                        val bf = dm.javaClass.getDeclaredField("batteryLevel")
+                        bf.isAccessible = true
+                        bf.get(dm)
+                    }
+                    android.util.Log.d(TAG, "deviceMetrics field batteryLevel = $v")
+                    val result = (v as? Number)?.toInt()
+                    if (result != null && result > 0) return result
+                }
+            } catch (e: Exception) {
+                android.util.Log.d(TAG, "field deviceMetrics failed: ${e.message}")
+            }
+
+            // 4. pole 'batteryLevel' bezpośrednio na NodeInfo
+            try {
+                val f = nodeInfo.javaClass.getDeclaredField("batteryLevel")
+                f.isAccessible = true
+                val v = f.get(nodeInfo)
+                android.util.Log.d(TAG, "field batteryLevel on NodeInfo = $v")
+                val result = (v as? Number)?.toInt()
+                if (result != null && result > 0) return result
+            } catch (e: Exception) {
+                android.util.Log.d(TAG, "field batteryLevel on NodeInfo failed: ${e.message}")
+            }
+
+            android.util.Log.w(TAG, "Could not read batteryLevel — all methods failed, dumping NodeInfo fields:")
+            try {
+                nodeInfo.javaClass.declaredFields.forEach { f ->
+                    f.isAccessible = true
+                    android.util.Log.w(TAG, "  field '${f.name}' = ${f.get(nodeInfo)}")
+                }
+            } catch (e: Exception) { /* ignore */ }
+            return 0
+        }
+
+        /**
          * Odczytuje RSSI z obiektu NodeInfo Meshtastic.
          * Próbuje kolejno: getRssi() → pole 'rssi' → getRxRssi() → pole 'rxRssi'.
          * Zwraca Int.MAX_VALUE gdy żadna metoda nie zadziała.
@@ -382,16 +461,7 @@ data class MeshNodeInfo(
                 val timeDiff = if (lastHeard > 0) currentTime - lastHeard else -1
                 android.util.Log.d("MeshNodeInfo", "Online check: lastHeard=$lastHeard, currentTime=$currentTime, diff=$timeDiff seconds, isOnline=${lastHeard > 0 && timeDiff < 300}")
                 
-                val batteryLevel = try {
-                    val deviceMetrics = nodeInfo.javaClass.getMethod("getDeviceMetrics").invoke(nodeInfo)
-                    if (deviceMetrics != null) {
-                        (deviceMetrics.javaClass.getMethod("getBatteryLevel").invoke(deviceMetrics) as? Int) ?: 0
-                    } else {
-                        0
-                    }
-                } catch (e: Exception) {
-                    0
-                }
+                val batteryLevel = readBatteryLevel(nodeInfo)
                 
                 val channel = try {
                     (nodeInfo.javaClass.getMethod("getChannel").invoke(nodeInfo) as? Int) ?: 0

@@ -74,8 +74,18 @@ fun SettingsScreen(
                 }
                 context.startActivity(Intent.createChooser(intent, "Eksportuj sesję"))
             }
-            result.onFailure { error ->
-                // Empty history case is signaled by message "empty" in CsvExporter
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.exportZonesEvent.collect { result ->
+            result.onSuccess { uri ->
+                val intent = Intent(Intent.ACTION_SEND).apply {
+                    type = "text/csv"
+                    putExtra(Intent.EXTRA_STREAM, uri)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                context.startActivity(Intent.createChooser(intent, "Eksportuj zdarzenia stref"))
             }
         }
     }
@@ -198,6 +208,22 @@ fun SettingsScreen(
 
         Text(
             text = "Eksportuje historię pozycji wszystkich węzłów",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(bottom = 4.dp)
+        )
+
+        Button(
+            onClick = { viewModel.exportZoneEvents() },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 4.dp)
+        ) {
+            Text("Eksportuj zdarzenia stref do CSV")
+        }
+
+        Text(
+            text = "Eksportuje log wejść i wyjść ze stref geofencingu",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 4.dp)

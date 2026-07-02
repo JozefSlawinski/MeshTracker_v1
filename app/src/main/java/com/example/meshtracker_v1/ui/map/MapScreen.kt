@@ -10,21 +10,33 @@ import android.graphics.Path
 import android.graphics.PorterDuff
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -40,6 +52,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color as ComposeColor
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -82,6 +95,7 @@ fun MapScreen(
     // ------------------------------------------------------------------ stan z VMów
     val nodes           by viewModel.nodes.collectAsState()
     val selectedNodeId  by viewModel.selectedNodeId.collectAsState()
+    val selectedNode    = selectedNodeId?.let { nodes[it] }
     val connectionState by viewModel.connectionState.collectAsState()
     val mapTypeIndex    by viewModel.mapType.collectAsState()
     val nodeHistory     by viewModel.nodeHistory.collectAsState()
@@ -336,6 +350,23 @@ fun MapScreen(
             }
         }
 
+        // ---- Dymek z detalami węzła ----
+        AnimatedVisibility(
+            visible = selectedNode != null,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(start = 16.dp, end = 16.dp, bottom = 88.dp),
+            enter = fadeIn() + slideInVertically(initialOffsetY = { it / 2 }),
+            exit  = fadeOut() + slideOutVertically(targetOffsetY  = { it / 2 })
+        ) {
+            selectedNode?.let { node ->
+                NodeInfoPopup(
+                    node = node,
+                    onDismiss = { viewModel.selectNode(null) }
+                )
+            }
+        }
+
         // ---- FABs (lewy dolny róg — nie zasłania przycisków zoom Google Maps) ----
         Column(
             modifier = Modifier
@@ -408,6 +439,101 @@ fun MapScreen(
             },
             onDismiss = { zoneViewModel.cancelDrawing() }
         )
+    }
+}
+
+// ------------------------------------------------------------------ Node info popup
+
+/**
+ * Dymek z podstawowymi szczegółami węzła, wyświetlany po kliknięciu markera.
+ */
+@Composable
+private fun NodeInfoPopup(
+    node: MeshNodeInfo,
+    onDismiss: () -> Unit
+) {
+    Card(
+        modifier  = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        shape     = MaterialTheme.shapes.large
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            // Nagłówek: nazwa + przycisk zamknięcia
+            Row(
+                modifier       = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text  = node.getDisplayName(),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                IconButton(onClick = onDismiss) {
+                    Icon(
+                        imageVector        = Icons.Default.Close,
+                        contentDescription = "Zamknij",
+                        tint               = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            // Status online / offline
+            val isOnline = node.isOnline()
+            Text(
+                text  = if (isOnline) "● Online" else "● Offline",
+                style = MaterialTheme.typography.bodySmall,
+                color = if (isOnline)
+                    ComposeColor(0xFF4CAF50.toInt())
+                else
+                    MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            // Siatka szczegółów
+            val details = buildList {
+                if (node.batteryLevel > 0)        add("Bateria" to "${node.batteryLevel}%")
+                if (node.snr != Float.MAX_VALUE)  add("SNR" to "${String.format("%.1f", node.snr)} dB")
+                if (node.rssi != Int.MAX_VALUE)   add("RSSI" to "${node.rssi} dBm")
+                if (node.hopsAway > 0)            add("Hopy" to "${node.hopsAway}")
+                if (node.channel > 0)             add("Kanał" to "${node.channel}")
+                node.position?.let { pos ->
+                    add("Pozycja" to "${String.format("%.5f", pos.latitude)}, ${String.format("%.5f", pos.longitude)}")
+                    if (pos.altitude != 0) add("Wysokość" to "${pos.altitude} m")
+                    if (pos.satellitesInView > 0) add("Satelity" to "${pos.satellitesInView}")
+                    if (pos.groundSpeed > 0)      add("Prędkość" to "${pos.groundSpeed} m/s")
+                    if (pos.time > 0) {
+                        val age = (System.currentTimeMillis() / 1000 - pos.time).toInt()
+                        add("GPS" to formatPositionAge(age))
+                    }
+                }
+            }
+
+            if (details.isNotEmpty()) {
+                Column(modifier = Modifier.padding(top = 6.dp)) {
+                    details.chunked(2).forEach { row ->
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            row.forEach { (label, value) ->
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text  = label,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    Text(
+                                        text  = value,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
+                            }
+                            // Wypełnij jeśli nieparzysty
+                            if (row.size == 1) Spacer(modifier = Modifier.weight(1f))
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 

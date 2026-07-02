@@ -327,16 +327,35 @@ data class MeshPosition(
                     0
                 }
                 
-                val satellites = try {
-                    val method = position.javaClass.getMethod("getSatellitesInView")
-                    val value = method.invoke(position)
-                    when (value) {
-                        is Int -> value
-                        is Long -> value.toInt()
-                        else -> (value as? Number)?.toInt() ?: 0
+                val satellites = run {
+                    // Próbuj getSatellitesInView(), potem getSatsInView(), potem pole satellitesInView
+                    var result = 0
+                    val getterNames = listOf("getSatellitesInView", "getSatsInView", "getSatellites")
+                    for (name in getterNames) {
+                        try {
+                            val v = position.javaClass.getMethod(name).invoke(position)
+                            android.util.Log.d("MeshPosition", "$name() = $v")
+                            val n = (v as? Number)?.toInt() ?: 0
+                            if (n > 0) { result = n; break }
+                        } catch (e: Exception) {
+                            android.util.Log.d("MeshPosition", "$name() failed: ${e.message}")
+                        }
                     }
-                } catch (e: Exception) {
-                    0
+                    if (result == 0) {
+                        val fieldNames = listOf("satellitesInView", "satsInView", "satellites")
+                        for (name in fieldNames) {
+                            try {
+                                val f = position.javaClass.getDeclaredField(name)
+                                f.isAccessible = true
+                                val n = (f.get(position) as? Number)?.toInt() ?: 0
+                                android.util.Log.d("MeshPosition", "field $name = $n")
+                                if (n > 0) { result = n; break }
+                            } catch (e: Exception) {
+                                android.util.Log.d("MeshPosition", "field $name failed: ${e.message}")
+                            }
+                        }
+                    }
+                    result
                 }
                 
                 val speed = try {

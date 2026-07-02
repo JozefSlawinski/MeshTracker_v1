@@ -54,6 +54,9 @@ class SettingsViewModel @Inject constructor(
     private val _exportEvent = Channel<Result<Uri>>(Channel.BUFFERED)
     val exportEvent = _exportEvent.receiveAsFlow()
 
+    private val _exportZonesEvent = Channel<Result<Uri>>(Channel.BUFFERED)
+    val exportZonesEvent = _exportZonesEvent.receiveAsFlow()
+
     fun setRefreshInterval(seconds: Int) = viewModelScope.launch { prefs.setRefreshInterval(seconds) }
     fun setOnlineThreshold(minutes: Int) = viewModelScope.launch { prefs.setOnlineThreshold(minutes) }
     fun setDefaultOnlineFilter(enabled: Boolean) = viewModelScope.launch { prefs.setDefaultOnlineFilter(enabled) }
@@ -69,6 +72,13 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             val result = csvExporter.export(nodes = nodes)
             _exportEvent.send(result)
+        }
+    }
+
+    fun exportZoneEvents() {
+        viewModelScope.launch {
+            val result = csvExporter.exportZoneEvents()
+            _exportZonesEvent.send(result)
         }
     }
 

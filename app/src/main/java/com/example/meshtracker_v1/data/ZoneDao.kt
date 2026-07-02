@@ -17,6 +17,9 @@ interface ZoneDao {
     @Query("SELECT * FROM zones ORDER BY name ASC")
     fun getAllZones(): Flow<List<Zone>>
 
+    @Query("SELECT * FROM zones ORDER BY name ASC")
+    suspend fun getAllZonesOnce(): List<Zone>
+
     @Query("SELECT * FROM zones WHERE id = :id")
     suspend fun getZoneById(id: String): Zone?
 
@@ -36,6 +39,9 @@ interface ZoneDao {
 
     @Query("SELECT * FROM zone_events WHERE zoneId = :zoneId ORDER BY timestampSeconds DESC")
     fun getEventsForZone(zoneId: String): Flow<List<ZoneEvent>>
+
+    @Query("SELECT * FROM zone_events WHERE zoneId = :zoneId ORDER BY timestampSeconds ASC")
+    suspend fun getEventsOnce(zoneId: String): List<ZoneEvent>
 
     @Query("SELECT COUNT(*) FROM zone_events WHERE zoneId = :zoneId")
     suspend fun countEventsForZone(zoneId: String): Int
