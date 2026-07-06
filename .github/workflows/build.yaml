@@ -1,0 +1,29 @@
+name: Build APK
+on: workflow_dispatch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: (opcjonalnie) Google Maps API key
+        run: echo "MAPS_API_KEY=${{ secrets.MAPS_API_KEY }}" >> local.properties
+        # jeśli nie dodasz sekretu MAPS_API_KEY w ustawieniach repo,
+        # ta linijka po prostu wpisze pusty klucz - build i tak przejdzie
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build debug APK
+        run: ./gradlew assembleDebug
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MeshTracker-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
