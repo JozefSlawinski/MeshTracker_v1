@@ -75,17 +75,25 @@ class MapViewModel @Inject constructor(
     val mapType: StateFlow<Int> = appPreferences.mapType
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppPreferences.DEFAULT_MAP_TYPE)
 
+    // FIX: only ever read via `.value` in startPeriodicRefresh() — no Compose collector exists
+    // for this private flow, so WhileSubscribed(5_000) never actually starts collecting the
+    // upstream DataStore flow and `.value` was frozen forever at the seed default. Eagerly
+    // collects immediately in viewModelScope regardless of subscribers.
     private val refreshIntervalSeconds: StateFlow<Int> = appPreferences.refreshIntervalSeconds
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppPreferences.DEFAULT_REFRESH_INTERVAL)
+        .stateIn(viewModelScope, SharingStarted.Eagerly, AppPreferences.DEFAULT_REFRESH_INTERVAL)
 
     private val _filterState = MutableStateFlow(NodeFilterState())
     val filterState: StateFlow<NodeFilterState> = _filterState.asStateFlow()
 
+    // FIX: same issue as refreshIntervalSeconds — only read via `.value` in onNodeChanged(),
+    // never collected, so it was permanently stuck at DEFAULT_HISTORY_MAX_POINTS (50)
+    // regardless of what the user picked in Settings. This was the reported bug.
     private val historyMaxPoints: StateFlow<Int> = appPreferences.historyMaxPoints
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppPreferences.DEFAULT_HISTORY_MAX_POINTS)
+        .stateIn(viewModelScope, SharingStarted.Eagerly, AppPreferences.DEFAULT_HISTORY_MAX_POINTS)
 
+    // FIX: same issue as above, only read via `.value` in onNodeChanged().
     private val historyMinDistanceM: StateFlow<Int> = appPreferences.historyMinDistanceM
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppPreferences.DEFAULT_HISTORY_MIN_DIST_M)
+        .stateIn(viewModelScope, SharingStarted.Eagerly, AppPreferences.DEFAULT_HISTORY_MIN_DIST_M)
 
     val nodeHistory: StateFlow<Map<String, List<TimedPosition>>> = positionHistoryRepository.history
 
