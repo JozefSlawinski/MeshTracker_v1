@@ -23,7 +23,7 @@ object DatabaseModule {
         context,
         ZoneDatabase::class.java,
         "zone_database"
-    ).build()
+    ).addMigrations(ZoneDatabase.MIGRATION_1_2).build()
 
     @Provides
     @Singleton
