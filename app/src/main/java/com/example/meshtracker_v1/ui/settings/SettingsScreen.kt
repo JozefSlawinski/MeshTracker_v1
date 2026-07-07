@@ -179,7 +179,7 @@ fun SettingsScreen(
         SettingsDropdown(
             label = "Max punktów historii",
             selected = historyMaxPoints,
-            options = listOf(10, 50, 100, 200),
+            options = listOf(10, 50, 100, 200, 300),
             optionLabel = { "$it pkt" },
             onSelect = viewModel::setHistoryMaxPoints
         )
