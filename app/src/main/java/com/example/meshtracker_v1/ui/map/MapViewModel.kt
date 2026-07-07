@@ -246,7 +246,9 @@ class MapViewModel @Inject constructor(
                     nodeId = nodeInfo.getId(),
                     position = nodeInfo.position!!,
                     maxPoints = historyMaxPoints.value,
-                    minDistanceM = historyMinDistanceM.value
+                    minDistanceM = historyMinDistanceM.value,
+                    snr = nodeInfo.snr,
+                    rssi = nodeInfo.rssi
                 )
             }
 
