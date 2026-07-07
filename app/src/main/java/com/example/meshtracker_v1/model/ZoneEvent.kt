@@ -30,7 +30,9 @@ data class ZoneEvent(
     val nodeId: String,
     val nodeName: String,         // snapshot nazwy węzła w chwili zdarzenia
     val eventType: String,        // ZoneEventType.name: "ENTER" lub "EXIT"
-    val timestampSeconds: Int
+    val timestampSeconds: Int,
+    val lat: Double,              // pozycja węzła w chwili zdarzenia
+    val lon: Double
 ) {
     fun type(): ZoneEventType = ZoneEventType.valueOf(eventType)
 }

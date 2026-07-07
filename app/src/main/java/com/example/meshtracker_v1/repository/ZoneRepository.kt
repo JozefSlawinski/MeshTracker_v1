@@ -81,19 +81,24 @@ class ZoneRepository @Inject constructor(
     /**
      * Zapisuje zdarzenie wejścia/wyjścia węzła ze strefy.
      * @param nodeName snapshot nazwy węzła — przechowywany razem ze zdarzeniem
+     * @param lat, lon pozycja węzła w chwili zdarzenia
      */
     suspend fun recordEvent(
         zoneId: String,
         nodeId: String,
         nodeName: String,
-        type: ZoneEventType
+        type: ZoneEventType,
+        lat: Double,
+        lon: Double
     ) {
         val event = ZoneEvent(
             zoneId = zoneId,
             nodeId = nodeId,
             nodeName = nodeName,
             eventType = type.name,
-            timestampSeconds = (System.currentTimeMillis() / 1000).toInt()
+            timestampSeconds = (System.currentTimeMillis() / 1000).toInt(),
+            lat = lat,
+            lon = lon
         )
         dao.insertEvent(event)
         Log.d(TAG, "recordEvent: $nodeId ${type.name} strefę $zoneId")

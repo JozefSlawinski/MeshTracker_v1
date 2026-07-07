@@ -201,7 +201,9 @@ class CsvExporter @Inject constructor(
                         zoneName = zone.name,
                         nodeId = event.nodeId,
                         nodeName = event.nodeName,
-                        eventType = event.eventType
+                        eventType = event.eventType,
+                        lat = event.lat,
+                        lon = event.lon
                     )
                 }
             }.sortedBy { it.substringBefore(",").toIntOrNull() ?: 0 }
@@ -223,7 +225,9 @@ class CsvExporter @Inject constructor(
         zoneName: String,
         nodeId: String,
         nodeName: String,
-        eventType: String
+        eventType: String,
+        lat: Double,
+        lon: Double
     ): String {
         val readable = if (timestampUnix > 0) dateFormat.format(Date(timestampUnix.toLong() * 1000)) else ""
         return listOf(
@@ -233,7 +237,9 @@ class CsvExporter @Inject constructor(
             "\"$zoneName\"",
             "\"$nodeId\"",
             "\"$nodeName\"",
-            "\"$eventType\""
+            "\"$eventType\"",
+            String.format(Locale.US, "%.6f", lat),
+            String.format(Locale.US, "%.6f", lon)
         ).joinToString(",")
     }
 
@@ -299,7 +305,7 @@ class CsvExporter @Inject constructor(
             "battery_pct,speed_ms,heading_deg,satellites"
 
         private const val ZONE_CSV_HEADER =
-            "timestamp_unix,timestamp_readable,zone_id,zone_name,node_id,node_name,event_type"
+            "timestamp_unix,timestamp_readable,zone_id,zone_name,node_id,node_name,event_type,lat,lon"
 
         private const val ZONE_DEFINITIONS_CSV_HEADER =
             "zone_id,zone_name,color_argb,is_active,vertex_index,vertex_lat,vertex_lon,watched_node_ids"

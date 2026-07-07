@@ -169,7 +169,7 @@ class ZoneMonitorService : Service(),
         for (zoneId in currentZones - previousZones) {
             val zone = zones.find { it.id == zoneId } ?: continue
             Log.i(TAG, "ENTER: $nodeName → ${zone.name}")
-            zoneRepository.recordEvent(zoneId, nodeId, nodeName, ZoneEventType.ENTER)
+            zoneRepository.recordEvent(zoneId, nodeId, nodeName, ZoneEventType.ENTER, pos.latitude, pos.longitude)
             fireAlertNotification(zone, nodeName, ZoneEventType.ENTER)
         }
 
@@ -177,7 +177,7 @@ class ZoneMonitorService : Service(),
         for (zoneId in previousZones - currentZones) {
             val zone = zones.find { it.id == zoneId } ?: continue
             Log.i(TAG, "EXIT: $nodeName ← ${zone.name}")
-            zoneRepository.recordEvent(zoneId, nodeId, nodeName, ZoneEventType.EXIT)
+            zoneRepository.recordEvent(zoneId, nodeId, nodeName, ZoneEventType.EXIT, pos.latitude, pos.longitude)
             fireAlertNotification(zone, nodeName, ZoneEventType.EXIT)
         }
 
