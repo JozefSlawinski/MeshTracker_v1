@@ -7,6 +7,7 @@ import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import com.example.meshtracker_v1.model.MeshNodeInfo
+import com.example.meshtracker_v1.model.Zone
 import com.example.meshtracker_v1.repository.PacketStatsRepository
 import com.example.meshtracker_v1.repository.PositionHistoryRepository
 import com.example.meshtracker_v1.repository.ZoneRepository
@@ -236,6 +237,61 @@ class CsvExporter @Inject constructor(
         ).joinToString(",")
     }
 
+    // ---------------------------------------------------------------- Zone definitions export
+
+    suspend fun exportZoneDefinitions(): Result<Uri> = withContext(Dispatchers.IO) {
+        runCatching {
+            val zones = zoneRepository.getAllZonesOnce()
+            if (zones.isEmpty()) throw IllegalStateException("empty")
+
+            val rows = zones.flatMap { zone -> buildZoneDefinitionRows(zone) }
+
+            val fileName = "meshtracker_zone_definitions_${fileNameFormat.format(Date())}.csv"
+            val csvContent = buildString {
+                appendLine(ZONE_DEFINITIONS_CSV_HEADER)
+                rows.forEach { appendLine(it) }
+            }
+            writeCsvFile(fileName, csvContent)
+        }
+    }
+
+    private fun buildZoneDefinitionRows(zone: Zone): List<String> {
+        val watchedNodeIds = zone.watchedNodeIds().joinToString(";")
+        val vertices = zone.vertices()
+
+        if (vertices.isEmpty()) {
+            return listOf(buildZoneDefinitionRow(zone, watchedNodeIds, vertexIndex = "", lat = "", lon = ""))
+        }
+
+        return vertices.mapIndexed { index, vertex ->
+            buildZoneDefinitionRow(
+                zone = zone,
+                watchedNodeIds = watchedNodeIds,
+                vertexIndex = index.toString(),
+                lat = String.format(Locale.US, "%.6f", vertex.lat),
+                lon = String.format(Locale.US, "%.6f", vertex.lon)
+            )
+        }
+    }
+
+    private fun buildZoneDefinitionRow(
+        zone: Zone,
+        watchedNodeIds: String,
+        vertexIndex: String,
+        lat: String,
+        lon: String
+    ): String {
+        return listOf(
+            "\"${zone.id}\"",
+            "\"${zone.name}\"",
+            zone.colorArgb.toString(),
+            zone.isActive.toString(),
+            vertexIndex,
+            lat, lon,
+            "\"$watchedNodeIds\""
+        ).joinToString(",")
+    }
+
     companion object {
         private const val CSV_HEADER =
             "timestamp_unix,timestamp_readable,node_id,node_name,role," +
@@ -244,5 +300,8 @@ class CsvExporter @Inject constructor(
 
         private const val ZONE_CSV_HEADER =
             "timestamp_unix,timestamp_readable,zone_id,zone_name,node_id,node_name,event_type"
+
+        private const val ZONE_DEFINITIONS_CSV_HEADER =
+            "zone_id,zone_name,color_argb,is_active,vertex_index,vertex_lat,vertex_lon,watched_node_ids"
     }
 }
