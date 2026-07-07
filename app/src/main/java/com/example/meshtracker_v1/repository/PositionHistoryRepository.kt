@@ -16,7 +16,14 @@ class PositionHistoryRepository @Inject constructor() {
     private val _history = MutableStateFlow<Map<String, List<TimedPosition>>>(emptyMap())
     val history: StateFlow<Map<String, List<TimedPosition>>> = _history.asStateFlow()
 
-    fun record(nodeId: String, position: MeshPosition, maxPoints: Int, minDistanceM: Int) {
+    fun record(
+        nodeId: String,
+        position: MeshPosition,
+        maxPoints: Int,
+        minDistanceM: Int,
+        snr: Float = Float.MAX_VALUE,
+        rssi: Int = Int.MAX_VALUE
+    ) {
         val current = _history.value
         val nodeHistory = current[nodeId]?.toMutableList() ?: mutableListOf()
 
@@ -32,7 +39,7 @@ class PositionHistoryRepository @Inject constructor() {
         val ts = if (position.time > 0) position.time
                  else (System.currentTimeMillis() / 1000).toInt()
 
-        nodeHistory.add(TimedPosition(position.latitude, position.longitude, position.altitude, ts))
+        nodeHistory.add(TimedPosition(position.latitude, position.longitude, position.altitude, ts, snr, rssi))
 
         while (nodeHistory.size > maxPoints) nodeHistory.removeAt(0)
 
