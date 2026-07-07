@@ -4,11 +4,14 @@
 Aby umożliwić analizę zebranych danych pomiarowych, konieczne było zaimplementowanie mechanizmu
 przechowywania historii pozycji węzłów oraz funkcji eksportu tych danych do formatu CSV,
 który jest powszechnie używany do dalszej obróbki w arkuszach kalkulacyjnych.
-Zaimplementowano trzy funkcjonalności: mechanizm przechowywania historii pozycji węzłów,
-eksport zebranych danych pozycji do pliku CSV oraz osobny eksport logu zdarzeń
-geofencingu (wejść i wyjść ze stref). Dwa pierwsze dostarczają danych do analizy tras
-i~metryk PDR i~$\Delta t$, trzeci pozwala zmierzyć czas wykrycia przekroczenia granicy strefy
-(metryka~$T_z$) w~testach TC-MON-004.
+Zaimplementowano cztery funkcjonalności: mechanizm przechowywania historii pozycji węzłów,
+eksport zebranych danych pozycji do pliku CSV, eksport logu zdarzeń
+geofencingu (wejść i wyjść ze stref) oraz eksport definicji stref (geometrii wielokątów
+wraz z listą obserwowanych węzłów). Pierwsze dwie funkcjonalności dostarczają danych do analizy
+tras i~metryk PDR i~$\Delta t$, trzecia pozwala zmierzyć czas wykrycia przekroczenia granicy strefy
+(metryka~$T_z$) w~testach TC-MON-004, a~czwarta umożliwia odtworzenie geometrii stref poza
+aplikacją - np.\ do naniesienia na mapę w~zewnętrznym narzędziu GIS lub jako kopia zapasowa
+konfiguracji.
 
 \subsection*{Przechowywanie historii pozycji}
 \label{sec:historia}
@@ -29,10 +32,10 @@ data class TimedPosition(
 
 Znacznik czasu pochodzi z~pola \texttt{time} obiektu \texttt{MeshPosition} (czas GPS
 nadany przez węzeł). Jeśli węzeł nie wypełnia tego pola, używany jest czas systemowy
-telefonu w~momencie odbioru broadcastu. 
+telefonu w~momencie odbioru broadcastu.
 
-Stan przechowywany jest wyłącznie w~pamięci operacyjnej, dlatego restart aplikacji 
-powoduje utratę historii - jest to zachowanie celowe, ponieważ dane sesji pomiarowej 
+Stan przechowywany jest wyłącznie w~pamięci operacyjnej, dlatego restart aplikacji
+powoduje utratę historii - jest to zachowanie celowe, ponieważ dane sesji pomiarowej
 nie powinny wpływać na kolejne sesje.
 
 \subsection*{Eksport danych sesji do CSV}
@@ -155,3 +158,66 @@ znajduje się przycisk ,,Eksportuj zdarzenia stref do CSV''. Wywołuje on
 \texttt{\seqsplit{SettingsViewModel.exportZoneEvents()}}, a~wynik trafia do osobnego kanału
 \texttt{\seqsplit{exportZonesEvent}}, obsługiwanego przez dedykowany \texttt{\seqsplit{LaunchedEffect}}
 w~\texttt{SettingsScreen}. Jeśli baza nie zawiera żadnych zdarzeń, plik nie jest tworzony.
+
+\subsection*{Eksport definicji stref geofencingu do CSV}
+\label{sec:eksport-definicje-stref}
+
+Trzeci wariant eksportu dotyczy nie historii, lecz samej \textbf{konfiguracji} stref -
+geometrii wielokątów i~listy węzłów, które dana strefa monitoruje (encja \texttt{Zone},
+tabela~\ref{tab:zone-entity}). W~odróżnieniu od eksportu zdarzeń (rozdz.~\ref{sec:eksport-strefy}),
+który dokumentuje \emph{co się wydarzyło}, ten eksport dokumentuje \emph{jak zdefiniowano
+strefę} - pozwala to np.\ odtworzyć granice stref w~zewnętrznym narzędziu GIS albo zachować
+kopię zapasową konfiguracji przed jej modyfikacją lub usunięciem.
+
+\paragraph{Format pliku.}
+
+Nazwa pliku przyjmuje format\\
+\texttt{meshtracker\_zone\_definitions\_YYYYMMDD\_HHmmss.csv}.
+Plik zawiera 8 kolumn:
+
+\begin{table}[!h]
+    \caption{Kolumny pliku CSV definicji stref}
+    \label{tab:csv-definicje-stref}
+    \centering
+    \small
+    \begin{tabular}{|p{3cm}|p{3.7cm}|p{5.3cm}|}
+        \hline
+        \textbf{Kolumna} & \textbf{Źródło} & \textbf{Uwagi} \\
+        \hline
+        \texttt{zone\_id}            & \texttt{Zone.id}                          & UUID strefy \\
+        \texttt{zone\_name}          & \texttt{Zone.name}                        & Nazwa nadana przez użytkownika \\
+        \texttt{color\_argb}         & \texttt{\seqsplit{Zone.colorArgb}}        & Kolor strefy jako liczba ARGB \\
+        \texttt{is\_active}          & \texttt{\seqsplit{Zone.isActive}}         & \texttt{true}/\texttt{false} \\
+        \texttt{vertex\_index}       & Indeks w~liście wierzchołków              & Numeracja od 0 \\
+        \texttt{vertex\_lat}, \texttt{vertex\_lon} & \texttt{\seqsplit{Zone.vertices()}} & 6 miejsc po przecinku \\
+        \texttt{watched\_node\_ids}  & \texttt{\seqsplit{Zone.watchedNodeIds()}} & Lista ID węzłów rozdzielona średnikiem \texttt{;} \\
+        \hline
+    \end{tabular}
+    \normalsize
+\end{table}
+
+Każdy wierzchołek wielokąta strefy staje się jednym wierszem CSV - dzięki temu plik
+zachowuje pełną geometrię, kosztem denormalizacji (kolumny \texttt{zone\_id} .. \texttt{is\_active}
+oraz \texttt{watched\_node\_ids} powtarzają się w~każdym wierszu należącym do tej samej
+strefy). Jeżeli strefa nie posiada żadnych wierzchołków (przypadek brzegowy), eksportowany
+jest pojedynczy wiersz z~pustymi kolumnami \texttt{vertex\_index}, \texttt{vertex\_lat}
+i~\texttt{vertex\_lon}.
+
+\paragraph{Implementacja.}
+
+Metoda \texttt{\seqsplit{CsvExporter.exportZoneDefinitions()}} pobiera wszystkie strefy przez
+\texttt{\seqsplit{zoneRepository.getAllZonesOnce()}} - zarówno aktywne, jak i~nieaktywne - a~następnie
+dla każdej z~nich generuje wiersze na podstawie jej wierzchołków. Jeśli w~bazie nie ma
+żadnej zdefiniowanej strefy, metoda zwraca \texttt{Result.failure} z~komunikatem
+\texttt{"empty"} i~plik nie jest tworzony.
+
+\paragraph{Interfejs użytkownika.}
+
+W~sekcji ,,Dane testowe'' ekranu ustawień, poniżej przycisku ,,Eksportuj zdarzenia stref
+do CSV'', znajduje się trzeci przycisk - ,,Eksportuj strefy geofencingu do CSV'', opisany
+podpisem ,,Eksportuje definicje stref (geometria wielokątów i~obserwowane węzły) do
+naniesienia na mapę'' (rysunek~\ref{fig:ustawienia-eksport}). Wywołuje on
+\texttt{\seqsplit{SettingsViewModel.exportZoneDefinitions()}}, a~wynik trafia do osobnego
+kanału \texttt{\seqsplit{exportZoneDefinitionsEvent}}, obsługiwanego przez dedykowany
+\texttt{\seqsplit{LaunchedEffect}} w~\texttt{SettingsScreen}, który otwiera Android Share
+sheet z~tytułem ,,Eksportuj strefy geofencingu''.
