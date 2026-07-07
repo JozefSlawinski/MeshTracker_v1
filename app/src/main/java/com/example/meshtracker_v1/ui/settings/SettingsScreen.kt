@@ -90,6 +90,19 @@ fun SettingsScreen(
         }
     }
 
+    LaunchedEffect(Unit) {
+        viewModel.exportZoneDefinitionsEvent.collect { result ->
+            result.onSuccess { uri ->
+                val intent = Intent(Intent.ACTION_SEND).apply {
+                    type = "text/csv"
+                    putExtra(Intent.EXTRA_STREAM, uri)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                context.startActivity(Intent.createChooser(intent, "Eksportuj strefy geofencingu"))
+            }
+        }
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -224,6 +237,22 @@ fun SettingsScreen(
 
         Text(
             text = "Eksportuje log wejść i wyjść ze stref geofencingu",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(bottom = 4.dp)
+        )
+
+        Button(
+            onClick = { viewModel.exportZoneDefinitions() },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 4.dp)
+        ) {
+            Text("Eksportuj strefy geofencingu do CSV")
+        }
+
+        Text(
+            text = "Eksportuje definicje stref (geometria wielokątów i obserwowane węzły) do naniesienia na mapę",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 4.dp)
