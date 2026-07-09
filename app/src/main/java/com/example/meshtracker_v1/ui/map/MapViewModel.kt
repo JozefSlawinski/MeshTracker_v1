@@ -308,10 +308,32 @@ class MapViewModel @Inject constructor(
                 return@launch
             }
             val updated = _nodes.value.toMutableMap()
-            nodesList.forEach { updated[it.getId()] = it }
+            var backfilledCount = 0
+            nodesList.forEach { node ->
+                if (node.hasValidPosition() && positionChangedSince(updated[node.getId()], node)) {
+                    // Backfills history for ACTION_NODE_CHANGE broadcasts dropped while the
+                    // process was backgrounded — onNodeChanged() is the only other recorder.
+                    positionHistoryRepository.record(
+                        nodeId = node.getId(),
+                        position = node.position!!,
+                        maxPoints = historyMaxPoints.value,
+                        minDistanceM = historyMinDistanceM.value,
+                        snr = node.snr,
+                        rssi = node.rssi
+                    )
+                    backfilledCount++
+                }
+                updated[node.getId()] = node
+            }
             _nodes.value = updated
-            Log.d(TAG, "Refreshed ${nodesList.size} nodes")
+            Log.d(TAG, "Refreshed ${nodesList.size} nodes, backfilled $backfilledCount position(s) missed by broadcast")
         }
+    }
+
+    private fun positionChangedSince(oldNode: MeshNodeInfo?, newNode: MeshNodeInfo): Boolean {
+        val oldPos = oldNode?.position?.takeIf { oldNode.hasValidPosition() } ?: return true
+        val newPos = newNode.position!!
+        return oldPos.latitude != newPos.latitude || oldPos.longitude != newPos.longitude
     }
 
     fun selectNode(nodeId: String?) { _selectedNodeId.value = nodeId }
